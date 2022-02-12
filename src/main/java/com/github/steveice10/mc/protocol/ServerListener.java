@@ -162,13 +162,9 @@ public class ServerListener extends SessionAdapter {
 
             GameProfile profile = null;
             if(verify && this.key != null) {
-                Proxy proxy = this.session.<Proxy>getFlag(MinecraftConstants.AUTH_PROXY_KEY);
-                if(proxy == null) {
-                    proxy = Proxy.NO_PROXY;
-                }
 
                 try {
-                    profile = new SessionService(proxy).getProfileByServer(username, new BigInteger(CryptUtil.getServerIdHash(serverId, KEY_PAIR.getPublic(), this.key)).toString(16));
+                    profile = new SessionService().getProfileByServer(username, new BigInteger(CryptUtil.getServerIdHash(serverId, KEY_PAIR.getPublic(), this.key)).toString(16));
                 } catch(RequestException e) {
                     this.session.disconnect("Failed to make session service request.", e);
                     return;
