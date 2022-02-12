@@ -11,6 +11,10 @@ import com.github.steveice10.packetlib.io.NetOutput;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
 
 public class ServerPlayerListEntryPacket extends MinecraftPacket {
     private PlayerListEntryAction action;
@@ -58,7 +62,9 @@ public class ServerPlayerListEntryPacket extends MinecraftPacket {
                             signature = in.readString();
                         }
 
-                        profile.getProperties().add(new GameProfile.Property(propertyName, value, signature));
+                        profile.setProperties(
+                                Stream.concat(profile.getProperties().stream(), asList(new GameProfile.Property(propertyName, value, signature)).stream())
+                                        .collect(Collectors.toList()));
                     }
 
                     int g = in.readVarInt();
