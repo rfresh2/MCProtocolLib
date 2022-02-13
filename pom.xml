@@ -62,7 +62,7 @@
         <dependency>
             <groupId>com.github.5cmc</groupId>
             <artifactId>mcauthlib</artifactId>
-            <version>1d9ac7fa1e</version>
+            <version>f8e7e20aee</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
