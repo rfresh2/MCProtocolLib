@@ -60,9 +60,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.tycrek</groupId>
+            <groupId>com.github.5cmc</groupId>
             <artifactId>mcauthlib</artifactId>
-            <version>bba08f6198</version>
+            <version>1d9ac7fa1e</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
