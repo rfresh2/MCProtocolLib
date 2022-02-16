@@ -1,6 +1,7 @@
 package com.github.steveice10.mc.protocol;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
+import com.github.steveice10.mc.auth.exception.profile.ProfileException;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.service.SessionService;
 import com.github.steveice10.mc.protocol.data.SubProtocol;
@@ -174,8 +175,10 @@ public class ServerListener extends SessionAdapter {
             GameProfile profile = null;
             if(verify && this.key != null) {
                 try {
-                    profile = new SessionService().getProfileByServer(username, new BigInteger(CryptUtil.getServerIdHash(serverId, KEY_PAIR.getPublic(), this.key)).toString(16));
-                } catch(RequestException e) {
+                    SessionService sessionService = new SessionService();
+                    profile = sessionService.getProfileByServer(username, new BigInteger(CryptUtil.getServerIdHash(serverId, KEY_PAIR.getPublic(), this.key)).toString(16));
+                    sessionService.fillProfileProperties(profile);
+                } catch(RequestException | ProfileException e) {
                     this.session.disconnect("Failed to make session service request.", e);
                     return;
                 }
