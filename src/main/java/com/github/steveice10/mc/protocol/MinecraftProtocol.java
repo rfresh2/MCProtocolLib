@@ -128,7 +128,6 @@ import com.github.steveice10.mc.protocol.packet.status.client.StatusPingPacket;
 import com.github.steveice10.mc.protocol.packet.status.client.StatusQueryPacket;
 import com.github.steveice10.mc.protocol.packet.status.server.StatusPongPacket;
 import com.github.steveice10.mc.protocol.packet.status.server.StatusResponsePacket;
-import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.crypt.AESEncryption;
@@ -213,7 +212,7 @@ public class MinecraftProtocol extends PacketProtocol {
     }
 
     @Override
-    public void newClientSession(Client client, Session session) {
+    public void newClientSession(Session session) {
         if(this.profile != null) {
             session.setFlag(MinecraftConstants.PROFILE_KEY, this.profile);
             session.setFlag(MinecraftConstants.ACCESS_TOKEN_KEY, this.accessToken);
