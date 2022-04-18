@@ -2,6 +2,7 @@ package com.github.steveice10.mc.protocol.packet.status.server;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.auth.util.Base64;
+import com.github.steveice10.mc.protocol.data.message.Message;
 import com.github.steveice10.mc.protocol.data.status.PlayerInfo;
 import com.github.steveice10.mc.protocol.data.status.ServerStatusInfo;
 import com.github.steveice10.mc.protocol.data.status.VersionInfo;
@@ -61,7 +62,7 @@ public class StatusResponsePacket extends MinecraftPacket {
             icon = this.stringToIcon(obj.get("favicon").getAsString());
         }
 
-        this.info = new ServerStatusInfo(version, players, description, icon, false);
+        this.info = new ServerStatusInfo(version, players, Message.fromString(description), icon);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class StatusResponsePacket extends MinecraftPacket {
 
         obj.add("version", ver);
         obj.add("players", plrs);
-        obj.add("description", new JsonParser().parse(this.info.getDescription()));
+        obj.add("description", this.info.getDescription().toJson());
         if(this.info.getIcon() != null) {
             obj.addProperty("favicon", this.iconToString(this.info.getIcon()));
         }

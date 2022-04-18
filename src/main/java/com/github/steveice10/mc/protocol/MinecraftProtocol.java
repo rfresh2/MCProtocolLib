@@ -136,6 +136,8 @@ import com.github.steveice10.packetlib.crypt.PacketEncryption;
 import com.github.steveice10.packetlib.packet.DefaultPacketHeader;
 import com.github.steveice10.packetlib.packet.PacketHeader;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.net.Proxy;
 import java.security.GeneralSecurityException;
@@ -147,9 +149,14 @@ public class MinecraftProtocol extends PacketProtocol {
     private PacketHeader header = new DefaultPacketHeader();
     private AESEncryption encrypt;
 
+    private SubProtocol targetSubProtocol;
     private GameProfile profile;
     private String clientToken = "";
     private String accessToken = "";
+
+    @Getter
+    @Setter
+    private boolean useDefaultListeners = true;
 
     @SuppressWarnings("unused")
     private MinecraftProtocol() {
@@ -160,7 +167,7 @@ public class MinecraftProtocol extends PacketProtocol {
             throw new IllegalArgumentException("Only login and status modes are permitted.");
         }
 
-        this.subProtocol = subProtocol;
+        this.targetSubProtocol = subProtocol;
         if(subProtocol == SubProtocol.LOGIN) {
             this.profile = new GameProfile((UUID) null, "Player");
         }
@@ -213,13 +220,17 @@ public class MinecraftProtocol extends PacketProtocol {
         }
 
         this.setSubProtocol(this.subProtocol, true, session);
-        session.addListener(new ClientListener());
+        if(this.useDefaultListeners) {
+            session.addListener(new ClientListener(this.targetSubProtocol));
+        }
     }
 
     @Override
     public void newServerSession(Server server, Session session) {
         this.setSubProtocol(SubProtocol.HANDSHAKE, false, session);
-        session.addListener(new ServerListener());
+        if(this.useDefaultListeners) {
+            session.addListener(new ServerListener());
+        }
     }
 
     protected void enableEncryption(Key key) {
