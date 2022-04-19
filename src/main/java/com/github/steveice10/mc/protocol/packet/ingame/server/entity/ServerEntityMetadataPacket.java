@@ -12,8 +12,9 @@ public class ServerEntityMetadataPacket extends MinecraftPacket {
     private int entityId;
     private EntityMetadata metadata[];
 
-    @SuppressWarnings("unused")
-    private ServerEntityMetadataPacket() {
+    public ServerEntityMetadataPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     public ServerEntityMetadataPacket(int entityId, EntityMetadata metadata[]) {
@@ -27,12 +28,6 @@ public class ServerEntityMetadataPacket extends MinecraftPacket {
 
     public EntityMetadata[] getMetadata() {
         return this.metadata;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     @Override

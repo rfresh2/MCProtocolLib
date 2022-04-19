@@ -20,25 +20,7 @@ public class ServerPlayerListEntryPacket extends MinecraftPacket {
     private PlayerListEntryAction action;
     private PlayerListEntry entries[];
 
-    @SuppressWarnings("unused")
-    private ServerPlayerListEntryPacket() {
-    }
-
-    public ServerPlayerListEntryPacket(PlayerListEntryAction action, PlayerListEntry entries[]) {
-        this.action = action;
-        this.entries = entries;
-    }
-
-    public PlayerListEntryAction getAction() {
-        return this.action;
-    }
-
-    public PlayerListEntry[] getEntries() {
-        return this.entries;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerPlayerListEntryPacket(NetInput in) throws IOException {
         this.action = MagicValues.key(PlayerListEntryAction.class, in.readVarInt());
         this.entries = new PlayerListEntry[in.readVarInt()];
         for(int count = 0; count < this.entries.length; count++) {
@@ -100,6 +82,19 @@ public class ServerPlayerListEntryPacket extends MinecraftPacket {
 
             this.entries[count] = entry;
         }
+    }
+
+    public ServerPlayerListEntryPacket(PlayerListEntryAction action, PlayerListEntry entries[]) {
+        this.action = action;
+        this.entries = entries;
+    }
+
+    public PlayerListEntryAction getAction() {
+        return this.action;
+    }
+
+    public PlayerListEntry[] getEntries() {
+        return this.entries;
     }
 
     @Override

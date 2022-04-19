@@ -15,8 +15,14 @@ public class ServerEntityTeleportPacket extends MinecraftPacket {
     private float pitch;
     private boolean onGround;
 
-    @SuppressWarnings("unused")
-    private ServerEntityTeleportPacket() {
+    public ServerEntityTeleportPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readByte() * 360 / 256f;
+        this.pitch = in.readByte() * 360 / 256f;
+        this.onGround = in.readBoolean();
     }
 
     public ServerEntityTeleportPacket(int entityId, double x, double y, double z, float yaw, float pitch, boolean onGround) {
@@ -55,17 +61,6 @@ public class ServerEntityTeleportPacket extends MinecraftPacket {
 
     public boolean isOnGround() {
         return this.onGround;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.yaw = in.readByte() * 360 / 256f;
-        this.pitch = in.readByte() * 360 / 256f;
-        this.onGround = in.readBoolean();
     }
 
     @Override

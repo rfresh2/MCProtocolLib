@@ -9,8 +9,12 @@ import java.io.IOException;
 public class ServerAdvancementTabPacket extends MinecraftPacket {
     private String tabId;
 
-    @SuppressWarnings("unused")
-    private ServerAdvancementTabPacket() {
+    public ServerAdvancementTabPacket(NetInput in) throws IOException {
+        if(in.readBoolean()) {
+            this.tabId = in.readString();
+        } else {
+            this.tabId = null;
+        }
     }
 
     public ServerAdvancementTabPacket(String tabId) {
@@ -19,15 +23,6 @@ public class ServerAdvancementTabPacket extends MinecraftPacket {
 
     public String getTabId() {
         return this.tabId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        if(in.readBoolean()) {
-            this.tabId = in.readString();
-        } else {
-            this.tabId = null;
-        }
     }
 
     @Override

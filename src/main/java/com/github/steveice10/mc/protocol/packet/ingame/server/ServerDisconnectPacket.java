@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ServerDisconnectPacket extends MinecraftPacket {
     private String message;
 
-    @SuppressWarnings("unused")
-    private ServerDisconnectPacket() {
+    public ServerDisconnectPacket(NetInput in) throws IOException {
+        this.message = in.readString();
     }
 
     public ServerDisconnectPacket(String text, boolean escape) {
@@ -19,11 +19,6 @@ public class ServerDisconnectPacket extends MinecraftPacket {
 
     public String getReason() {
         return this.message;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.message = in.readString();
     }
 
     @Override

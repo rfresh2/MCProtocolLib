@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ClientResourcePackStatusPacket extends MinecraftPacket {
     private ResourcePackStatus status;
 
-    @SuppressWarnings("unused")
-    private ClientResourcePackStatusPacket() {
+    public ClientResourcePackStatusPacket(NetInput in) throws IOException {
+        this.status = MagicValues.key(ResourcePackStatus.class, in.readVarInt());
     }
 
     public ClientResourcePackStatusPacket(ResourcePackStatus status) {
@@ -21,11 +21,6 @@ public class ClientResourcePackStatusPacket extends MinecraftPacket {
 
     public ResourcePackStatus getStatus() {
         return this.status;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.status = MagicValues.key(ResourcePackStatus.class, in.readVarInt());
     }
 
     @Override

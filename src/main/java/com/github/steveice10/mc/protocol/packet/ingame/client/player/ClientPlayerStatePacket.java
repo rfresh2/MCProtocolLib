@@ -13,8 +13,10 @@ public class ClientPlayerStatePacket extends MinecraftPacket {
     private PlayerState state;
     private int jumpBoost;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerStatePacket() {
+    public ClientPlayerStatePacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.state = MagicValues.key(PlayerState.class, in.readVarInt());
+        this.jumpBoost = in.readVarInt();
     }
 
     public ClientPlayerStatePacket(int entityId, PlayerState state) {
@@ -37,13 +39,6 @@ public class ClientPlayerStatePacket extends MinecraftPacket {
 
     public int getJumpBoost() {
         return this.jumpBoost;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.state = MagicValues.key(PlayerState.class, in.readVarInt());
-        this.jumpBoost = in.readVarInt();
     }
 
     @Override

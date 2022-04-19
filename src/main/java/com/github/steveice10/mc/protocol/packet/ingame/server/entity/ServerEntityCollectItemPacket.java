@@ -11,8 +11,10 @@ public class ServerEntityCollectItemPacket extends MinecraftPacket {
     private int collectorEntityId;
     private int itemCount;
 
-    @SuppressWarnings("unused")
-    private ServerEntityCollectItemPacket() {
+    public ServerEntityCollectItemPacket(NetInput in) throws IOException {
+        this.collectedEntityId = in.readVarInt();
+        this.collectorEntityId = in.readVarInt();
+        this.itemCount = in.readVarInt();
     }
 
     public ServerEntityCollectItemPacket(int collectedEntityId, int collectorEntityId, int itemCount) {
@@ -31,13 +33,6 @@ public class ServerEntityCollectItemPacket extends MinecraftPacket {
 
     public int getItemCount() {
         return this.itemCount;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.collectedEntityId = in.readVarInt();
-        this.collectorEntityId = in.readVarInt();
-        this.itemCount = in.readVarInt();
     }
 
     @Override

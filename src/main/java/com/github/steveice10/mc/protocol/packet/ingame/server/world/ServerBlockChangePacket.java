@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ServerBlockChangePacket extends MinecraftPacket {
     private BlockChangeRecord record;
 
-    @SuppressWarnings("unused")
-    private ServerBlockChangePacket() {
+    public ServerBlockChangePacket(NetInput in) throws IOException {
+        this.record = new BlockChangeRecord(NetUtil.readPosition(in), NetUtil.readBlockState(in));
     }
 
     public ServerBlockChangePacket(BlockChangeRecord record) {
@@ -21,11 +21,6 @@ public class ServerBlockChangePacket extends MinecraftPacket {
 
     public BlockChangeRecord getRecord() {
         return this.record;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.record = new BlockChangeRecord(NetUtil.readPosition(in), NetUtil.readBlockState(in));
     }
 
     @Override

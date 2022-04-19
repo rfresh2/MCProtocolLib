@@ -10,8 +10,8 @@ import java.io.IOException;
 public class LoginSuccessPacket extends MinecraftPacket {
     private GameProfile profile;
 
-    @SuppressWarnings("unused")
-    private LoginSuccessPacket() {
+    public LoginSuccessPacket(NetInput in) throws IOException {
+        this.profile = new GameProfile(in.readString(), in.readString());
     }
 
     public LoginSuccessPacket(GameProfile profile) {
@@ -20,11 +20,6 @@ public class LoginSuccessPacket extends MinecraftPacket {
 
     public GameProfile getProfile() {
         return this.profile;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.profile = new GameProfile(in.readString(), in.readString());
     }
 
     @Override

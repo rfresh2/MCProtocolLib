@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ServerDifficultyPacket extends MinecraftPacket {
     private Difficulty difficulty;
 
-    @SuppressWarnings("unused")
-    private ServerDifficultyPacket() {
+    public ServerDifficultyPacket(NetInput in) throws IOException {
+        this.difficulty = MagicValues.key(Difficulty.class, in.readUnsignedByte());
     }
 
     public ServerDifficultyPacket(Difficulty difficulty) {
@@ -21,11 +21,6 @@ public class ServerDifficultyPacket extends MinecraftPacket {
 
     public Difficulty getDifficulty() {
         return this.difficulty;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.difficulty = MagicValues.key(Difficulty.class, in.readUnsignedByte());
     }
 
     @Override

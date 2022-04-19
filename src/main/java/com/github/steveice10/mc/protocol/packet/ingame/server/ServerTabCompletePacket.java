@@ -9,8 +9,11 @@ import java.io.IOException;
 public class ServerTabCompletePacket extends MinecraftPacket {
     private String matches[];
 
-    @SuppressWarnings("unused")
-    private ServerTabCompletePacket() {
+    public ServerTabCompletePacket(NetInput in) throws IOException {
+        this.matches = new String[in.readVarInt()];
+        for(int index = 0; index < this.matches.length; index++) {
+            this.matches[index] = in.readString();
+        }
     }
 
     public ServerTabCompletePacket(String matches[]) {
@@ -19,14 +22,6 @@ public class ServerTabCompletePacket extends MinecraftPacket {
 
     public String[] getMatches() {
         return this.matches;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.matches = new String[in.readVarInt()];
-        for(int index = 0; index < this.matches.length; index++) {
-            this.matches[index] = in.readString();
-        }
     }
 
     @Override

@@ -21,8 +21,22 @@ public class ClientSettingsPacket extends MinecraftPacket {
     private List<SkinPart> visibleParts;
     private Hand mainHand;
 
-    @SuppressWarnings("unused")
-    private ClientSettingsPacket() {
+    public ClientSettingsPacket(NetInput in) throws IOException {
+        this.locale = in.readString();
+        this.renderDistance = in.readByte();
+        this.chatVisibility = MagicValues.key(ChatVisibility.class, in.readVarInt());
+        this.chatColors = in.readBoolean();
+        this.visibleParts = new ArrayList<SkinPart>();
+
+        int flags = in.readUnsignedByte();
+        for(SkinPart part : SkinPart.values()) {
+            int bit = 1 << part.ordinal();
+            if((flags & bit) == bit) {
+                this.visibleParts.add(part);
+            }
+        }
+
+        this.mainHand = MagicValues.key(Hand.class, in.readVarInt());
     }
 
     public ClientSettingsPacket(String locale, int renderDistance, ChatVisibility chatVisibility, boolean chatColors, SkinPart[] visibleParts, Hand mainHand) {
@@ -56,25 +70,6 @@ public class ClientSettingsPacket extends MinecraftPacket {
 
     public Hand getMainHand() {
         return this.mainHand;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.locale = in.readString();
-        this.renderDistance = in.readByte();
-        this.chatVisibility = MagicValues.key(ChatVisibility.class, in.readVarInt());
-        this.chatColors = in.readBoolean();
-        this.visibleParts = new ArrayList<SkinPart>();
-
-        int flags = in.readUnsignedByte();
-        for(SkinPart part : SkinPart.values()) {
-            int bit = 1 << part.ordinal();
-            if((flags & bit) == bit) {
-                this.visibleParts.add(part);
-            }
-        }
-
-        this.mainHand = MagicValues.key(Hand.class, in.readVarInt());
     }
 
     @Override

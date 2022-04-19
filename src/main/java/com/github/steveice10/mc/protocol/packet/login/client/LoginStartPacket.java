@@ -9,8 +9,8 @@ import java.io.IOException;
 public class LoginStartPacket extends MinecraftPacket {
     private String username;
 
-    @SuppressWarnings("unused")
-    private LoginStartPacket() {
+    public LoginStartPacket(NetInput in) throws IOException {
+        this.username = in.readString();
     }
 
     public LoginStartPacket(String username) {
@@ -19,11 +19,6 @@ public class LoginStartPacket extends MinecraftPacket {
 
     public String getUsername() {
         return this.username;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.username = in.readString();
     }
 
     @Override

@@ -20,8 +20,20 @@ public class ServerPlaySoundPacket extends MinecraftPacket {
     private float volume;
     private float pitch;
 
-    @SuppressWarnings("unused")
-    private ServerPlaySoundPacket() {
+    public ServerPlaySoundPacket(NetInput in) throws IOException {
+        String value = in.readString();
+        try {
+            this.sound = MagicValues.key(BuiltinSound.class, value);
+        } catch(IllegalArgumentException e) {
+            this.sound = new CustomSound(value);
+        }
+
+        this.category = MagicValues.key(SoundCategory.class, in.readVarInt());
+        this.x = in.readInt() / 8D;
+        this.y = in.readInt() / 8D;
+        this.z = in.readInt() / 8D;
+        this.volume = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     public ServerPlaySoundPacket(Sound sound, SoundCategory category, double x, double y, double z, float volume, float pitch) {
@@ -60,23 +72,6 @@ public class ServerPlaySoundPacket extends MinecraftPacket {
 
     public float getPitch() {
         return this.pitch;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        String value = in.readString();
-        try {
-            this.sound = MagicValues.key(BuiltinSound.class, value);
-        } catch(IllegalArgumentException e) {
-            this.sound = new CustomSound(value);
-        }
-
-        this.category = MagicValues.key(SoundCategory.class, in.readVarInt());
-        this.x = in.readInt() / 8D;
-        this.y = in.readInt() / 8D;
-        this.z = in.readInt() / 8D;
-        this.volume = in.readFloat();
-        this.pitch = in.readFloat();
     }
 
     @Override

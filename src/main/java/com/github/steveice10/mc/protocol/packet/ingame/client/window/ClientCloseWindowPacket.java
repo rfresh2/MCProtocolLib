@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ClientCloseWindowPacket extends MinecraftPacket {
     private int windowId;
 
-    @SuppressWarnings("unused")
-    private ClientCloseWindowPacket() {
+    public ClientCloseWindowPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
     }
 
     public ClientCloseWindowPacket(int windowId) {
@@ -19,11 +19,6 @@ public class ClientCloseWindowPacket extends MinecraftPacket {
 
     public int getWindowId() {
         return this.windowId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
     }
 
     @Override

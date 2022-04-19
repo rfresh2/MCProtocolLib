@@ -12,8 +12,12 @@ public class ClientUpdateSignPacket extends MinecraftPacket {
     private Position position;
     private String lines[];
 
-    @SuppressWarnings("unused")
-    private ClientUpdateSignPacket() {
+    public ClientUpdateSignPacket(NetInput in) throws IOException {
+        this.position = NetUtil.readPosition(in);
+        this.lines = new String[4];
+        for(int count = 0; count < this.lines.length; count++) {
+            this.lines[count] = in.readString();
+        }
     }
 
     public ClientUpdateSignPacket(Position position, String lines[]) {
@@ -31,15 +35,6 @@ public class ClientUpdateSignPacket extends MinecraftPacket {
 
     public String[] getLines() {
         return this.lines;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = NetUtil.readPosition(in);
-        this.lines = new String[4];
-        for(int count = 0; count < this.lines.length; count++) {
-            this.lines[count] = in.readString();
-        }
     }
 
     @Override

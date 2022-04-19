@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ClientPlayerChangeHeldItemPacket extends MinecraftPacket {
     private int slot;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerChangeHeldItemPacket() {
+    public ClientPlayerChangeHeldItemPacket(NetInput in) throws IOException {
+        this.slot = in.readShort();
     }
 
     public ClientPlayerChangeHeldItemPacket(int slot) {
@@ -19,11 +19,6 @@ public class ClientPlayerChangeHeldItemPacket extends MinecraftPacket {
 
     public int getSlot() {
         return this.slot;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.slot = in.readShort();
     }
 
     @Override

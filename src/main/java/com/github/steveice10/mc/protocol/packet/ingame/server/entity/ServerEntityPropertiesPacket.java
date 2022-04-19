@@ -17,25 +17,7 @@ public class ServerEntityPropertiesPacket extends MinecraftPacket {
     private int entityId;
     private List<Attribute> attributes;
 
-    @SuppressWarnings("unused")
-    private ServerEntityPropertiesPacket() {
-    }
-
-    public ServerEntityPropertiesPacket(int entityId, List<Attribute> attributes) {
-        this.entityId = entityId;
-        this.attributes = attributes;
-    }
-
-    public int getEntityId() {
-        return this.entityId;
-    }
-
-    public List<Attribute> getAttributes() {
-        return this.attributes;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerEntityPropertiesPacket(NetInput in) throws IOException {
         this.entityId = in.readVarInt();
         this.attributes = new ArrayList<Attribute>();
         int length = in.readInt();
@@ -50,6 +32,19 @@ public class ServerEntityPropertiesPacket extends MinecraftPacket {
 
             this.attributes.add(new Attribute(MagicValues.key(AttributeType.class, key), value, modifiers));
         }
+    }
+
+    public ServerEntityPropertiesPacket(int entityId, List<Attribute> attributes) {
+        this.entityId = entityId;
+        this.attributes = attributes;
+    }
+
+    public int getEntityId() {
+        return this.entityId;
+    }
+
+    public List<Attribute> getAttributes() {
+        return this.attributes;
     }
 
     @Override

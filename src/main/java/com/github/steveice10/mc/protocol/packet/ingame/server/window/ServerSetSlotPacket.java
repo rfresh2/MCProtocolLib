@@ -13,8 +13,10 @@ public class ServerSetSlotPacket extends MinecraftPacket {
     private int slot;
     private ItemStack item;
 
-    @SuppressWarnings("unused")
-    private ServerSetSlotPacket() {
+    public ServerSetSlotPacket(NetInput in) throws IOException {
+        this.windowId = in.readUnsignedByte();
+        this.slot = in.readShort();
+        this.item = NetUtil.readItem(in);
     }
 
     public ServerSetSlotPacket(int windowId, int slot, ItemStack item) {
@@ -33,13 +35,6 @@ public class ServerSetSlotPacket extends MinecraftPacket {
 
     public ItemStack getItem() {
         return this.item;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readUnsignedByte();
-        this.slot = in.readShort();
-        this.item = NetUtil.readItem(in);
     }
 
     @Override

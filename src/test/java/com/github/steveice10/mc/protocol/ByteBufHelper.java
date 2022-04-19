@@ -19,28 +19,6 @@ public class ByteBufHelper {
     public static final ByteBufNetOutput out = new ByteBufNetOutput(buffer);
     public static final ByteBufNetInput in = new ByteBufNetInput(buffer);
 
-    @SuppressWarnings("unchecked")
-    public static <T> T writeAndRead(Packet writable) {
-        try {
-            buffer.clear();
-
-            writable.write(out);
-
-            // Creating new fresh packet to reset fields.
-            Constructor constructor = writable.getClass().getDeclaredConstructor();
-            constructor.setAccessible(true);
-
-            Packet readable = (Packet) constructor.newInstance();
-            readable.read(in);
-
-            assertFalse("Buffer is not empty", buffer.isReadable());
-
-            return (T) readable;
-        } catch(Exception e) {
-            throw new IllegalStateException("Failed parse packet", e);
-        }
-    }
-
     public static void assertPosition(Position position, int x, int y, int z) {
         assertEquals("Received incorrect X position", x, position.getX());
         assertEquals("Received incorrect Y position", y, position.getY());

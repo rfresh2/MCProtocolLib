@@ -16,8 +16,11 @@ public class ServerRespawnPacket extends MinecraftPacket {
     private GameMode gamemode;
     private WorldType worldType;
 
-    @SuppressWarnings("unused")
-    private ServerRespawnPacket() {
+    public ServerRespawnPacket(NetInput in) throws IOException {
+        this.dimension = in.readInt();
+        this.difficulty = MagicValues.key(Difficulty.class, in.readUnsignedByte());
+        this.gamemode = MagicValues.key(GameMode.class, in.readUnsignedByte());
+        this.worldType = MagicValues.key(WorldType.class, in.readString().toLowerCase());
     }
 
     public ServerRespawnPacket(int dimension, Difficulty difficulty, GameMode gamemode, WorldType worldType) {
@@ -41,14 +44,6 @@ public class ServerRespawnPacket extends MinecraftPacket {
 
     public WorldType getWorldType() {
         return this.worldType;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.dimension = in.readInt();
-        this.difficulty = MagicValues.key(Difficulty.class, in.readUnsignedByte());
-        this.gamemode = MagicValues.key(GameMode.class, in.readUnsignedByte());
-        this.worldType = MagicValues.key(WorldType.class, in.readString().toLowerCase());
     }
 
     @Override

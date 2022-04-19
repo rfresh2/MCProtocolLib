@@ -19,8 +19,13 @@ public class ClientPlayerPlaceBlockPacket extends MinecraftPacket {
     private float cursorY;
     private float cursorZ;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerPlaceBlockPacket() {
+    public ClientPlayerPlaceBlockPacket(NetInput in) throws IOException {
+        this.position = NetUtil.readPosition(in);
+        this.face = MagicValues.key(BlockFace.class, in.readVarInt());
+        this.hand = MagicValues.key(Hand.class, in.readVarInt());
+        this.cursorX = in.readFloat();
+        this.cursorY = in.readFloat();
+        this.cursorZ = in.readFloat();
     }
 
     public ClientPlayerPlaceBlockPacket(Position position, BlockFace face, Hand hand, float cursorX, float cursorY, float cursorZ) {
@@ -54,16 +59,6 @@ public class ClientPlayerPlaceBlockPacket extends MinecraftPacket {
 
     public float getCursorZ() {
         return this.cursorZ;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = NetUtil.readPosition(in);
-        this.face = MagicValues.key(BlockFace.class, in.readVarInt());
-        this.hand = MagicValues.key(Hand.class, in.readVarInt());
-        this.cursorX = in.readFloat();
-        this.cursorY = in.readFloat();
-        this.cursorZ = in.readFloat();
     }
 
     @Override

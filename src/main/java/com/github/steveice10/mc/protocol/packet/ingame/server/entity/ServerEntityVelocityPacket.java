@@ -12,8 +12,11 @@ public class ServerEntityVelocityPacket extends MinecraftPacket {
     private double motY;
     private double motZ;
 
-    @SuppressWarnings("unused")
-    private ServerEntityVelocityPacket() {
+    public ServerEntityVelocityPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.motX = in.readShort() / 8000D;
+        this.motY = in.readShort() / 8000D;
+        this.motZ = in.readShort() / 8000D;
     }
 
     public ServerEntityVelocityPacket(int entityId, double motX, double motY, double motZ) {
@@ -37,14 +40,6 @@ public class ServerEntityVelocityPacket extends MinecraftPacket {
 
     public double getMotionZ() {
         return this.motZ;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.motX = in.readShort() / 8000D;
-        this.motY = in.readShort() / 8000D;
-        this.motZ = in.readShort() / 8000D;
     }
 
     @Override

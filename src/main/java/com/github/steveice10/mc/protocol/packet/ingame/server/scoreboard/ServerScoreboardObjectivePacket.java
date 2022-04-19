@@ -15,8 +15,13 @@ public class ServerScoreboardObjectivePacket extends MinecraftPacket {
     private String displayName;
     private ScoreType type;
 
-    @SuppressWarnings("unused")
-    private ServerScoreboardObjectivePacket() {
+    public ServerScoreboardObjectivePacket(NetInput in) throws IOException {
+        this.name = in.readString();
+        this.action = MagicValues.key(ObjectiveAction.class, in.readByte());
+        if(this.action == ObjectiveAction.ADD || this.action == ObjectiveAction.UPDATE) {
+            this.displayName = in.readString();
+            this.type = MagicValues.key(ScoreType.class, in.readString());
+        }
     }
 
     public ServerScoreboardObjectivePacket(String name) {
@@ -49,16 +54,6 @@ public class ServerScoreboardObjectivePacket extends MinecraftPacket {
 
     public ScoreType getType() {
         return this.type;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.name = in.readString();
-        this.action = MagicValues.key(ObjectiveAction.class, in.readByte());
-        if(this.action == ObjectiveAction.ADD || this.action == ObjectiveAction.UPDATE) {
-            this.displayName = in.readString();
-            this.type = MagicValues.key(ScoreType.class, in.readString());
-        }
     }
 
     @Override

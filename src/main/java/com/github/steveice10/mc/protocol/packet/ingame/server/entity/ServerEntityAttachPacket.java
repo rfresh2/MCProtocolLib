@@ -10,8 +10,9 @@ public class ServerEntityAttachPacket extends MinecraftPacket {
     private int entityId;
     private int attachedToId;
 
-    @SuppressWarnings("unused")
-    private ServerEntityAttachPacket() {
+    public ServerEntityAttachPacket(NetInput in) throws IOException {
+        this.entityId = in.readInt();
+        this.attachedToId = in.readInt();
     }
 
     public ServerEntityAttachPacket(int entityId, int attachedToId) {
@@ -25,12 +26,6 @@ public class ServerEntityAttachPacket extends MinecraftPacket {
 
     public int getAttachedToId() {
         return this.attachedToId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readInt();
-        this.attachedToId = in.readInt();
     }
 
     @Override

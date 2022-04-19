@@ -12,8 +12,9 @@ public class ServerDisplayScoreboardPacket extends MinecraftPacket {
     private ScoreboardPosition position;
     private String name;
 
-    @SuppressWarnings("unused")
-    private ServerDisplayScoreboardPacket() {
+    public ServerDisplayScoreboardPacket(NetInput in) throws IOException {
+        this.position = MagicValues.key(ScoreboardPosition.class, in.readByte());
+        this.name = in.readString();
     }
 
     public ServerDisplayScoreboardPacket(ScoreboardPosition position, String name) {
@@ -27,12 +28,6 @@ public class ServerDisplayScoreboardPacket extends MinecraftPacket {
 
     public String getScoreboardName() {
         return this.name;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = MagicValues.key(ScoreboardPosition.class, in.readByte());
-        this.name = in.readString();
     }
 
     @Override

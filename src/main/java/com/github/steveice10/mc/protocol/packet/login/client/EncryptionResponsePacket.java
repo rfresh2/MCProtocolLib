@@ -14,8 +14,9 @@ public class EncryptionResponsePacket extends MinecraftPacket {
     private byte sharedKey[];
     private byte verifyToken[];
 
-    @SuppressWarnings("unused")
-    private EncryptionResponsePacket() {
+    public EncryptionResponsePacket(NetInput in) throws IOException {
+        this.sharedKey = in.readBytes(in.readVarInt());
+        this.verifyToken = in.readBytes(in.readVarInt());
     }
 
     public EncryptionResponsePacket(SecretKey secretKey, PublicKey publicKey, byte verifyToken[]) {
@@ -29,12 +30,6 @@ public class EncryptionResponsePacket extends MinecraftPacket {
 
     public byte[] getVerifyToken(PrivateKey privateKey) {
         return CryptUtil.decryptData(privateKey, this.verifyToken);
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.sharedKey = in.readBytes(in.readVarInt());
-        this.verifyToken = in.readBytes(in.readVarInt());
     }
 
     @Override

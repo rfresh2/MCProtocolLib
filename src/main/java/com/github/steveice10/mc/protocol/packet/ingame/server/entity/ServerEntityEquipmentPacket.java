@@ -15,8 +15,10 @@ public class ServerEntityEquipmentPacket extends MinecraftPacket {
     private EquipmentSlot slot;
     private ItemStack item;
 
-    @SuppressWarnings("unused")
-    private ServerEntityEquipmentPacket() {
+    public ServerEntityEquipmentPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.slot = MagicValues.key(EquipmentSlot.class, in.readVarInt());
+        this.item = NetUtil.readItem(in);
     }
 
     public ServerEntityEquipmentPacket(int entityId, EquipmentSlot slot, ItemStack item) {
@@ -35,13 +37,6 @@ public class ServerEntityEquipmentPacket extends MinecraftPacket {
 
     public ItemStack getItem() {
         return this.item;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.slot = MagicValues.key(EquipmentSlot.class, in.readVarInt());
-        this.item = NetUtil.readItem(in);
     }
 
     @Override

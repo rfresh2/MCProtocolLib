@@ -12,8 +12,9 @@ public class ClientCreativeInventoryActionPacket extends MinecraftPacket {
     private int slot;
     private ItemStack clicked;
 
-    @SuppressWarnings("unused")
-    private ClientCreativeInventoryActionPacket() {
+    public ClientCreativeInventoryActionPacket(NetInput in) throws IOException {
+        this.slot = in.readShort();
+        this.clicked = NetUtil.readItem(in);
     }
 
     public ClientCreativeInventoryActionPacket(int slot, ItemStack clicked) {
@@ -27,12 +28,6 @@ public class ClientCreativeInventoryActionPacket extends MinecraftPacket {
 
     public ItemStack getClickedItem() {
         return this.clicked;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.slot = in.readShort();
-        this.clicked = NetUtil.readItem(in);
     }
 
     @Override

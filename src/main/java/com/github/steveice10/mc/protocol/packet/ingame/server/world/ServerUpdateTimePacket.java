@@ -10,8 +10,9 @@ public class ServerUpdateTimePacket extends MinecraftPacket {
     private long age;
     private long time;
 
-    @SuppressWarnings("unused")
-    private ServerUpdateTimePacket() {
+    public ServerUpdateTimePacket(NetInput in) throws IOException {
+        this.age = in.readLong();
+        this.time = in.readLong();
     }
 
     public ServerUpdateTimePacket(long age, long time) {
@@ -25,12 +26,6 @@ public class ServerUpdateTimePacket extends MinecraftPacket {
 
     public long getTime() {
         return this.time;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.age = in.readLong();
-        this.time = in.readLong();
     }
 
     @Override

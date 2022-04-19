@@ -19,8 +19,20 @@ public class ServerExplosionPacket extends MinecraftPacket {
     private float pushY;
     private float pushZ;
 
-    @SuppressWarnings("unused")
-    private ServerExplosionPacket() {
+    public ServerExplosionPacket(NetInput in) throws IOException {
+        this.x = in.readFloat();
+        this.y = in.readFloat();
+        this.z = in.readFloat();
+        this.radius = in.readFloat();
+        this.exploded = new ArrayList<ExplodedBlockRecord>();
+        int length = in.readInt();
+        for(int count = 0; count < length; count++) {
+            this.exploded.add(new ExplodedBlockRecord(in.readByte(), in.readByte(), in.readByte()));
+        }
+
+        this.pushX = in.readFloat();
+        this.pushY = in.readFloat();
+        this.pushZ = in.readFloat();
     }
 
     public ServerExplosionPacket(float x, float y, float z, float radius, List<ExplodedBlockRecord> exploded, float pushX, float pushY, float pushZ) {
@@ -64,23 +76,6 @@ public class ServerExplosionPacket extends MinecraftPacket {
 
     public float getPushZ() {
         return this.pushZ;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.x = in.readFloat();
-        this.y = in.readFloat();
-        this.z = in.readFloat();
-        this.radius = in.readFloat();
-        this.exploded = new ArrayList<ExplodedBlockRecord>();
-        int length = in.readInt();
-        for(int count = 0; count < length; count++) {
-            this.exploded.add(new ExplodedBlockRecord(in.readByte(), in.readByte(), in.readByte()));
-        }
-
-        this.pushX = in.readFloat();
-        this.pushY = in.readFloat();
-        this.pushZ = in.readFloat();
     }
 
     @Override

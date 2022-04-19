@@ -18,8 +18,18 @@ public class ClientPlayerInteractEntityPacket extends MinecraftPacket {
     private float targetZ;
     private Hand hand;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerInteractEntityPacket() {
+    public ClientPlayerInteractEntityPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.action = MagicValues.key(InteractAction.class, in.readVarInt());
+        if(this.action == InteractAction.INTERACT_AT) {
+            this.targetX = in.readFloat();
+            this.targetY = in.readFloat();
+            this.targetZ = in.readFloat();
+        }
+
+        if(this.action == InteractAction.INTERACT || this.action == InteractAction.INTERACT_AT) {
+            this.hand = MagicValues.key(Hand.class, in.readVarInt());
+        }
     }
 
     public ClientPlayerInteractEntityPacket(int entityId, InteractAction action) {
@@ -61,21 +71,6 @@ public class ClientPlayerInteractEntityPacket extends MinecraftPacket {
 
     public Hand getHand() {
         return this.hand;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.action = MagicValues.key(InteractAction.class, in.readVarInt());
-        if(this.action == InteractAction.INTERACT_AT) {
-            this.targetX = in.readFloat();
-            this.targetY = in.readFloat();
-            this.targetZ = in.readFloat();
-        }
-
-        if(this.action == InteractAction.INTERACT || this.action == InteractAction.INTERACT_AT) {
-            this.hand = MagicValues.key(Hand.class, in.readVarInt());
-        }
     }
 
     @Override

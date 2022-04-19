@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ClientChatPacket extends MinecraftPacket {
     private String message;
 
-    @SuppressWarnings("unused")
-    private ClientChatPacket() {
+    public ClientChatPacket(NetInput in) throws IOException {
+        this.message = in.readString();
     }
 
     public ClientChatPacket(String message) {
@@ -19,11 +19,6 @@ public class ClientChatPacket extends MinecraftPacket {
 
     public String getMessage() {
         return this.message;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.message = in.readString();
     }
 
     @Override

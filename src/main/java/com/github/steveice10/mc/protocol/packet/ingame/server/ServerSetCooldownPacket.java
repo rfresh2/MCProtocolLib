@@ -10,8 +10,9 @@ public class ServerSetCooldownPacket extends MinecraftPacket {
     private int itemId;
     private int cooldownTicks;
 
-    @SuppressWarnings("unused")
-    private ServerSetCooldownPacket() {
+    public ServerSetCooldownPacket(NetInput in) throws IOException {
+        this.itemId = in.readVarInt();
+        this.cooldownTicks = in.readVarInt();
     }
 
     public ServerSetCooldownPacket(int itemId, int cooldownTicks) {
@@ -25,12 +26,6 @@ public class ServerSetCooldownPacket extends MinecraftPacket {
 
     public int getCooldownTicks() {
         return this.cooldownTicks;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.itemId = in.readVarInt();
-        this.cooldownTicks = in.readVarInt();
     }
 
     @Override

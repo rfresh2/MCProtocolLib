@@ -10,8 +10,9 @@ public class ClientSteerBoatPacket extends MinecraftPacket {
     private boolean rightPaddleTurning;
     private boolean leftPaddleTurning;
 
-    @SuppressWarnings("unused")
-    private ClientSteerBoatPacket() {
+    public ClientSteerBoatPacket(NetInput in) throws IOException {
+        this.rightPaddleTurning = in.readBoolean();
+        this.leftPaddleTurning = in.readBoolean();
     }
 
     public ClientSteerBoatPacket(boolean rightPaddleTurning, boolean leftPaddleTurning) {
@@ -25,12 +26,6 @@ public class ClientSteerBoatPacket extends MinecraftPacket {
 
     public boolean isLeftPaddleTurning() {
         return this.leftPaddleTurning;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.rightPaddleTurning = in.readBoolean();
-        this.leftPaddleTurning = in.readBoolean();
     }
 
     @Override

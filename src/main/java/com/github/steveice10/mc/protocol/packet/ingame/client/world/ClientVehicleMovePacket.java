@@ -13,8 +13,12 @@ public class ClientVehicleMovePacket extends MinecraftPacket {
     private float yaw;
     private float pitch;
 
-    @SuppressWarnings("unused")
-    private ClientVehicleMovePacket() {
+    public ClientVehicleMovePacket(NetInput in) throws IOException {
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     public ClientVehicleMovePacket(double x, double y, double z, float yaw, float pitch) {
@@ -43,15 +47,6 @@ public class ClientVehicleMovePacket extends MinecraftPacket {
 
     public float getPitch() {
         return this.pitch;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.yaw = in.readFloat();
-        this.pitch = in.readFloat();
     }
 
     @Override

@@ -14,8 +14,18 @@ public class ClientCraftingBookDataPacket extends MinecraftPacket {
     private boolean craftingBookOpen;
     private boolean filterActive;
 
-    @SuppressWarnings("unused")
-    private ClientCraftingBookDataPacket() {
+    public ClientCraftingBookDataPacket(NetInput in) throws IOException {
+        switch(this.type = MagicValues.key(CraftingBookDataType.class, in.readVarInt())) {
+            case DISPLAYED_RECIPE:
+                this.recipeId = in.readInt();
+                break;
+            case CRAFTING_BOOK_STATUS:
+                this.craftingBookOpen = in.readBoolean();
+                this.filterActive = in.readBoolean();
+                break;
+            default:
+                throw new IOException("Unknown crafting book data type: " + this.type);
+        }
     }
 
     public ClientCraftingBookDataPacket(int recipeId) {
@@ -52,21 +62,6 @@ public class ClientCraftingBookDataPacket extends MinecraftPacket {
     public boolean isFilterActive() {
         ensureType(CraftingBookDataType.CRAFTING_BOOK_STATUS, "filterActive");
         return filterActive;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        switch(this.type = MagicValues.key(CraftingBookDataType.class, in.readVarInt())) {
-            case DISPLAYED_RECIPE:
-                this.recipeId = in.readInt();
-                break;
-            case CRAFTING_BOOK_STATUS:
-                this.craftingBookOpen = in.readBoolean();
-                this.filterActive = in.readBoolean();
-                break;
-            default:
-                throw new IOException("Unknown crafting book data type: " + this.type);
-        }
     }
 
     @Override

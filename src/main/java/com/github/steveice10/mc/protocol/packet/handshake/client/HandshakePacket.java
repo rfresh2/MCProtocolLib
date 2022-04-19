@@ -14,8 +14,11 @@ public class HandshakePacket extends MinecraftPacket {
     private int port;
     private HandshakeIntent intent;
 
-    @SuppressWarnings("unused")
-    private HandshakePacket() {
+    public HandshakePacket(NetInput in) throws IOException {
+        this.protocolVersion = in.readVarInt();
+        this.hostname = in.readString();
+        this.port = in.readUnsignedShort();
+        this.intent = MagicValues.key(HandshakeIntent.class, in.readVarInt());
     }
 
     public HandshakePacket(int protocolVersion, String hostname, int port, HandshakeIntent intent) {
@@ -39,14 +42,6 @@ public class HandshakePacket extends MinecraftPacket {
 
     public HandshakeIntent getIntent() {
         return this.intent;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.protocolVersion = in.readVarInt();
-        this.hostname = in.readString();
-        this.port = in.readUnsignedShort();
-        this.intent = MagicValues.key(HandshakeIntent.class, in.readVarInt());
     }
 
     @Override

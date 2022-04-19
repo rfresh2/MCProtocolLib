@@ -15,8 +15,14 @@ public class ServerBlockBreakAnimPacket extends MinecraftPacket {
     private Position position;
     private BlockBreakStage stage;
 
-    @SuppressWarnings("unused")
-    private ServerBlockBreakAnimPacket() {
+    public ServerBlockBreakAnimPacket(NetInput in) throws IOException {
+        this.breakerEntityId = in.readVarInt();
+        this.position = NetUtil.readPosition(in);
+        try {
+            this.stage = MagicValues.key(BlockBreakStage.class, in.readUnsignedByte());
+        } catch(IllegalArgumentException e) {
+            this.stage = BlockBreakStage.RESET;
+        }
     }
 
     public ServerBlockBreakAnimPacket(int breakerEntityId, Position position, BlockBreakStage stage) {
@@ -35,17 +41,6 @@ public class ServerBlockBreakAnimPacket extends MinecraftPacket {
 
     public BlockBreakStage getStage() {
         return this.stage;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.breakerEntityId = in.readVarInt();
-        this.position = NetUtil.readPosition(in);
-        try {
-            this.stage = MagicValues.key(BlockBreakStage.class, in.readUnsignedByte());
-        } catch(IllegalArgumentException e) {
-            this.stage = BlockBreakStage.RESET;
-        }
     }
 
     @Override

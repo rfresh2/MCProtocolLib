@@ -15,8 +15,12 @@ public class ServerSpawnGlobalEntityPacket extends MinecraftPacket {
     private double y;
     private double z;
 
-    @SuppressWarnings("unused")
-    private ServerSpawnGlobalEntityPacket() {
+    public ServerSpawnGlobalEntityPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.type = MagicValues.key(GlobalEntityType.class, in.readByte());
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
     }
 
     public ServerSpawnGlobalEntityPacket(int entityId, GlobalEntityType type, double x, double y, double z) {
@@ -45,15 +49,6 @@ public class ServerSpawnGlobalEntityPacket extends MinecraftPacket {
 
     public double getZ() {
         return this.z;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.type = MagicValues.key(GlobalEntityType.class, in.readByte());
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
     }
 
     @Override

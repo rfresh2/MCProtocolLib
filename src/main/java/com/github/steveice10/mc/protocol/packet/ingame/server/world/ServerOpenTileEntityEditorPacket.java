@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ServerOpenTileEntityEditorPacket extends MinecraftPacket {
     private Position position;
 
-    @SuppressWarnings("unused")
-    private ServerOpenTileEntityEditorPacket() {
+    public ServerOpenTileEntityEditorPacket(NetInput in) throws IOException {
+        this.position = NetUtil.readPosition(in);
     }
 
     public ServerOpenTileEntityEditorPacket(Position position) {
@@ -21,11 +21,6 @@ public class ServerOpenTileEntityEditorPacket extends MinecraftPacket {
 
     public Position getPosition() {
         return this.position;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = NetUtil.readPosition(in);
     }
 
     @Override

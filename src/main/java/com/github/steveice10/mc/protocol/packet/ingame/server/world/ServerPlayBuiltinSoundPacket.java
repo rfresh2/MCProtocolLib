@@ -18,8 +18,14 @@ public class ServerPlayBuiltinSoundPacket extends MinecraftPacket {
     private float volume;
     private float pitch;
 
-    @SuppressWarnings("unused")
-    private ServerPlayBuiltinSoundPacket() {
+    public ServerPlayBuiltinSoundPacket(NetInput in) throws IOException {
+        this.sound = MagicValues.key(BuiltinSound.class, in.readVarInt());
+        this.category = MagicValues.key(SoundCategory.class, in.readVarInt());
+        this.x = in.readInt() / 8D;
+        this.y = in.readInt() / 8D;
+        this.z = in.readInt() / 8D;
+        this.volume = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     public ServerPlayBuiltinSoundPacket(BuiltinSound sound, SoundCategory category, double x, double y, double z, float volume, float pitch) {
@@ -58,17 +64,6 @@ public class ServerPlayBuiltinSoundPacket extends MinecraftPacket {
 
     public float getPitch() {
         return this.pitch;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.sound = MagicValues.key(BuiltinSound.class, in.readVarInt());
-        this.category = MagicValues.key(SoundCategory.class, in.readVarInt());
-        this.x = in.readInt() / 8D;
-        this.y = in.readInt() / 8D;
-        this.z = in.readInt() / 8D;
-        this.volume = in.readFloat();
-        this.pitch = in.readFloat();
     }
 
     @Override

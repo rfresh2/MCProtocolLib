@@ -10,8 +10,8 @@ public class StatusQueryPacket extends MinecraftPacket {
     public StatusQueryPacket() {
     }
 
-    @Override
-    public void read(NetInput in) throws IOException {
+    public StatusQueryPacket(NetInput in) {
+
     }
 
     @Override

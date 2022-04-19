@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ClientPlayerSwingArmPacket extends MinecraftPacket {
     private Hand hand;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerSwingArmPacket() {
+    public ClientPlayerSwingArmPacket(NetInput in) throws IOException {
+        this.hand = MagicValues.key(Hand.class, in.readVarInt());
     }
 
     public ClientPlayerSwingArmPacket(Hand hand) {
@@ -21,11 +21,6 @@ public class ClientPlayerSwingArmPacket extends MinecraftPacket {
 
     public Hand getHand() {
         return this.hand;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.hand = MagicValues.key(Hand.class, in.readVarInt());
     }
 
     @Override

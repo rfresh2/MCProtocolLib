@@ -13,8 +13,12 @@ public class ServerSpawnExpOrbPacket extends MinecraftPacket {
     private double z;
     private int exp;
 
-    @SuppressWarnings("unused")
-    private ServerSpawnExpOrbPacket() {
+    public ServerSpawnExpOrbPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.exp = in.readShort();
     }
 
     public ServerSpawnExpOrbPacket(int entityId, double x, double y, double z, int exp) {
@@ -43,15 +47,6 @@ public class ServerSpawnExpOrbPacket extends MinecraftPacket {
 
     public int getExp() {
         return this.exp;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.exp = in.readShort();
     }
 
     @Override

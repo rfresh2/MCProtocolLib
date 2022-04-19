@@ -12,8 +12,12 @@ public class ClientSteerVehiclePacket extends MinecraftPacket {
     private boolean jump;
     private boolean dismount;
 
-    @SuppressWarnings("unused")
-    private ClientSteerVehiclePacket() {
+    public ClientSteerVehiclePacket(NetInput in) throws IOException {
+        this.sideways = in.readFloat();
+        this.forward = in.readFloat();
+        int flags = in.readUnsignedByte();
+        this.jump = (flags & 1) > 0;
+        this.dismount = (flags & 2) > 0;
     }
 
     public ClientSteerVehiclePacket(float sideways, float forward, boolean jump, boolean dismount) {
@@ -37,15 +41,6 @@ public class ClientSteerVehiclePacket extends MinecraftPacket {
 
     public boolean getDismounting() {
         return this.dismount;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.sideways = in.readFloat();
-        this.forward = in.readFloat();
-        int flags = in.readUnsignedByte();
-        this.jump = (flags & 1) > 0;
-        this.dismount = (flags & 2) > 0;
     }
 
     @Override

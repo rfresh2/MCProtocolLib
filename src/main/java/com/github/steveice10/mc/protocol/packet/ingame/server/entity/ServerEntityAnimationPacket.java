@@ -12,8 +12,9 @@ public class ServerEntityAnimationPacket extends MinecraftPacket {
     private int entityId;
     private Animation animation;
 
-    @SuppressWarnings("unused")
-    private ServerEntityAnimationPacket() {
+    public ServerEntityAnimationPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.animation = MagicValues.key(Animation.class, in.readUnsignedByte());
     }
 
     public ServerEntityAnimationPacket(int entityId, Animation animation) {
@@ -27,12 +28,6 @@ public class ServerEntityAnimationPacket extends MinecraftPacket {
 
     public Animation getAnimation() {
         return this.animation;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.animation = MagicValues.key(Animation.class, in.readUnsignedByte());
     }
 
     @Override

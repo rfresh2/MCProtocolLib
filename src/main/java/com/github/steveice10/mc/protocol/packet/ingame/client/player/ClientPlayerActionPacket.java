@@ -16,8 +16,10 @@ public class ClientPlayerActionPacket extends MinecraftPacket {
     private Position position;
     private BlockFace face;
 
-    @SuppressWarnings("unused")
-    private ClientPlayerActionPacket() {
+    public ClientPlayerActionPacket(NetInput in) throws IOException {
+        this.action = MagicValues.key(PlayerAction.class, in.readVarInt());
+        this.position = NetUtil.readPosition(in);
+        this.face = MagicValues.key(BlockFace.class, in.readUnsignedByte());
     }
 
     public ClientPlayerActionPacket(PlayerAction action, Position position, BlockFace face) {
@@ -36,13 +38,6 @@ public class ClientPlayerActionPacket extends MinecraftPacket {
 
     public BlockFace getFace() {
         return this.face;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.action = MagicValues.key(PlayerAction.class, in.readVarInt());
-        this.position = NetUtil.readPosition(in);
-        this.face = MagicValues.key(BlockFace.class, in.readUnsignedByte());
     }
 
     @Override

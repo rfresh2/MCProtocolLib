@@ -12,8 +12,12 @@ public class ServerWindowItemsPacket extends MinecraftPacket {
     private int windowId;
     private ItemStack items[];
 
-    @SuppressWarnings("unused")
-    private ServerWindowItemsPacket() {
+    public ServerWindowItemsPacket(NetInput in) throws IOException {
+        this.windowId = in.readUnsignedByte();
+        this.items = new ItemStack[in.readShort()];
+        for(int index = 0; index < this.items.length; index++) {
+            this.items[index] = NetUtil.readItem(in);
+        }
     }
 
     public ServerWindowItemsPacket(int windowId, ItemStack items[]) {
@@ -27,15 +31,6 @@ public class ServerWindowItemsPacket extends MinecraftPacket {
 
     public ItemStack[] getItems() {
         return this.items;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readUnsignedByte();
-        this.items = new ItemStack[in.readShort()];
-        for(int index = 0; index < this.items.length; index++) {
-            this.items[index] = NetUtil.readItem(in);
-        }
     }
 
     @Override

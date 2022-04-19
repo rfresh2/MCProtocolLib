@@ -12,8 +12,9 @@ public class ServerEntityStatusPacket extends MinecraftPacket {
     protected int entityId;
     protected EntityStatus status;
 
-    @SuppressWarnings("unused")
-    private ServerEntityStatusPacket() {
+    public ServerEntityStatusPacket(NetInput in) throws IOException {
+        this.entityId = in.readInt();
+        this.status = MagicValues.key(EntityStatus.class, in.readByte());
     }
 
     public ServerEntityStatusPacket(int entityId, EntityStatus status) {
@@ -27,12 +28,6 @@ public class ServerEntityStatusPacket extends MinecraftPacket {
 
     public EntityStatus getStatus() {
         return this.status;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readInt();
-        this.status = MagicValues.key(EntityStatus.class, in.readByte());
     }
 
     @Override

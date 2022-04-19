@@ -19,8 +19,25 @@ public class ServerUnlockRecipesPacket extends MinecraftPacket {
     private boolean openCraftingBook;
     private boolean activateFiltering;
 
-    @SuppressWarnings("unused")
-    private ServerUnlockRecipesPacket() {
+    public ServerUnlockRecipesPacket(NetInput in) throws IOException {
+        this.action = MagicValues.key(UnlockRecipesAction.class, in.readVarInt());
+
+        this.openCraftingBook = in.readBoolean();
+        this.activateFiltering = in.readBoolean();
+
+        if(this.action == UnlockRecipesAction.INIT) {
+            int size = in.readVarInt();
+            this.alreadyKnownRecipes = new ArrayList<>(size);
+            for(int i = 0; i < size; i++) {
+                this.alreadyKnownRecipes.add(in.readVarInt());
+            }
+        }
+
+        int size = in.readVarInt();
+        this.recipes = new ArrayList<>(size);
+        for(int i = 0; i < size; i++) {
+            this.recipes.add(in.readVarInt());
+        }
     }
 
     private ServerUnlockRecipesPacket(boolean openCraftingBook, boolean activateFiltering, List<Integer> recipes) {
@@ -65,28 +82,6 @@ public class ServerUnlockRecipesPacket extends MinecraftPacket {
 
     public boolean getActivateFiltering() {
         return this.activateFiltering;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.action = MagicValues.key(UnlockRecipesAction.class, in.readVarInt());
-
-        this.openCraftingBook = in.readBoolean();
-        this.activateFiltering = in.readBoolean();
-
-        if(this.action == UnlockRecipesAction.INIT) {
-            int size = in.readVarInt();
-            this.alreadyKnownRecipes = new ArrayList<>(size);
-            for(int i = 0; i < size; i++) {
-                this.alreadyKnownRecipes.add(in.readVarInt());
-            }
-        }
-
-        int size = in.readVarInt();
-        this.recipes = new ArrayList<>(size);
-        for(int i = 0; i < size; i++) {
-            this.recipes.add(in.readVarInt());
-        }
     }
 
     @Override

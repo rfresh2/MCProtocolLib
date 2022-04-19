@@ -11,8 +11,10 @@ public class ServerPlayerSetExperiencePacket extends MinecraftPacket {
     private int level;
     private int totalExperience;
 
-    @SuppressWarnings("unused")
-    private ServerPlayerSetExperiencePacket() {
+    public ServerPlayerSetExperiencePacket(NetInput in) throws IOException {
+        this.experience = in.readFloat();
+        this.level = in.readVarInt();
+        this.totalExperience = in.readVarInt();
     }
 
     public ServerPlayerSetExperiencePacket(float experience, int level, int totalExperience) {
@@ -31,13 +33,6 @@ public class ServerPlayerSetExperiencePacket extends MinecraftPacket {
 
     public int getTotalExperience() {
         return this.totalExperience;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.experience = in.readFloat();
-        this.level = in.readVarInt();
-        this.totalExperience = in.readVarInt();
     }
 
     @Override

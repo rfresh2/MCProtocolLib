@@ -10,8 +10,9 @@ public class ServerPreparedCraftingGridPacket extends MinecraftPacket {
     private int windowId;
     private int recipeId;
 
-    @SuppressWarnings("unused")
-    private ServerPreparedCraftingGridPacket() {
+    public ServerPreparedCraftingGridPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
+        this.recipeId = in.readVarInt();
     }
 
     public ServerPreparedCraftingGridPacket(int windowId, int recipeId) {
@@ -25,12 +26,6 @@ public class ServerPreparedCraftingGridPacket extends MinecraftPacket {
 
     public int getRecipeId() {
         return this.recipeId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
-        this.recipeId = in.readVarInt();
     }
 
     @Override

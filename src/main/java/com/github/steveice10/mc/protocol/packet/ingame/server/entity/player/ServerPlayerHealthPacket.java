@@ -11,8 +11,10 @@ public class ServerPlayerHealthPacket extends MinecraftPacket {
     private int food;
     private float saturation;
 
-    @SuppressWarnings("unused")
-    private ServerPlayerHealthPacket() {
+    public ServerPlayerHealthPacket(NetInput in) throws IOException {
+        this.health = in.readFloat();
+        this.food = in.readVarInt();
+        this.saturation = in.readFloat();
     }
 
     public ServerPlayerHealthPacket(float health, int food, float saturation) {
@@ -31,13 +33,6 @@ public class ServerPlayerHealthPacket extends MinecraftPacket {
 
     public float getSaturation() {
         return this.saturation;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.health = in.readFloat();
-        this.food = in.readVarInt();
-        this.saturation = in.readFloat();
     }
 
     @Override

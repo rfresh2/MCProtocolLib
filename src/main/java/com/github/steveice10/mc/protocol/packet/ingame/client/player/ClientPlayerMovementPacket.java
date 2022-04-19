@@ -17,6 +17,10 @@ public class ClientPlayerMovementPacket extends MinecraftPacket {
     protected boolean pos = false;
     protected boolean rot = false;
 
+    public ClientPlayerMovementPacket(NetInput in) throws IOException {
+        this.onGround = in.readBoolean();
+    }
+
     protected ClientPlayerMovementPacket() {
     }
 
@@ -46,22 +50,6 @@ public class ClientPlayerMovementPacket extends MinecraftPacket {
 
     public boolean isOnGround() {
         return this.onGround;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        if(this.pos) {
-            this.x = in.readDouble();
-            this.y = in.readDouble();
-            this.z = in.readDouble();
-        }
-
-        if(this.rot) {
-            this.yaw = in.readFloat();
-            this.pitch = in.readFloat();
-        }
-
-        this.onGround = in.readBoolean();
     }
 
     @Override

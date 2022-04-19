@@ -12,8 +12,9 @@ public class ServerPlayerUseBedPacket extends MinecraftPacket {
     private int entityId;
     private Position position;
 
-    @SuppressWarnings("unused")
-    private ServerPlayerUseBedPacket() {
+    public ServerPlayerUseBedPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.position = NetUtil.readPosition(in);
     }
 
     public ServerPlayerUseBedPacket(int entityId, Position position) {
@@ -27,12 +28,6 @@ public class ServerPlayerUseBedPacket extends MinecraftPacket {
 
     public Position getPosition() {
         return this.position;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.position = NetUtil.readPosition(in);
     }
 
     @Override

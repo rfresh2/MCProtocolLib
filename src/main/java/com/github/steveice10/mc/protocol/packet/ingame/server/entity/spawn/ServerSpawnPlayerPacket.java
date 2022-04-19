@@ -19,8 +19,15 @@ public class ServerSpawnPlayerPacket extends MinecraftPacket {
     private float pitch;
     private EntityMetadata metadata[];
 
-    @SuppressWarnings("unused")
-    private ServerSpawnPlayerPacket() {
+    public ServerSpawnPlayerPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.uuid = in.readUUID();
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readByte() * 360 / 256f;
+        this.pitch = in.readByte() * 360 / 256f;
+        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     public ServerSpawnPlayerPacket(int entityId, UUID uuid, double x, double y, double z, float yaw, float pitch, EntityMetadata metadata[]) {
@@ -64,18 +71,6 @@ public class ServerSpawnPlayerPacket extends MinecraftPacket {
 
     public EntityMetadata[] getMetadata() {
         return this.metadata;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.uuid = in.readUUID();
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.yaw = in.readByte() * 360 / 256f;
-        this.pitch = in.readByte() * 360 / 256f;
-        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     @Override

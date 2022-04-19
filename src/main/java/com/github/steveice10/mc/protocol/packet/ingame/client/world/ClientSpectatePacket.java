@@ -10,8 +10,8 @@ import java.util.UUID;
 public class ClientSpectatePacket extends MinecraftPacket {
     private UUID target;
 
-    @SuppressWarnings("unused")
-    private ClientSpectatePacket() {
+    public ClientSpectatePacket(NetInput in) throws IOException {
+        this.target = in.readUUID();
     }
 
     public ClientSpectatePacket(UUID target) {
@@ -20,11 +20,6 @@ public class ClientSpectatePacket extends MinecraftPacket {
 
     public UUID getTarget() {
         return this.target;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.target = in.readUUID();
     }
 
     @Override

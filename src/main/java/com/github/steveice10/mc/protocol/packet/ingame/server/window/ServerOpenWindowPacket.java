@@ -15,8 +15,14 @@ public class ServerOpenWindowPacket extends MinecraftPacket {
     private int slots;
     private int ownerEntityId;
 
-    @SuppressWarnings("unused")
-    private ServerOpenWindowPacket() {
+    public ServerOpenWindowPacket(NetInput in) throws IOException {
+        this.windowId = in.readUnsignedByte();
+        this.type = MagicValues.key(WindowType.class, in.readString());
+        this.name = in.readString();
+        this.slots = in.readUnsignedByte();
+        if(this.type == WindowType.HORSE) {
+            this.ownerEntityId = in.readInt();
+        }
     }
 
     public ServerOpenWindowPacket(int windowId, WindowType type, String name, int slots) {
@@ -49,17 +55,6 @@ public class ServerOpenWindowPacket extends MinecraftPacket {
 
     public int getOwnerEntityId() {
         return this.ownerEntityId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readUnsignedByte();
-        this.type = MagicValues.key(WindowType.class, in.readString());
-        this.name = in.readString();
-        this.slots = in.readUnsignedByte();
-        if(this.type == WindowType.HORSE) {
-            this.ownerEntityId = in.readInt();
-        }
     }
 
     @Override

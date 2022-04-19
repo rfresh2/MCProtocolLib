@@ -22,43 +22,7 @@ public class ServerAdvancementsPacket extends MinecraftPacket {
     private List<String> removedAdvancements;
     private Map<String, Map<String, Long>> progress;
 
-    @SuppressWarnings("unused")
-    private ServerAdvancementsPacket() {
-    }
-
-    public ServerAdvancementsPacket(boolean reset, List<Advancement> advancements, List<String> removedAdvancements, Map<String, Map<String, Long>> progress) {
-        this.reset = reset;
-        this.advancements = advancements;
-        this.removedAdvancements = removedAdvancements;
-        this.progress = progress;
-    }
-
-    public boolean doesReset() {
-        return this.reset;
-    }
-
-    public List<Advancement> getAdvancements() {
-        return this.advancements;
-    }
-
-    public List<String> getRemovedAdvancements() {
-        return this.removedAdvancements;
-    }
-
-    public Map<String, Map<String, Long>> getProgress() {
-        return this.progress;
-    }
-
-    public Map<String, Long> getProgress(String advancementId) {
-        return getProgress().get(advancementId);
-    }
-
-    public Long getAchievedDate(String advancementId, String criterionId) {
-        return getProgress(advancementId).get(criterionId);
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerAdvancementsPacket(NetInput in) throws IOException {
         this.reset = in.readBoolean();
 
         this.advancements = new ArrayList<>();
@@ -127,6 +91,37 @@ public class ServerAdvancementsPacket extends MinecraftPacket {
 
             this.progress.put(advancementId, advancementProgress);
         }
+    }
+
+    public ServerAdvancementsPacket(boolean reset, List<Advancement> advancements, List<String> removedAdvancements, Map<String, Map<String, Long>> progress) {
+        this.reset = reset;
+        this.advancements = advancements;
+        this.removedAdvancements = removedAdvancements;
+        this.progress = progress;
+    }
+
+    public boolean doesReset() {
+        return this.reset;
+    }
+
+    public List<Advancement> getAdvancements() {
+        return this.advancements;
+    }
+
+    public List<String> getRemovedAdvancements() {
+        return this.removedAdvancements;
+    }
+
+    public Map<String, Map<String, Long>> getProgress() {
+        return this.progress;
+    }
+
+    public Map<String, Long> getProgress(String advancementId) {
+        return getProgress().get(advancementId);
+    }
+
+    public Long getAchievedDate(String advancementId, String criterionId) {
+        return getProgress(advancementId).get(criterionId);
     }
 
     @Override

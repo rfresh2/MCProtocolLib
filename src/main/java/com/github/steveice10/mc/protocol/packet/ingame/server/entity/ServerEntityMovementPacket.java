@@ -15,9 +15,13 @@ public class ServerEntityMovementPacket extends MinecraftPacket {
     protected float pitch;
     protected boolean pos = false;
     protected boolean rot = false;
-    private boolean onGround;
+    protected boolean onGround;
 
     protected ServerEntityMovementPacket() {
+    }
+
+    public ServerEntityMovementPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
     }
 
     public ServerEntityMovementPacket(int entityId, boolean onGround) {
@@ -51,25 +55,6 @@ public class ServerEntityMovementPacket extends MinecraftPacket {
 
     public boolean isOnGround() {
         return this.onGround;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        if(this.pos) {
-            this.moveX = in.readShort() / 4096D;
-            this.moveY = in.readShort() / 4096D;
-            this.moveZ = in.readShort() / 4096D;
-        }
-
-        if(this.rot) {
-            this.yaw = in.readByte() * 360 / 256f;
-            this.pitch = in.readByte() * 360 / 256f;
-        }
-
-        if(this.pos || this.rot) {
-            this.onGround = in.readBoolean();
-        }
     }
 
     @Override

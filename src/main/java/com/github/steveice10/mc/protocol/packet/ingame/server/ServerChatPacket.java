@@ -26,8 +26,9 @@ public class ServerChatPacket extends MinecraftPacket {
     private String message;
     private MessageType type;
 
-    @SuppressWarnings("unused")
-    private ServerChatPacket() {
+    public ServerChatPacket(NetInput in) throws IOException {
+        this.message = in.readString();
+        this.type = MagicValues.key(MessageType.class, in.readByte());
     }
 
     public ServerChatPacket(String text, boolean escape) {
@@ -45,12 +46,6 @@ public class ServerChatPacket extends MinecraftPacket {
 
     public MessageType getType() {
         return this.type;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.message = in.readString();
-        this.type = MagicValues.key(MessageType.class, in.readByte());
     }
 
     @Override

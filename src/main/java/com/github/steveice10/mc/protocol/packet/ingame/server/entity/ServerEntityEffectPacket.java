@@ -16,8 +16,15 @@ public class ServerEntityEffectPacket extends MinecraftPacket {
     private boolean ambient;
     private boolean showParticles;
 
-    @SuppressWarnings("unused")
-    private ServerEntityEffectPacket() {
+    public ServerEntityEffectPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.effect = MagicValues.key(Effect.class, in.readByte());
+        this.amplifier = in.readByte();
+        this.duration = in.readVarInt();
+
+        int flags = in.readByte();
+        this.ambient = (flags & 0x1) == 0x1;
+        this.showParticles = (flags & 0x2) == 0x2;
     }
 
     public ServerEntityEffectPacket(int entityId, Effect effect, int amplifier, int duration, boolean ambient, boolean showParticles) {
@@ -51,18 +58,6 @@ public class ServerEntityEffectPacket extends MinecraftPacket {
 
     public boolean getShowParticles() {
         return this.showParticles;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.effect = MagicValues.key(Effect.class, in.readByte());
-        this.amplifier = in.readByte();
-        this.duration = in.readVarInt();
-
-        int flags = in.readByte();
-        this.ambient = (flags & 0x1) == 0x1;
-        this.showParticles = (flags & 0x2) == 0x2;
     }
 
     @Override

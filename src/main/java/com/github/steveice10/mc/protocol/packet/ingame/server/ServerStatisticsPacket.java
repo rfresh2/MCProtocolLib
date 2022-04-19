@@ -32,20 +32,7 @@ public class ServerStatisticsPacket extends MinecraftPacket {
 
     private Map<Statistic, Integer> statistics = new HashMap<Statistic, Integer>();
 
-    @SuppressWarnings("unused")
-    private ServerStatisticsPacket() {
-    }
-
-    public ServerStatisticsPacket(Map<Statistic, Integer> statistics) {
-        this.statistics = statistics;
-    }
-
-    public Map<Statistic, Integer> getStatistics() {
-        return this.statistics;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerStatisticsPacket(NetInput in) throws IOException {
         int length = in.readVarInt();
         for(int index = 0; index < length; index++) {
             String value = in.readString();
@@ -76,6 +63,14 @@ public class ServerStatisticsPacket extends MinecraftPacket {
 
             this.statistics.put(statistic, in.readVarInt());
         }
+    }
+
+    public ServerStatisticsPacket(Map<Statistic, Integer> statistics) {
+        this.statistics = statistics;
+    }
+
+    public Map<Statistic, Integer> getStatistics() {
+        return this.statistics;
     }
 
     @Override

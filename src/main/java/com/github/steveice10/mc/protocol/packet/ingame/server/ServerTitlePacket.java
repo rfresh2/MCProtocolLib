@@ -21,8 +21,28 @@ public class ServerTitlePacket extends MinecraftPacket {
     private int stay;
     private int fadeOut;
 
-    @SuppressWarnings("unused")
-    private ServerTitlePacket() {
+    public ServerTitlePacket(NetInput in) throws IOException {
+        this.action = MagicValues.key(TitleAction.class, in.readVarInt());
+        switch(this.action) {
+            case TITLE:
+                this.title = in.readString();
+                break;
+            case SUBTITLE:
+                this.subtitle = in.readString();
+                break;
+            case ACTION_BAR:
+                this.actionBar = in.readString();
+                break;
+            case TIMES:
+                this.fadeIn = in.readInt();
+                this.stay = in.readInt();
+                this.fadeOut = in.readInt();
+                break;
+            case CLEAR:
+                break;
+            case RESET:
+                break;
+        }
     }
 
     public ServerTitlePacket(String title, boolean sub, boolean escape) {
@@ -92,31 +112,6 @@ public class ServerTitlePacket extends MinecraftPacket {
 
     public int getFadeOut() {
         return this.fadeOut;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.action = MagicValues.key(TitleAction.class, in.readVarInt());
-        switch(this.action) {
-            case TITLE:
-                this.title = in.readString();
-                break;
-            case SUBTITLE:
-                this.subtitle = in.readString();
-                break;
-            case ACTION_BAR:
-                this.actionBar = in.readString();
-                break;
-            case TIMES:
-                this.fadeIn = in.readInt();
-                this.stay = in.readInt();
-                this.fadeOut = in.readInt();
-                break;
-            case CLEAR:
-                break;
-            case RESET:
-                break;
-        }
     }
 
     @Override

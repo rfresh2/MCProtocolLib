@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ClientKeepAlivePacket extends MinecraftPacket {
     private long id;
 
-    @SuppressWarnings("unused")
-    private ClientKeepAlivePacket() {
+    public ClientKeepAlivePacket(NetInput in) throws IOException {
+        this.id = in.readLong();
     }
 
     public ClientKeepAlivePacket(long id) {
@@ -19,11 +19,6 @@ public class ClientKeepAlivePacket extends MinecraftPacket {
 
     public long getPingId() {
         return this.id;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.id = in.readLong();
     }
 
     @Override

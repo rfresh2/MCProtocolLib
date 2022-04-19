@@ -19,8 +19,12 @@ public class ServerSpawnPaintingPacket extends MinecraftPacket {
     private Position position;
     private HangingDirection direction;
 
-    @SuppressWarnings("unused")
-    private ServerSpawnPaintingPacket() {
+    public ServerSpawnPaintingPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.uuid = in.readUUID();
+        this.paintingType = MagicValues.key(PaintingType.class, in.readString());
+        this.position = NetUtil.readPosition(in);
+        this.direction = MagicValues.key(HangingDirection.class, in.readUnsignedByte());
     }
 
     public ServerSpawnPaintingPacket(int entityId, UUID uuid, PaintingType paintingType, Position position, HangingDirection direction) {
@@ -49,15 +53,6 @@ public class ServerSpawnPaintingPacket extends MinecraftPacket {
 
     public HangingDirection getDirection() {
         return this.direction;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.uuid = in.readUUID();
-        this.paintingType = MagicValues.key(PaintingType.class, in.readString());
-        this.position = NetUtil.readPosition(in);
-        this.direction = MagicValues.key(HangingDirection.class, in.readUnsignedByte());
     }
 
     @Override

@@ -15,6 +15,18 @@ public class ServerCombatPacket extends MinecraftPacket {
     private int playerId;
     private String message;
 
+    public ServerCombatPacket(NetInput in) throws IOException {
+        this.state = MagicValues.key(CombatState.class, in.readVarInt());
+        if(this.state == CombatState.END_COMBAT) {
+            this.duration = in.readVarInt();
+            this.entityId = in.readInt();
+        } else if(this.state == CombatState.ENTITY_DEAD) {
+            this.playerId = in.readVarInt();
+            this.entityId = in.readInt();
+            this.message = in.readString();
+        }
+    }
+
     public ServerCombatPacket() {
         this.state = CombatState.ENTER_COMBAT;
     }
@@ -50,19 +62,6 @@ public class ServerCombatPacket extends MinecraftPacket {
 
     public String getMessage() {
         return this.message;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.state = MagicValues.key(CombatState.class, in.readVarInt());
-        if(this.state == CombatState.END_COMBAT) {
-            this.duration = in.readVarInt();
-            this.entityId = in.readInt();
-        } else if(this.state == CombatState.ENTITY_DEAD) {
-            this.playerId = in.readVarInt();
-            this.entityId = in.readInt();
-            this.message = in.readString();
-        }
     }
 
     @Override

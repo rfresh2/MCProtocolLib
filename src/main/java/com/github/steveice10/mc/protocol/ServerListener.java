@@ -26,9 +26,8 @@ import com.github.steveice10.mc.protocol.packet.status.server.StatusResponsePack
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.ConnectedEvent;
 import com.github.steveice10.packetlib.event.session.DisconnectingEvent;
-import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
-import com.github.steveice10.packetlib.event.session.PacketSentEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
+import com.github.steveice10.packetlib.packet.Packet;
 
 import javax.crypto.SecretKey;
 import java.net.Proxy;
@@ -73,58 +72,58 @@ public class ServerListener extends SessionAdapter {
     }
 
     @Override
-    public void packetReceived(PacketReceivedEvent event) {
-        MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
+    public void packetReceived(Session session, Packet packet) {
+        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
         if(protocol.getSubProtocol() == SubProtocol.HANDSHAKE) {
-            if(event.getPacket() instanceof HandshakePacket) {
-                HandshakePacket packet = event.getPacket();
-                switch(packet.getIntent()) {
+            if(packet instanceof HandshakePacket) {
+                HandshakePacket handshakePacket = (HandshakePacket) packet;
+                switch(handshakePacket.getIntent()) {
                     case STATUS:
-                        protocol.setSubProtocol(SubProtocol.STATUS, false, event.getSession());
+                        protocol.setSubProtocol(SubProtocol.STATUS);
                         break;
                     case LOGIN:
-                        protocol.setSubProtocol(SubProtocol.LOGIN, false, event.getSession());
-                        if(packet.getProtocolVersion() > MinecraftConstants.PROTOCOL_VERSION) {
-                            event.getSession().disconnect("Outdated server! I'm still on " + MinecraftConstants.GAME_VERSION + ".");
-                        } else if(packet.getProtocolVersion() < MinecraftConstants.PROTOCOL_VERSION) {
-                            event.getSession().disconnect("Outdated client! Please use " + MinecraftConstants.GAME_VERSION + ".");
+                        protocol.setSubProtocol(SubProtocol.LOGIN);
+                        if(handshakePacket.getProtocolVersion() > MinecraftConstants.PROTOCOL_VERSION) {
+                            session.disconnect("Outdated server! I'm still on " + MinecraftConstants.GAME_VERSION + ".");
+                        } else if(handshakePacket.getProtocolVersion() < MinecraftConstants.PROTOCOL_VERSION) {
+                            session.disconnect("Outdated client! Please use " + MinecraftConstants.GAME_VERSION + ".");
                         }
-
                         break;
                     default:
-                        throw new UnsupportedOperationException("Invalid client intent: " + packet.getIntent());
+                        throw new UnsupportedOperationException("Invalid client intent: " + handshakePacket.getIntent());
                 }
             }
         }
 
         if(protocol.getSubProtocol() == SubProtocol.LOGIN) {
-            if(event.getPacket() instanceof LoginStartPacket) {
-                this.username = event.<LoginStartPacket>getPacket().getUsername();
+            if(packet instanceof LoginStartPacket) {
+                final LoginStartPacket loginStartPacket = (LoginStartPacket) packet;
+                this.username = loginStartPacket.getUsername();
 
-                if(event.getSession().getFlag(MinecraftConstants.VERIFY_USERS_KEY, true)) {
-                    event.getSession().send(new EncryptionRequestPacket(SERVER_ID, KEY_PAIR.getPublic(), this.verifyToken));
+                if(session.getFlag(MinecraftConstants.VERIFY_USERS_KEY, true)) {
+                    session.send(new EncryptionRequestPacket(SERVER_ID, KEY_PAIR.getPublic(), this.verifyToken));
                 } else {
-                    new Thread(new UserAuthTask(event.getSession(), null)).start();
+                    new Thread(new UserAuthTask(session, null)).start();
                 }
-            } else if(event.getPacket() instanceof EncryptionResponsePacket) {
-                EncryptionResponsePacket packet = event.getPacket();
+            } else if(packet instanceof EncryptionResponsePacket) {
+                EncryptionResponsePacket encryptionResponsePacket = (EncryptionResponsePacket) packet;
                 PrivateKey privateKey = KEY_PAIR.getPrivate();
-                if(!Arrays.equals(this.verifyToken, packet.getVerifyToken(privateKey))) {
-                    event.getSession().disconnect("Invalid nonce!");
+                if(!Arrays.equals(this.verifyToken, encryptionResponsePacket.getVerifyToken(privateKey))) {
+                    session.disconnect("Invalid nonce!");
                     return;
                 }
 
-                SecretKey key = packet.getSecretKey(privateKey);
-                protocol.enableEncryption(key);
-                new Thread(new UserAuthTask(event.getSession(), key)).start();
+                SecretKey key = encryptionResponsePacket.getSecretKey(privateKey);
+                session.enableEncryption(protocol.enableEncryption(key));
+                new Thread(new UserAuthTask(session, key)).start();
             }
         }
 
         if(protocol.getSubProtocol() == SubProtocol.STATUS) {
-            if(event.getPacket() instanceof StatusQueryPacket) {
-                ServerInfoBuilder builder = event.getSession().getFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY);
+            if(packet instanceof StatusQueryPacket) {
+                ServerInfoBuilder builder = session.getFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY);
                 if(builder == null) {
-                    builder = session -> new ServerStatusInfo(
+                    builder = session1 -> new ServerStatusInfo(
                             VersionInfo.CURRENT,
                             new PlayerInfo(0, 20, new GameProfile[0]),
                             Message.fromString("A Minecraft Server"),
@@ -132,32 +131,31 @@ public class ServerListener extends SessionAdapter {
                     );
                 }
 
-                ServerStatusInfo info = builder.buildInfo(event.getSession());
-                event.getSession().send(new StatusResponsePacket(info));
-            } else if(event.getPacket() instanceof StatusPingPacket) {
-                event.getSession().send(new StatusPongPacket(event.<StatusPingPacket>getPacket().getPingTime()));
+                ServerStatusInfo info = builder.buildInfo(session);
+                session.send(new StatusResponsePacket(info));
+            } else if(packet instanceof StatusPingPacket) {
+                session.send(new StatusPongPacket(((StatusPingPacket) packet).getPingTime()));
             }
         }
 
         if(protocol.getSubProtocol() == SubProtocol.GAME) {
-            if(event.getPacket() instanceof ClientKeepAlivePacket) {
-                ClientKeepAlivePacket packet = event.getPacket();
-                if(packet.getPingId() == this.lastPingId) {
+            if(packet instanceof ClientKeepAlivePacket) {
+                ClientKeepAlivePacket clientKeepAlivePacket = (ClientKeepAlivePacket) packet;
+                if(clientKeepAlivePacket.getPingId() == this.lastPingId) {
                     long time = System.currentTimeMillis() - this.lastPingTime;
-                    event.getSession().setFlag(MinecraftConstants.PING_KEY, time);
+                    session.setFlag(MinecraftConstants.PING_KEY, time);
                 }
             }
         }
     }
 
     @Override
-    public void packetSent(PacketSentEvent event) {
-        Session session = event.getSession();
-        if(event.getPacket() instanceof LoginSetCompressionPacket) {
-            session.setCompressionThreshold(event.<LoginSetCompressionPacket>getPacket().getThreshold());
-            session.send(new LoginSuccessPacket(session.getFlag(MinecraftConstants.PROFILE_KEY)));
-        } else if(event.getPacket() instanceof LoginSuccessPacket) {
-            ((MinecraftProtocol) session.getPacketProtocol()).setSubProtocol(SubProtocol.GAME, false, session);
+    public void packetSent(Session session, Packet packet) {
+        if(packet instanceof LoginSetCompressionPacket) {
+            session.setCompressionThreshold(((LoginSetCompressionPacket) packet).getThreshold(), false);
+            session.send(new LoginSuccessPacket((GameProfile) session.getFlag(MinecraftConstants.PROFILE_KEY)));
+        } else if(packet instanceof LoginSuccessPacket) {
+            ((MinecraftProtocol) session.getPacketProtocol()).setSubProtocol(SubProtocol.GAME);
             ServerLoginHandler handler = session.getFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY);
             if(handler != null) {
                 handler.loggedIn(session);

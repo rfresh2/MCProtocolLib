@@ -13,8 +13,10 @@ public class EncryptionRequestPacket extends MinecraftPacket {
     private PublicKey publicKey;
     private byte verifyToken[];
 
-    @SuppressWarnings("unused")
-    private EncryptionRequestPacket() {
+    public EncryptionRequestPacket(NetInput in) throws IOException {
+        this.serverId = in.readString();
+        this.publicKey = CryptUtil.decodePublicKey(in.readBytes(in.readVarInt()));
+        this.verifyToken = in.readBytes(in.readVarInt());
     }
 
     public EncryptionRequestPacket(String serverId, PublicKey publicKey, byte verifyToken[]) {
@@ -33,13 +35,6 @@ public class EncryptionRequestPacket extends MinecraftPacket {
 
     public byte[] getVerifyToken() {
         return this.verifyToken;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.serverId = in.readString();
-        this.publicKey = CryptUtil.decodePublicKey(in.readBytes(in.readVarInt()));
-        this.verifyToken = in.readBytes(in.readVarInt());
     }
 
     @Override

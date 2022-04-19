@@ -10,8 +10,8 @@ import java.io.IOException;
 public class LoginDisconnectPacket extends MinecraftPacket {
     private String message;
 
-    @SuppressWarnings("unused")
-    private LoginDisconnectPacket() {
+    public LoginDisconnectPacket(NetInput in) throws IOException {
+        this.message = in.readString();
     }
 
     public LoginDisconnectPacket(String text, boolean escape) {
@@ -20,11 +20,6 @@ public class LoginDisconnectPacket extends MinecraftPacket {
 
     public String getReason() {
         return this.message;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.message = in.readString();
     }
 
     @Override

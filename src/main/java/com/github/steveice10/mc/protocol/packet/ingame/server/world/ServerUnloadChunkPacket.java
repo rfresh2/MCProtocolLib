@@ -10,8 +10,9 @@ public class ServerUnloadChunkPacket extends MinecraftPacket {
     private int x;
     private int z;
 
-    @SuppressWarnings("unused")
-    private ServerUnloadChunkPacket() {
+    public ServerUnloadChunkPacket(NetInput in) throws IOException {
+        this.x = in.readInt();
+        this.z = in.readInt();
     }
 
     public ServerUnloadChunkPacket(int x, int z) {
@@ -25,12 +26,6 @@ public class ServerUnloadChunkPacket extends MinecraftPacket {
 
     public int getZ() {
         return this.z;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.x = in.readInt();
-        this.z = in.readInt();
     }
 
     @Override

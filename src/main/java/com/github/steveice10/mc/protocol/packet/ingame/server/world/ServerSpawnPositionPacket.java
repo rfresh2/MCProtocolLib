@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ServerSpawnPositionPacket extends MinecraftPacket {
     private Position position;
 
-    @SuppressWarnings("unused")
-    private ServerSpawnPositionPacket() {
+    public ServerSpawnPositionPacket(NetInput in) throws IOException {
+        this.position = NetUtil.readPosition(in);
     }
 
     public ServerSpawnPositionPacket(Position position) {
@@ -21,11 +21,6 @@ public class ServerSpawnPositionPacket extends MinecraftPacket {
 
     public Position getPosition() {
         return this.position;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = NetUtil.readPosition(in);
     }
 
     @Override

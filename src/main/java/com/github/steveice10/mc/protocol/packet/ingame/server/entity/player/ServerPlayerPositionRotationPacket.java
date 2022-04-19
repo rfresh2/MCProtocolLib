@@ -20,8 +20,22 @@ public class ServerPlayerPositionRotationPacket extends MinecraftPacket {
     private List<PositionElement> relative;
     private int teleportId;
 
-    @SuppressWarnings("unused")
-    private ServerPlayerPositionRotationPacket() {
+    public ServerPlayerPositionRotationPacket(NetInput in) throws IOException {
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
+        this.relative = new ArrayList<PositionElement>();
+        int flags = in.readUnsignedByte();
+        for(PositionElement element : PositionElement.values()) {
+            int bit = 1 << MagicValues.value(Integer.class, element);
+            if((flags & bit) == bit) {
+                this.relative.add(element);
+            }
+        }
+
+        this.teleportId = in.readVarInt();
     }
 
     public ServerPlayerPositionRotationPacket(double x, double y, double z, float yaw, float pitch, int teleportId, PositionElement... relative) {
@@ -60,25 +74,6 @@ public class ServerPlayerPositionRotationPacket extends MinecraftPacket {
 
     public int getTeleportId() {
         return this.teleportId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.yaw = in.readFloat();
-        this.pitch = in.readFloat();
-        this.relative = new ArrayList<PositionElement>();
-        int flags = in.readUnsignedByte();
-        for(PositionElement element : PositionElement.values()) {
-            int bit = 1 << MagicValues.value(Integer.class, element);
-            if((flags & bit) == bit) {
-                this.relative.add(element);
-            }
-        }
-
-        this.teleportId = in.readVarInt();
     }
 
     @Override

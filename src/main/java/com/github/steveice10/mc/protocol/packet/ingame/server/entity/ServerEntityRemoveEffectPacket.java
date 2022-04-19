@@ -12,8 +12,9 @@ public class ServerEntityRemoveEffectPacket extends MinecraftPacket {
     private int entityId;
     private Effect effect;
 
-    @SuppressWarnings("unused")
-    private ServerEntityRemoveEffectPacket() {
+    public ServerEntityRemoveEffectPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.effect = MagicValues.key(Effect.class, in.readUnsignedByte());
     }
 
     public ServerEntityRemoveEffectPacket(int entityId, Effect effect) {
@@ -27,12 +28,6 @@ public class ServerEntityRemoveEffectPacket extends MinecraftPacket {
 
     public Effect getEffect() {
         return this.effect;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.effect = MagicValues.key(Effect.class, in.readUnsignedByte());
     }
 
     @Override

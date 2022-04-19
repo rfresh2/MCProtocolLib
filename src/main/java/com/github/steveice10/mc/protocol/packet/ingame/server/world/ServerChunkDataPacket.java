@@ -14,20 +14,7 @@ import java.io.IOException;
 public class ServerChunkDataPacket extends MinecraftPacket {
     private Column column;
 
-    @SuppressWarnings("unused")
-    private ServerChunkDataPacket() {
-    }
-
-    public ServerChunkDataPacket(Column column) {
-        this.column = column;
-    }
-
-    public Column getColumn() {
-        return this.column;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerChunkDataPacket(NetInput in) throws IOException {
         int x = in.readInt();
         int z = in.readInt();
         boolean fullChunk = in.readBoolean();
@@ -39,6 +26,14 @@ public class ServerChunkDataPacket extends MinecraftPacket {
         }
 
         this.column = NetUtil.readColumn(data, x, z, fullChunk, false, chunkMask, tileEntities);
+    }
+
+    public ServerChunkDataPacket(Column column) {
+        this.column = column;
+    }
+
+    public Column getColumn() {
+        return this.column;
     }
 
     @Override

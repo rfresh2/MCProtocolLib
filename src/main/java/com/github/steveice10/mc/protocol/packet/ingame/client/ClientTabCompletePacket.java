@@ -13,8 +13,10 @@ public class ClientTabCompletePacket extends MinecraftPacket {
     private boolean assumeCommand;
     private Position lookingAt;
 
-    @SuppressWarnings("unused")
-    private ClientTabCompletePacket() {
+    public ClientTabCompletePacket(NetInput in) throws IOException {
+        this.text = in.readString();
+        this.assumeCommand = in.readBoolean();
+        this.lookingAt = in.readBoolean() ? NetUtil.readPosition(in) : null;
     }
 
     public ClientTabCompletePacket(String text, boolean assumeCommand) {
@@ -37,13 +39,6 @@ public class ClientTabCompletePacket extends MinecraftPacket {
 
     public Position getLookingAt() {
         return this.lookingAt;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.text = in.readString();
-        this.assumeCommand = in.readBoolean();
-        this.lookingAt = in.readBoolean() ? NetUtil.readPosition(in) : null;
     }
 
     @Override

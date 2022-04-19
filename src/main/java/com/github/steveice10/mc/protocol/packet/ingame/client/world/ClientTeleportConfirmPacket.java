@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ClientTeleportConfirmPacket extends MinecraftPacket {
     private int id;
 
-    @SuppressWarnings("unused")
-    private ClientTeleportConfirmPacket() {
+    public ClientTeleportConfirmPacket(NetInput in) throws IOException {
+        this.id = in.readVarInt();
     }
 
     public ClientTeleportConfirmPacket(int id) {
@@ -19,11 +19,6 @@ public class ClientTeleportConfirmPacket extends MinecraftPacket {
 
     public int getTeleportId() {
         return this.id;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.id = in.readVarInt();
     }
 
     @Override

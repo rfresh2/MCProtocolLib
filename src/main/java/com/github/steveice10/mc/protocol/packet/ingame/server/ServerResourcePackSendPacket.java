@@ -10,8 +10,9 @@ public class ServerResourcePackSendPacket extends MinecraftPacket {
     private String url;
     private String hash;
 
-    @SuppressWarnings("unused")
-    private ServerResourcePackSendPacket() {
+    public ServerResourcePackSendPacket(NetInput in) throws IOException {
+        this.url = in.readString();
+        this.hash = in.readString();
     }
 
     public ServerResourcePackSendPacket(String url, String hash) {
@@ -25,12 +26,6 @@ public class ServerResourcePackSendPacket extends MinecraftPacket {
 
     public String getHash() {
         return this.hash;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.url = in.readString();
-        this.hash = in.readString();
     }
 
     @Override

@@ -24,20 +24,7 @@ import java.io.IOException;
 public class StatusResponsePacket extends MinecraftPacket {
     private ServerStatusInfo info;
 
-    @SuppressWarnings("unused")
-    private StatusResponsePacket() {
-    }
-
-    public StatusResponsePacket(ServerStatusInfo info) {
-        this.info = info;
-    }
-
-    public ServerStatusInfo getInfo() {
-        return this.info;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public StatusResponsePacket(NetInput in) throws IOException {
         JsonObject obj = new Gson().fromJson(in.readString(), JsonObject.class);
         JsonObject ver = obj.get("version").getAsJsonObject();
         VersionInfo version = new VersionInfo(ver.get("name").getAsString(), ver.get("protocol").getAsInt());
@@ -63,6 +50,14 @@ public class StatusResponsePacket extends MinecraftPacket {
         }
 
         this.info = new ServerStatusInfo(version, players, Message.fromString(description), icon);
+    }
+
+    public StatusResponsePacket(ServerStatusInfo info) {
+        this.info = info;
+    }
+
+    public ServerStatusInfo getInfo() {
+        return this.info;
     }
 
     @Override

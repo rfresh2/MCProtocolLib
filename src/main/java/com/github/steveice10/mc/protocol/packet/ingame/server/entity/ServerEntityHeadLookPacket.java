@@ -10,8 +10,9 @@ public class ServerEntityHeadLookPacket extends MinecraftPacket {
     private int entityId;
     private float headYaw;
 
-    @SuppressWarnings("unused")
-    private ServerEntityHeadLookPacket() {
+    public ServerEntityHeadLookPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.headYaw = in.readByte() * 360 / 256f;
     }
 
     public ServerEntityHeadLookPacket(int entityId, float headYaw) {
@@ -25,12 +26,6 @@ public class ServerEntityHeadLookPacket extends MinecraftPacket {
 
     public float getHeadYaw() {
         return this.headYaw;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.headYaw = in.readByte() * 360 / 256f;
     }
 
     @Override

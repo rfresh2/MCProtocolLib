@@ -18,25 +18,7 @@ public class ServerNotifyClientPacket extends MinecraftPacket {
     private ClientNotification notification;
     private ClientNotificationValue value;
 
-    @SuppressWarnings("unused")
-    private ServerNotifyClientPacket() {
-    }
-
-    public ServerNotifyClientPacket(ClientNotification notification, ClientNotificationValue value) {
-        this.notification = notification;
-        this.value = value;
-    }
-
-    public ClientNotification getNotification() {
-        return this.notification;
-    }
-
-    public ClientNotificationValue getValue() {
-        return this.value;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
+    public ServerNotifyClientPacket(NetInput in) throws IOException {
         this.notification = MagicValues.key(ClientNotification.class, in.readUnsignedByte());
         float value = in.readFloat();
         if(this.notification == ClientNotification.CHANGE_GAMEMODE) {
@@ -50,6 +32,19 @@ public class ServerNotifyClientPacket extends MinecraftPacket {
         } else if(this.notification == ClientNotification.THUNDER_STRENGTH) {
             this.value = new ThunderStrengthValue(value);
         }
+    }
+
+    public ServerNotifyClientPacket(ClientNotification notification, ClientNotificationValue value) {
+        this.notification = notification;
+        this.value = value;
+    }
+
+    public ClientNotification getNotification() {
+        return this.notification;
+    }
+
+    public ClientNotificationValue getValue() {
+        return this.value;
     }
 
     @Override

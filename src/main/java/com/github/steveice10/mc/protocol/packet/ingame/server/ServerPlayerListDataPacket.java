@@ -10,8 +10,9 @@ public class ServerPlayerListDataPacket extends MinecraftPacket {
     private String header;
     private String footer;
 
-    @SuppressWarnings("unused")
-    private ServerPlayerListDataPacket() {
+    public ServerPlayerListDataPacket(NetInput in) throws IOException {
+        this.header = in.readString();
+        this.footer = in.readString();
     }
 
     public ServerPlayerListDataPacket(String header, String footer, boolean escape) {
@@ -25,12 +26,6 @@ public class ServerPlayerListDataPacket extends MinecraftPacket {
 
     public String getFooter() {
         return this.footer;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.header = in.readString();
-        this.footer = in.readString();
     }
 
     @Override

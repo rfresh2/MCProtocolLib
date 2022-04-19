@@ -26,8 +26,28 @@ public class ClientWindowActionPacket extends MinecraftPacket {
     private WindowAction action;
     private ItemStack clicked;
 
-    @SuppressWarnings("unused")
-    private ClientWindowActionPacket() {
+    public ClientWindowActionPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
+        this.slot = in.readShort();
+        byte param = in.readByte();
+        this.actionId = in.readShort();
+        this.action = MagicValues.key(WindowAction.class, in.readByte());
+        this.clicked = NetUtil.readItem(in);
+        if(this.action == WindowAction.CLICK_ITEM) {
+            this.param = MagicValues.key(ClickItemParam.class, param);
+        } else if(this.action == WindowAction.SHIFT_CLICK_ITEM) {
+            this.param = MagicValues.key(ShiftClickItemParam.class, param);
+        } else if(this.action == WindowAction.MOVE_TO_HOTBAR_SLOT) {
+            this.param = MagicValues.key(MoveToHotbarParam.class, param);
+        } else if(this.action == WindowAction.CREATIVE_GRAB_MAX_STACK) {
+            this.param = MagicValues.key(CreativeGrabParam.class, param);
+        } else if(this.action == WindowAction.DROP_ITEM) {
+            this.param = MagicValues.key(DropItemParam.class, param + (this.slot != -999 ? 2 : 0));
+        } else if(this.action == WindowAction.SPREAD_ITEM) {
+            this.param = MagicValues.key(SpreadItemParam.class, param);
+        } else if(this.action == WindowAction.FILL_STACK) {
+            this.param = MagicValues.key(FillStackParam.class, param);
+        }
     }
 
     public ClientWindowActionPacket(int windowId, int actionId, int slot, ItemStack clicked, WindowAction action, WindowActionParam param) {
@@ -61,31 +81,6 @@ public class ClientWindowActionPacket extends MinecraftPacket {
 
     public WindowActionParam getParam() {
         return this.param;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
-        this.slot = in.readShort();
-        byte param = in.readByte();
-        this.actionId = in.readShort();
-        this.action = MagicValues.key(WindowAction.class, in.readByte());
-        this.clicked = NetUtil.readItem(in);
-        if(this.action == WindowAction.CLICK_ITEM) {
-            this.param = MagicValues.key(ClickItemParam.class, param);
-        } else if(this.action == WindowAction.SHIFT_CLICK_ITEM) {
-            this.param = MagicValues.key(ShiftClickItemParam.class, param);
-        } else if(this.action == WindowAction.MOVE_TO_HOTBAR_SLOT) {
-            this.param = MagicValues.key(MoveToHotbarParam.class, param);
-        } else if(this.action == WindowAction.CREATIVE_GRAB_MAX_STACK) {
-            this.param = MagicValues.key(CreativeGrabParam.class, param);
-        } else if(this.action == WindowAction.DROP_ITEM) {
-            this.param = MagicValues.key(DropItemParam.class, param + (this.slot != -999 ? 2 : 0));
-        } else if(this.action == WindowAction.SPREAD_ITEM) {
-            this.param = MagicValues.key(SpreadItemParam.class, param);
-        } else if(this.action == WindowAction.FILL_STACK) {
-            this.param = MagicValues.key(FillStackParam.class, param);
-        }
     }
 
     @Override

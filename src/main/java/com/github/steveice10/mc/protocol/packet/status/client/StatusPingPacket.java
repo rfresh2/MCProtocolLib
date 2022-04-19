@@ -9,8 +9,8 @@ import java.io.IOException;
 public class StatusPingPacket extends MinecraftPacket {
     private long time;
 
-    @SuppressWarnings("unused")
-    private StatusPingPacket() {
+    public StatusPingPacket(NetInput in) throws IOException {
+        this.time = in.readLong();
     }
 
     public StatusPingPacket(long time) {
@@ -19,11 +19,6 @@ public class StatusPingPacket extends MinecraftPacket {
 
     public long getPingTime() {
         return this.time;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.time = in.readLong();
     }
 
     @Override

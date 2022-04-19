@@ -9,8 +9,8 @@ import java.io.IOException;
 public class LoginSetCompressionPacket extends MinecraftPacket {
     private int threshold;
 
-    @SuppressWarnings("unused")
-    private LoginSetCompressionPacket() {
+    public LoginSetCompressionPacket(NetInput in) throws IOException {
+        this.threshold = in.readVarInt();
     }
 
     public LoginSetCompressionPacket(int threshold) {
@@ -19,11 +19,6 @@ public class LoginSetCompressionPacket extends MinecraftPacket {
 
     public int getThreshold() {
         return this.threshold;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.threshold = in.readVarInt();
     }
 
     @Override

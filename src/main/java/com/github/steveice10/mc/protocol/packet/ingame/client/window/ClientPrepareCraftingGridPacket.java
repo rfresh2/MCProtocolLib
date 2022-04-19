@@ -11,8 +11,10 @@ public class ClientPrepareCraftingGridPacket extends MinecraftPacket {
     private int recipeId;
     private boolean makeAll;
 
-    @SuppressWarnings("unused")
-    private ClientPrepareCraftingGridPacket() {
+    public ClientPrepareCraftingGridPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
+        this.recipeId = in.readVarInt();
+        this.makeAll = in.readBoolean();
     }
 
     public ClientPrepareCraftingGridPacket(int windowId, int recipeId, boolean makeAll) {
@@ -31,13 +33,6 @@ public class ClientPrepareCraftingGridPacket extends MinecraftPacket {
 
     public boolean doesMakeAll() {
         return makeAll;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
-        this.recipeId = in.readVarInt();
-        this.makeAll = in.readBoolean();
     }
 
     @Override

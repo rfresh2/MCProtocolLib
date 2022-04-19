@@ -26,8 +26,20 @@ public class ServerSpawnMobPacket extends MinecraftPacket {
     private double motZ;
     private EntityMetadata metadata[];
 
-    @SuppressWarnings("unused")
-    private ServerSpawnMobPacket() {
+    public ServerSpawnMobPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.uuid = in.readUUID();
+        this.type = MagicValues.key(MobType.class, in.readVarInt());
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readByte() * 360 / 256f;
+        this.pitch = in.readByte() * 360 / 256f;
+        this.headYaw = in.readByte() * 360 / 256f;
+        this.motX = in.readShort() / 8000D;
+        this.motY = in.readShort() / 8000D;
+        this.motZ = in.readShort() / 8000D;
+        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     public ServerSpawnMobPacket(int entityId, UUID uuid, MobType type, double x, double y, double z, float yaw, float pitch, float headYaw, double motX, double motY, double motZ, EntityMetadata metadata[]) {
@@ -96,23 +108,6 @@ public class ServerSpawnMobPacket extends MinecraftPacket {
 
     public EntityMetadata[] getMetadata() {
         return this.metadata;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.uuid = in.readUUID();
-        this.type = MagicValues.key(MobType.class, in.readVarInt());
-        this.x = in.readDouble();
-        this.y = in.readDouble();
-        this.z = in.readDouble();
-        this.yaw = in.readByte() * 360 / 256f;
-        this.pitch = in.readByte() * 360 / 256f;
-        this.headYaw = in.readByte() * 360 / 256f;
-        this.motX = in.readShort() / 8000D;
-        this.motY = in.readShort() / 8000D;
-        this.motZ = in.readShort() / 8000D;
-        this.metadata = NetUtil.readEntityMetadata(in);
     }
 
     @Override

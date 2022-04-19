@@ -9,8 +9,11 @@ import java.io.IOException;
 public class ServerEntityDestroyPacket extends MinecraftPacket {
     private int entityIds[];
 
-    @SuppressWarnings("unused")
-    private ServerEntityDestroyPacket() {
+    public ServerEntityDestroyPacket(NetInput in) throws IOException {
+        this.entityIds = new int[in.readVarInt()];
+        for(int index = 0; index < this.entityIds.length; index++) {
+            this.entityIds[index] = in.readVarInt();
+        }
     }
 
     public ServerEntityDestroyPacket(int... entityIds) {
@@ -19,14 +22,6 @@ public class ServerEntityDestroyPacket extends MinecraftPacket {
 
     public int[] getEntityIds() {
         return this.entityIds;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityIds = new int[in.readVarInt()];
-        for(int index = 0; index < this.entityIds.length; index++) {
-            this.entityIds[index] = in.readVarInt();
-        }
     }
 
     @Override

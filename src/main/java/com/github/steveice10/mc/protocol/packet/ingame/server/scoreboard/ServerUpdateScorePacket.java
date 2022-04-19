@@ -14,8 +14,13 @@ public class ServerUpdateScorePacket extends MinecraftPacket {
     private String objective;
     private int value;
 
-    @SuppressWarnings("unused")
-    private ServerUpdateScorePacket() {
+    public ServerUpdateScorePacket(NetInput in) throws IOException {
+        this.entry = in.readString();
+        this.action = MagicValues.key(ScoreboardAction.class, in.readVarInt());
+        this.objective = in.readString();
+        if(this.action == ScoreboardAction.ADD_OR_UPDATE) {
+            this.value = in.readVarInt();
+        }
     }
 
     public ServerUpdateScorePacket(String entry, String objective) {
@@ -45,16 +50,6 @@ public class ServerUpdateScorePacket extends MinecraftPacket {
 
     public int getValue() {
         return this.value;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entry = in.readString();
-        this.action = MagicValues.key(ScoreboardAction.class, in.readVarInt());
-        this.objective = in.readString();
-        if(this.action == ScoreboardAction.ADD_OR_UPDATE) {
-            this.value = in.readVarInt();
-        }
     }
 
     @Override

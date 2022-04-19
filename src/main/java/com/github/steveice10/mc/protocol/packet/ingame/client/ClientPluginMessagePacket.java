@@ -10,8 +10,9 @@ public class ClientPluginMessagePacket extends MinecraftPacket {
     private String channel;
     private byte data[];
 
-    @SuppressWarnings("unused")
-    private ClientPluginMessagePacket() {
+    public ClientPluginMessagePacket(NetInput in) throws IOException {
+        this.channel = in.readString();
+        this.data = in.readBytes(in.available());
     }
 
     public ClientPluginMessagePacket(String channel, byte data[]) {
@@ -25,12 +26,6 @@ public class ClientPluginMessagePacket extends MinecraftPacket {
 
     public byte[] getData() {
         return this.data;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.channel = in.readString();
-        this.data = in.readBytes(in.available());
     }
 
     @Override

@@ -9,8 +9,8 @@ import java.io.IOException;
 public class ServerSwitchCameraPacket extends MinecraftPacket {
     private int cameraEntityId;
 
-    @SuppressWarnings("unused")
-    private ServerSwitchCameraPacket() {
+    public ServerSwitchCameraPacket(NetInput in) throws IOException {
+        this.cameraEntityId = in.readVarInt();
     }
 
     public ServerSwitchCameraPacket(int cameraEntityId) {
@@ -19,11 +19,6 @@ public class ServerSwitchCameraPacket extends MinecraftPacket {
 
     public int getCameraEntityId() {
         return this.cameraEntityId;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.cameraEntityId = in.readVarInt();
     }
 
     @Override

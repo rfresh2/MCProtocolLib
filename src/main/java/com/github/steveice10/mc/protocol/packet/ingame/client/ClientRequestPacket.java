@@ -11,8 +11,8 @@ import java.io.IOException;
 public class ClientRequestPacket extends MinecraftPacket {
     private ClientRequest request;
 
-    @SuppressWarnings("unused")
-    private ClientRequestPacket() {
+    public ClientRequestPacket(NetInput in) throws IOException {
+        this.request = MagicValues.key(ClientRequest.class, in.readVarInt());
     }
 
     public ClientRequestPacket(ClientRequest request) {
@@ -21,11 +21,6 @@ public class ClientRequestPacket extends MinecraftPacket {
 
     public ClientRequest getRequest() {
         return this.request;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.request = MagicValues.key(ClientRequest.class, in.readVarInt());
     }
 
     @Override

@@ -10,8 +10,12 @@ public class ServerEntitySetPassengersPacket extends MinecraftPacket {
     private int entityId;
     private int passengerIds[];
 
-    @SuppressWarnings("unused")
-    private ServerEntitySetPassengersPacket() {
+    public ServerEntitySetPassengersPacket(NetInput in) throws IOException {
+        this.entityId = in.readVarInt();
+        this.passengerIds = new int[in.readVarInt()];
+        for(int index = 0; index < this.passengerIds.length; index++) {
+            this.passengerIds[index] = in.readVarInt();
+        }
     }
 
     public ServerEntitySetPassengersPacket(int entityId, int... passengerIds) {
@@ -25,15 +29,6 @@ public class ServerEntitySetPassengersPacket extends MinecraftPacket {
 
     public int[] getPassengerIds() {
         return this.passengerIds;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.entityId = in.readVarInt();
-        this.passengerIds = new int[in.readVarInt()];
-        for(int index = 0; index < this.passengerIds.length; index++) {
-            this.passengerIds[index] = in.readVarInt();
-        }
     }
 
     @Override

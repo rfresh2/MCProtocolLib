@@ -16,8 +16,10 @@ public class ServerUpdateTileEntityPacket extends MinecraftPacket {
     private UpdatedTileType type;
     private CompoundTag nbt;
 
-    @SuppressWarnings("unused")
-    private ServerUpdateTileEntityPacket() {
+    public ServerUpdateTileEntityPacket(NetInput in) throws IOException {
+        this.position = NetUtil.readPosition(in);
+        this.type = MagicValues.key(UpdatedTileType.class, in.readUnsignedByte());
+        this.nbt = NetUtil.readNBT(in);
     }
 
     public ServerUpdateTileEntityPacket(Position position, UpdatedTileType type, CompoundTag nbt) {
@@ -36,13 +38,6 @@ public class ServerUpdateTileEntityPacket extends MinecraftPacket {
 
     public CompoundTag getNBT() {
         return this.nbt;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.position = NetUtil.readPosition(in);
-        this.type = MagicValues.key(UpdatedTileType.class, in.readUnsignedByte());
-        this.nbt = NetUtil.readNBT(in);
     }
 
     @Override

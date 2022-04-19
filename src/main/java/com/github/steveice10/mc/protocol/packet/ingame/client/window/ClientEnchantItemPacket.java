@@ -10,8 +10,9 @@ public class ClientEnchantItemPacket extends MinecraftPacket {
     private int windowId;
     private int enchantment;
 
-    @SuppressWarnings("unused")
-    private ClientEnchantItemPacket() {
+    public ClientEnchantItemPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
+        this.enchantment = in.readByte();
     }
 
     public ClientEnchantItemPacket(int windowId, int enchantment) {
@@ -25,12 +26,6 @@ public class ClientEnchantItemPacket extends MinecraftPacket {
 
     public int getEnchantment() {
         return this.enchantment;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
-        this.enchantment = in.readByte();
     }
 
     @Override

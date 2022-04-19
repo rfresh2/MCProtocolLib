@@ -11,8 +11,10 @@ public class ClientConfirmTransactionPacket extends MinecraftPacket {
     private int actionId;
     private boolean accepted;
 
-    @SuppressWarnings("unused")
-    private ClientConfirmTransactionPacket() {
+    public ClientConfirmTransactionPacket(NetInput in) throws IOException {
+        this.windowId = in.readByte();
+        this.actionId = in.readShort();
+        this.accepted = in.readBoolean();
     }
 
     public ClientConfirmTransactionPacket(int windowId, int actionId, boolean accepted) {
@@ -31,13 +33,6 @@ public class ClientConfirmTransactionPacket extends MinecraftPacket {
 
     public boolean getAccepted() {
         return this.accepted;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readByte();
-        this.actionId = in.readShort();
-        this.accepted = in.readBoolean();
     }
 
     @Override

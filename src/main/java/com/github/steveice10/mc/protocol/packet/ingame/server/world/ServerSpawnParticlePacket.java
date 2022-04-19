@@ -21,8 +21,21 @@ public class ServerSpawnParticlePacket extends MinecraftPacket {
     private int amount;
     private int data[];
 
-    @SuppressWarnings("unused")
-    private ServerSpawnParticlePacket() {
+    public ServerSpawnParticlePacket(NetInput in) throws IOException {
+        this.particle = MagicValues.key(Particle.class, in.readInt());
+        this.longDistance = in.readBoolean();
+        this.x = in.readFloat();
+        this.y = in.readFloat();
+        this.z = in.readFloat();
+        this.offsetX = in.readFloat();
+        this.offsetY = in.readFloat();
+        this.offsetZ = in.readFloat();
+        this.velocityOffset = in.readFloat();
+        this.amount = in.readInt();
+        this.data = new int[this.particle.getDataLength()];
+        for(int index = 0; index < this.data.length; index++) {
+            this.data[index] = in.readVarInt();
+        }
     }
 
     public ServerSpawnParticlePacket(Particle particle, boolean longDistance, float x, float y, float z, float offsetX, float offsetY, float offsetZ, float velocityOffset, int amount, int... data) {
@@ -84,24 +97,6 @@ public class ServerSpawnParticlePacket extends MinecraftPacket {
 
     public int[] getData() {
         return this.data;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.particle = MagicValues.key(Particle.class, in.readInt());
-        this.longDistance = in.readBoolean();
-        this.x = in.readFloat();
-        this.y = in.readFloat();
-        this.z = in.readFloat();
-        this.offsetX = in.readFloat();
-        this.offsetY = in.readFloat();
-        this.offsetZ = in.readFloat();
-        this.velocityOffset = in.readFloat();
-        this.amount = in.readInt();
-        this.data = new int[this.particle.getDataLength()];
-        for(int index = 0; index < this.data.length; index++) {
-            this.data[index] = in.readVarInt();
-        }
     }
 
     @Override

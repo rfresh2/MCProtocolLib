@@ -13,8 +13,10 @@ public class ServerWindowPropertyPacket extends MinecraftPacket {
     private int property;
     private int value;
 
-    @SuppressWarnings("unused")
-    private ServerWindowPropertyPacket() {
+    public ServerWindowPropertyPacket(NetInput in) throws IOException {
+        this.windowId = in.readUnsignedByte();
+        this.property = in.readShort();
+        this.value = in.readShort();
     }
 
     public ServerWindowPropertyPacket(int windowId, int property, int value) {
@@ -43,13 +45,6 @@ public class ServerWindowPropertyPacket extends MinecraftPacket {
 
     public int getValue() {
         return this.value;
-    }
-
-    @Override
-    public void read(NetInput in) throws IOException {
-        this.windowId = in.readUnsignedByte();
-        this.property = in.readShort();
-        this.value = in.readShort();
     }
 
     @Override
