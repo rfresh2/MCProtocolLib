@@ -189,11 +189,21 @@ public class ServerListener extends SessionAdapter {
             GameProfile profile = null;
             if(this.key != null) {
                 SessionService sessionService = new SessionService();
-                try {
-                    profile = sessionService.getProfileByServer(username, sessionService.getServerId(SERVER_ID, KEY_PAIR.getPublic(), this.key));
-                } catch(RequestException e) {
-                    this.session.disconnect("Failed to make session service request.", e);
-                    return;
+                int tries = 0;
+                while (tries++ < 3 && profile == null) {
+                    try {
+                        profile = sessionService.getProfileByServer(username, sessionService.getServerId(SERVER_ID, KEY_PAIR.getPublic(), this.key));
+                    } catch(RequestException e) {
+                        this.session.disconnect("Failed to make session service request.", e);
+                        return;
+                    }
+                    if (profile == null) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
                 }
 
                 if(profile == null) {
