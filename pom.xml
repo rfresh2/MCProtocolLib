@@ -62,13 +62,13 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.8</version>
+            <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.5cmc</groupId>
             <artifactId>mcauthlib</artifactId>
-            <version>c7f559f505</version>
+            <version>78d06f8df4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
