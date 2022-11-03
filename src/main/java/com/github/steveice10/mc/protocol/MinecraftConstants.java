@@ -20,4 +20,5 @@ public class MinecraftConstants {
     public static final String SERVER_LOGIN_HANDLER_KEY = "login-handler";
     public static final String PING_KEY = "ping";
     public static final String SERVER_COMPRESSION_THRESHOLD = "compression-threshold";
+    public static final String SERVER_KEEPALIVE_INTERVAL_MS = "keep-alive-interval";
 }

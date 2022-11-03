@@ -41,6 +41,7 @@ import java.util.UUID;
 
 public class ServerListener extends SessionAdapter {
     private static final int DEFAULT_COMPRESSION_THRESHOLD = 256;
+    private static final int DEFAULT_KEEPALIVE_INTERVAL = 10000;
 
     // Always empty post-1.7
     private static final String SERVER_ID = "";
@@ -60,7 +61,6 @@ public class ServerListener extends SessionAdapter {
     private String username = "";
 
     private long lastPingTime = 0;
-    private int lastPingId = 0;
 
     public ServerListener() {
         new Random().nextBytes(this.verifyToken);
@@ -141,8 +141,8 @@ public class ServerListener extends SessionAdapter {
         if(protocol.getSubProtocol() == SubProtocol.GAME) {
             if(packet instanceof ClientKeepAlivePacket) {
                 ClientKeepAlivePacket clientKeepAlivePacket = (ClientKeepAlivePacket) packet;
-                if(clientKeepAlivePacket.getPingId() == this.lastPingId) {
-                    long time = System.currentTimeMillis() - this.lastPingTime;
+                if(clientKeepAlivePacket.getPingId() == this.lastPingTime) {
+                    long time = (System.nanoTime() - this.lastPingTime) / 1000000L; // ms
                     session.setFlag(MinecraftConstants.PING_KEY, time);
                 }
             }
@@ -199,7 +199,7 @@ public class ServerListener extends SessionAdapter {
                     }
                     if (profile == null) {
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(5000);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
@@ -230,12 +230,11 @@ public class ServerListener extends SessionAdapter {
         @Override
         public void run() {
             while(this.session.isConnected()) {
-                lastPingTime = System.currentTimeMillis();
-                lastPingId = (int) lastPingTime;
-                this.session.send(new ServerKeepAlivePacket(lastPingId));
+                lastPingTime = System.nanoTime();
+                this.session.send(new ServerKeepAlivePacket(lastPingTime));
 
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(this.session.getFlag(MinecraftConstants.SERVER_KEEPALIVE_INTERVAL_MS, DEFAULT_KEEPALIVE_INTERVAL));
                 } catch(InterruptedException e) {
                     break;
                 }
