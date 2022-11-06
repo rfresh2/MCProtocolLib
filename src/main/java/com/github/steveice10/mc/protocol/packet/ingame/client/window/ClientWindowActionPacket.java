@@ -96,7 +96,7 @@ public class ClientWindowActionPacket extends MinecraftPacket {
             } else if(this.action == WindowAction.CREATIVE_GRAB_MAX_STACK) {
                 param = MagicValues.value(Integer.class, (Enum<?>) this.param);
             } else if(this.action == WindowAction.DROP_ITEM) {
-                param = MagicValues.value(Integer.class, (Enum<?>) this.param) + (this.slot != -999 ? 2 : 0);
+                param = MagicValues.value(Integer.class, (Enum<?>) this.param) + (this.slot != -999 ? -2 : 0);
             } else if(this.action == WindowAction.SPREAD_ITEM) {
                 param = MagicValues.value(Integer.class, (Enum<?>) this.param);
             } else if(this.action == WindowAction.FILL_STACK) {
