@@ -1,14 +1,18 @@
 package com.github.steveice10.mc.protocol.data.game.chunk;
 
 import com.github.steveice10.mc.protocol.util.ObjectUtil;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Arrays;
 
+@Setter
+@Getter
 public class FlexibleStorage {
-    private final long[] data;
-    private final int bitsPerEntry;
-    private final int size;
-    private final long maxEntryValue;
+    private long[] data;
+    private int bitsPerEntry;
+    private int size;
+    private long maxEntryValue;
 
     public FlexibleStorage(int bitsPerEntry, int size) {
         this(bitsPerEntry, new long[roundToNearest(size * bitsPerEntry, 64) / 64]);
@@ -58,16 +62,20 @@ public class FlexibleStorage {
             throw new IndexOutOfBoundsException();
         }
 
-        int bitIndex = index * this.bitsPerEntry;
-        int startIndex = bitIndex / 64;
-        int endIndex = ((index + 1) * this.bitsPerEntry - 1) / 64;
-        int startBitSubIndex = bitIndex % 64;
-        if(startIndex == endIndex) {
-            return (int) (this.data[startIndex] >>> startBitSubIndex & this.maxEntryValue);
+        int individualValueMask = (1 << this.bitsPerEntry) - 1;
+        int startLong = (index * this.bitsPerEntry) / 64;
+        int startOffset = (index * this.bitsPerEntry) % 64;
+        int endLong = ((index + 1) * this.bitsPerEntry - 1) / 64;
+
+        int d;
+        if (startLong == endLong) {
+            d = (int) (this.data[startLong] >>> startOffset);
         } else {
-            int endBitSubIndex = 64 - startBitSubIndex;
-            return (int) ((this.data[startIndex] >>> startBitSubIndex | this.data[endIndex] << endBitSubIndex) & this.maxEntryValue);
+            int endOffset = 64 - startOffset;
+            d = (int) (this.data[startLong] >>> startOffset | this.data[endLong] << endOffset);
         }
+        d &= individualValueMask;
+        return d;
     }
 
     public void set(int index, int value) {
@@ -78,15 +86,18 @@ public class FlexibleStorage {
         if(value < 0 || value > this.maxEntryValue) {
             throw new IllegalArgumentException("Value cannot be outside of accepted range.");
         }
+        int individualValueMask = (1 << this.bitsPerEntry) - 1;
+        int startLong = (index * this.bitsPerEntry) / 64;
+        int startOffset = (index * this.bitsPerEntry) % 64;
+        int endLong = ((index + 1) * this.bitsPerEntry - 1) / 64;
+        long d = value & individualValueMask;
 
-        int bitIndex = index * this.bitsPerEntry;
-        int startIndex = bitIndex / 64;
-        int endIndex = ((index + 1) * this.bitsPerEntry - 1) / 64;
-        int startBitSubIndex = bitIndex % 64;
-        this.data[startIndex] = this.data[startIndex] & ~(this.maxEntryValue << startBitSubIndex) | ((long) value & this.maxEntryValue) << startBitSubIndex;
-        if(startIndex != endIndex) {
-            int endBitSubIndex = 64 - startBitSubIndex;
-            this.data[endIndex] = this.data[endIndex] >>> endBitSubIndex << endBitSubIndex | ((long) value & this.maxEntryValue) >> endBitSubIndex;
+        data[startLong] &= ~((long) individualValueMask << startOffset);
+        data[startLong] |= (d << startOffset);
+
+        if (startLong != endLong) {
+            data[endLong] &= ~(individualValueMask >> (64 - startOffset));
+            data[endLong] |= (d >> (64 - startOffset));
         }
     }
 

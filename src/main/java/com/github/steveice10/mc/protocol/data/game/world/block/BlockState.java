@@ -19,6 +19,10 @@ public class BlockState {
         return this.data;
     }
 
+    public static BlockState of(int id, int data) {
+        return new BlockState(id, data);
+    }
+
     @Override
     public boolean equals(Object o) {
         if(this == o) return true;

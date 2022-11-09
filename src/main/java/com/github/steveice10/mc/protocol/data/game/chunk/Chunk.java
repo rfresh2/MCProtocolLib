@@ -1,9 +1,11 @@
 package com.github.steveice10.mc.protocol.data.game.chunk;
 
 import com.github.steveice10.mc.protocol.util.ObjectUtil;
+import lombok.Setter;
 
 import java.util.Objects;
 
+@Setter
 public class Chunk {
     private BlockStorage blocks;
     private NibbleArray3d blocklight;
