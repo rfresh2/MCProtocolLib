@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static com.github.steveice10.mc.protocol.data.game.world.block.BlockState.*;
+import static com.github.steveice10.mc.protocol.data.game.world.block.BlockState.of;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -47,9 +47,6 @@ public class ChunkTest {
                 }
             }
         }
-
-        System.out.println(index(-165 & 0xF, 115 & 0xF, 482 & 0xF));
-        System.out.println(index(-166 & 0xF, 115 & 0xF, 482 & 0xF));
     }
 
     private static int index(int x, int y, int z) {

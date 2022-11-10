@@ -48,8 +48,8 @@ public class ServerChunkDataPacket extends MinecraftPacket {
         out.writeVarInt(mask);
         out.writeVarInt(byteOut.size());
         out.writeBytes(byteOut.toByteArray(), byteOut.size());
-        out.writeVarInt(this.column.getTileEntities().length);
-        for(CompoundTag tag : this.column.getTileEntities()) {
+        out.writeVarInt(this.column.getTileEntitiesTags().length);
+        for(CompoundTag tag : this.column.getTileEntitiesTags()) {
             NetUtil.writeNBT(out, tag);
         }
     }
