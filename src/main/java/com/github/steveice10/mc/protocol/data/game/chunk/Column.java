@@ -6,10 +6,7 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.IntTag;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Setter
@@ -55,8 +52,8 @@ public class Column {
         this.chunks = chunks;
         this.biomeData = biomeData;
         this.tileEntities = tileEntities != null
-                ? Arrays.stream(tileEntities).map(this::tagToTileEntity).collect(Collectors.toList())
-                : new ArrayList<>();
+                ? Collections.synchronizedList(Arrays.stream(tileEntities).map(this::tagToTileEntity).collect(Collectors.toList()))
+                : Collections.synchronizedList(new ArrayList<>());
     }
 
     public Column(int x, int z, Chunk chunks[], byte biomeData[], List<TileEntity> tileEntities) {
@@ -88,7 +85,7 @@ public class Column {
         this.z = z;
         this.chunks = chunks;
         this.biomeData = biomeData;
-        this.tileEntities = tileEntities;
+        this.tileEntities = Collections.synchronizedList(tileEntities);
     }
 
 
@@ -116,14 +113,14 @@ public class Column {
         return this.tileEntities;
     }
     public CompoundTag[] getTileEntitiesTags() {
-        synchronized (this) {
+        synchronized (this.tileEntities) {
             return this.tileEntities.stream().map(TileEntity::getCompoundTag).toArray(CompoundTag[]::new);
         }
     }
 
     public void setTileEntities(final CompoundTag[] compoundTags) {
-        synchronized (this) {
-            this.tileEntities = Arrays.stream(compoundTags).map(this::tagToTileEntity).collect(Collectors.toList());
+        synchronized (this.tileEntities) {
+            this.tileEntities = Collections.synchronizedList(Arrays.stream(compoundTags).map(this::tagToTileEntity).collect(Collectors.toList()));
         }
     }
 
