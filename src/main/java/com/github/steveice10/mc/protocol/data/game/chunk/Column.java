@@ -116,11 +116,15 @@ public class Column {
         return this.tileEntities;
     }
     public CompoundTag[] getTileEntitiesTags() {
-        return this.tileEntities.stream().map(TileEntity::getCompoundTag).toArray(CompoundTag[]::new);
+        synchronized (this) {
+            return this.tileEntities.stream().map(TileEntity::getCompoundTag).toArray(CompoundTag[]::new);
+        }
     }
 
     public void setTileEntities(final CompoundTag[] compoundTags) {
-        this.tileEntities = Arrays.stream(compoundTags).map(this::tagToTileEntity).collect(Collectors.toList());
+        synchronized (this) {
+            this.tileEntities = Arrays.stream(compoundTags).map(this::tagToTileEntity).collect(Collectors.toList());
+        }
     }
 
     public boolean hasSkylight() {
