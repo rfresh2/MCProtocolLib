@@ -54,9 +54,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.steveice10</groupId>
+            <groupId>com.github.5cmc</groupId>
             <artifactId>packetlib</artifactId>
-            <version>2.1</version>
+            <version>837f2fef85</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
