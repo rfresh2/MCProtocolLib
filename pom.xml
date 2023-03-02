@@ -5,7 +5,7 @@
 
     <groupId>com.github.5cmc</groupId>
     <artifactId>mcprotocollib</artifactId>
-    <version>1.12.2-4-5cmc-SNAPSHOT</version>
+    <version>1.12.2-5-5cmc</version>
     <packaging>jar</packaging>
 
     <name>MCProtocolLib</name>
@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>17</jdk.version>
         <argLine></argLine>
     </properties>
 
@@ -50,31 +50,31 @@
         <dependency>
             <groupId>com.github.steveice10</groupId>
             <artifactId>opennbt</artifactId>
-            <version>1.1</version>
+            <version>1.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.5cmc</groupId>
-            <artifactId>packetlib</artifactId>
-            <version>837f2fef85</version>
+            <artifactId>PacketLib</artifactId>
+            <version>ae443dee23</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
+            <version>1.18.26</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.5cmc</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>604e1a964a</version>
+            <version>94b70b772d</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -114,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.22.2</version>
                 <configuration>
                     <!-- Force the right file encoding during unit testing -->
                     <argLine>-Dfile.encoding=${project.build.sourceEncoding} @{argLine}</argLine>
@@ -123,7 +123,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
