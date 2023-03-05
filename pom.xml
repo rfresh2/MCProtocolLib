@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.5cmc</groupId>
-    <artifactId>mcprotocollib</artifactId>
-    <version>1.12.2-5-5cmc</version>
+    <artifactId>MCProtocolLib</artifactId>
+    <version>1.12.2-6-5cmc</version>
     <packaging>jar</packaging>
 
     <name>MCProtocolLib</name>
@@ -44,6 +44,16 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>opencollab-release-repo</id>
+            <url>https://repo.opencollab.dev/maven-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -56,7 +66,7 @@
         <dependency>
             <groupId>com.github.5cmc</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>e66777235c</version>
+            <version>e978f9168e</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -81,6 +91,12 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nukkitx.fastutil</groupId>
+            <artifactId>fastutil-int-sets</artifactId>
+            <version>8.5.2</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

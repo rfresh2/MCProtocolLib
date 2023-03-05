@@ -19,6 +19,10 @@ public class BlockState {
         return this.data;
     }
 
+    public int toInt() {
+        return (getId() << 4) | (getData() & 0xF);
+    }
+
     public static BlockState of(int id, int data) {
         return new BlockState(id, data);
     }

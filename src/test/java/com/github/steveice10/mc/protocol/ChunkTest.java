@@ -6,6 +6,7 @@ import lombok.Data;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.github.steveice10.mc.protocol.data.game.world.block.BlockState.of;
 import static java.util.Arrays.asList;
@@ -62,7 +63,7 @@ public class ChunkTest {
                 of(9, 7), of(9, 0), of(83,13), of(83, 0), of(83, 14), of(138, 0), of(83, 7), of(83, 10), of(83, 5), of(83, 2),
                 of(83, 15), of(83, 4), of(83, 3), of(33, 3), of(83, 1), of(33, 2), of(55, 0), of(218, 3), of(218, 2),
                 of(83, 9), of(83, 11), of(83, 8), of(83, 6), of(20, 0)));
-        chunk.getBlocks().setStates(states);
+        chunk.getBlocks().setStates(states.stream().map(BlockState::toInt).collect(Collectors.toList()));
         long[] data = new long[]{0, 0, 0, 0, 0, 0, 1171226243996323905L, 511247631101477124L, 2896101637926486162L, 8217099622298439939L, 4684887384405378328L, 292805461487454224L, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, -9076969306247397376L, 585610922974904352L, -4319171038531239157L, 1294143556, 0, 0, -8338198604502007808L, 5270702868021786820L, 2342434895806603394L, 136348168, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2342434895806603394L,
                 -7612942000037264888L, 6441720152723947877L, 8796093022208L, 0, 0, 0, 864691179994742784L, 3458777707960862723L, -8784269397739862504L, -9076969304611219359L, 585610922974904352L, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -7613051949836560807L,

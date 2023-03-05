@@ -57,8 +57,16 @@ public class NetUtil {
         return new BlockState(rawId >> 4, rawId & 0xF);
     }
 
+    public static int readBlockStateInt(NetInput in) throws IOException {
+        return in.readVarInt();
+    }
+
     public static void writeBlockState(NetOutput out, BlockState blockState) throws IOException {
         out.writeVarInt((blockState.getId() << 4) | (blockState.getData() & 0xF));
+    }
+
+    public static void writeBlockStateInt(NetOutput out, int blockState) throws IOException {
+        out.writeVarInt(blockState);
     }
 
     public static ItemStack readItem(NetInput in) throws IOException {
