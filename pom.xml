@@ -66,7 +66,7 @@
         <dependency>
             <groupId>com.github.5cmc</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>2f3cbdd034</version>
+            <version>a36f0665ca</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
