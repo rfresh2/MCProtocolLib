@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.5cmc</groupId>
+    <groupId>com.github.rfresh2</groupId>
     <artifactId>MCProtocolLib</artifactId>
-    <version>1.12.2-6-5cmc</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>MCProtocolLib</name>
     <description>A library for communicating with a Minecraft client or server.</description>
-    <url>http://github.com/5cmc/MCProtocolLib/</url>
+    <url>http://github.com/rfresh2/MCProtocolLib/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,19 +25,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <developers>
-        <developer>
-            <id>steveice10</id>
-            <name>Steveice10</name>
-            <email>Steveice10@gmail.com</email>
-        </developer>
-    </developers>
-
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/5cmc/MCProtocolLib/issues</url>
-    </issueManagement>
 
     <repositories>
         <repository>
@@ -64,9 +51,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.5cmc</groupId>
+            <groupId>com.github.rfresh2</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>a36f0665ca</version>
+            <version>c9f9394385</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -76,9 +63,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.5cmc</groupId>
+            <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>94b70b772d</version>
+            <version>0de5befe37</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

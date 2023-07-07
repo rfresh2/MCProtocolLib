@@ -127,14 +127,6 @@ public class MinecraftProtocol extends PacketProtocol {
         }
     }
 
-    protected PacketEncryption enableEncryption(Key key) {
-        try {
-            return new AESEncryption(key);
-        } catch (GeneralSecurityException e) {
-            throw new Error("Failed to enable protocol encryption.", e);
-        }
-    }
-
     public SubProtocol getSubProtocol() {
         return this.subProtocol;
     }

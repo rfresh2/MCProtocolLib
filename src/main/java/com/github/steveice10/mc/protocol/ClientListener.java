@@ -74,7 +74,7 @@ public class ClientListener extends SessionAdapter {
                 }
 
                 session.send(new EncryptionResponsePacket(key, ((EncryptionRequestPacket) packet).getPublicKey(), ((EncryptionRequestPacket) packet).getVerifyToken()));
-                session.enableEncryption(protocol.enableEncryption(key));
+                session.enableEncryption(key);
             } else if(packet instanceof LoginSuccessPacket) {
                 LoginSuccessPacket loginSuccessPacket = (LoginSuccessPacket) packet;
                 session.setFlag(MinecraftConstants.PROFILE_KEY, loginSuccessPacket.getProfile());
