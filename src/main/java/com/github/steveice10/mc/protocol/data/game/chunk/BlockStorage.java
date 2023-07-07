@@ -3,6 +3,7 @@ package com.github.steveice10.mc.protocol.data.game.chunk;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import com.github.steveice10.mc.protocol.util.NetUtil;
 import com.github.steveice10.mc.protocol.util.ObjectUtil;
+import com.github.steveice10.mc.protocol.util.VarIntUtil;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -67,6 +68,20 @@ public class BlockStorage {
         long[] data = this.storage.getData();
         out.writeVarInt(data.length);
         out.writeLongs(data);
+    }
+
+    public int getSerializedSize() {
+        int size = 1;
+
+        size += VarIntUtil.getVarIntLength(this.states.size());
+        for(Integer state : this.states) {
+            size += VarIntUtil.getVarIntLength(state);
+        }
+
+        size += VarIntUtil.getVarIntLength(this.storage.getData().length);
+        size += this.storage.getData().length * 8;
+
+        return size;
     }
 
     public int getBitsPerEntry() {

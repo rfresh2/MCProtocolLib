@@ -5,20 +5,16 @@ import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
 import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
 import com.github.steveice10.mc.protocol.data.game.chunk.Column;
 import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.ItemStack;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.Position;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.Rotation;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.*;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockFace;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import com.github.steveice10.packetlib.io.stream.StreamNetInput;
+import com.github.steveice10.packetlib.tcp.io.ByteBufNetInput;
+import io.netty.buffer.Unpooled;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -246,8 +242,8 @@ public class NetUtil {
         out.writeByte(255);
     }
 
-    public static Column readColumn(byte data[], int x, int z, boolean fullChunk, boolean hasSkylight, int mask, CompoundTag[] tileEntities) throws IOException {
-        NetInput in = new StreamNetInput(new ByteArrayInputStream(data));
+    public static Column readColumn(byte[] data, int x, int z, boolean fullChunk, boolean hasSkylight, int mask, CompoundTag[] tileEntities) throws IOException {
+        final ByteBufNetInput in = new ByteBufNetInput(Unpooled.wrappedBuffer(data));
         Throwable ex = null;
         Column column = null;
         try {
@@ -295,11 +291,9 @@ public class NetUtil {
                 }
             }
         }
-
         if(fullChunk) {
             out.writeBytes(column.getBiomeData());
         }
-
         return mask;
     }
 

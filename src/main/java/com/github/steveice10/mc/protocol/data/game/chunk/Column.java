@@ -137,6 +137,19 @@ public class Column {
         }
     }
 
+    public int getSerializedSize() {
+        int size = 0;
+        for (final Chunk chunk : chunks) {
+            if (chunk != null && (!hasBiomeData() || !chunk.isEmpty())) {
+                size += chunk.getSerializedSize();
+            }
+        }
+        if (hasBiomeData()) {
+            size += getBiomeData().length;
+        }
+        return size;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

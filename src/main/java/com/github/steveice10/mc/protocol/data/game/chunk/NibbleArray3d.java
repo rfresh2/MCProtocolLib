@@ -26,6 +26,10 @@ public class NibbleArray3d {
         out.writeBytes(this.data);
     }
 
+    public int getSerializedSize() {
+        return this.data.length;
+    }
+
     public byte[] getData() {
         return this.data;
     }

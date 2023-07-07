@@ -6,9 +6,9 @@ import com.github.steveice10.mc.protocol.util.NetUtil;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import com.github.steveice10.packetlib.io.stream.StreamNetOutput;
+import com.github.steveice10.packetlib.tcp.io.ByteBufNetOutput;
+import io.netty.buffer.Unpooled;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ServerChunkDataPacket extends MinecraftPacket {
@@ -19,7 +19,7 @@ public class ServerChunkDataPacket extends MinecraftPacket {
         int z = in.readInt();
         boolean fullChunk = in.readBoolean();
         int chunkMask = in.readVarInt();
-        byte data[] = in.readBytes(in.readVarInt());
+        byte[] data = in.readBytes(in.readVarInt());
         CompoundTag[] tileEntities = new CompoundTag[in.readVarInt()];
         for(int i = 0; i < tileEntities.length; i++) {
             tileEntities[i] = NetUtil.readNBT(in);
@@ -38,16 +38,17 @@ public class ServerChunkDataPacket extends MinecraftPacket {
 
     @Override
     public void write(NetOutput out) throws IOException {
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        NetOutput netOut = new StreamNetOutput(byteOut);
-        int mask = NetUtil.writeColumn(netOut, this.column, this.column.hasBiomeData(), this.column.hasSkylight());
-
         out.writeInt(this.column.getX());
         out.writeInt(this.column.getZ());
         out.writeBoolean(this.column.hasBiomeData());
+        int columnSize = this.column.getSerializedSize();
+        final byte[] buffer = new byte[columnSize];
+        final ByteBufNetOutput writeBuffer = new ByteBufNetOutput(Unpooled.wrappedBuffer(buffer));
+        writeBuffer.getBuffer().resetWriterIndex();
+        int mask = NetUtil.writeColumn(writeBuffer, this.column, this.column.hasBiomeData(), this.column.hasSkylight());
         out.writeVarInt(mask);
-        out.writeVarInt(byteOut.size());
-        out.writeBytes(byteOut.toByteArray(), byteOut.size());
+        out.writeVarInt(columnSize);
+        out.writeBytes(buffer);
         CompoundTag[] tileEntitiesTags = this.column.getTileEntitiesTags();
         out.writeVarInt(tileEntitiesTags.length);
         for(CompoundTag tag : tileEntitiesTags) {

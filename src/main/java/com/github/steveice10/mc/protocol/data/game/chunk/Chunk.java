@@ -21,6 +21,19 @@ public class Chunk {
         this.skylight = skylight;
     }
 
+    public int getSerializedSize() {
+        int size = this.blocks.getSerializedSize();
+        if(this.blocklight != null) {
+            size += this.blocklight.getSerializedSize();
+        }
+
+        if(this.skylight != null) {
+            size += this.skylight.getSerializedSize();
+        }
+
+        return size;
+    }
+
     public BlockStorage getBlocks() {
         return this.blocks;
     }
