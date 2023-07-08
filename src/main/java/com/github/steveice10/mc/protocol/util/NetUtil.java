@@ -242,8 +242,8 @@ public class NetUtil {
         out.writeByte(255);
     }
 
-    public static Column readColumn(byte[] data, int x, int z, boolean fullChunk, boolean hasSkylight, int mask, CompoundTag[] tileEntities) throws IOException {
-        final ByteBufNetInput in = new ByteBufNetInput(Unpooled.wrappedBuffer(data));
+    public static Column readColumnWithUnknownSkylight(byte[] buffer, int x, int z, boolean fullChunk, boolean hasSkylight, int mask, CompoundTag[] tileEntities) throws IOException {
+        final ByteBufNetInput in = new ByteBufNetInput(Unpooled.wrappedBuffer(buffer));
         Throwable ex = null;
         Column column = null;
         try {
@@ -269,8 +269,39 @@ public class NetUtil {
 
         // Unfortunately, this is needed to detect whether the chunks contain skylight or not.
         if((in.available() > 0 || ex != null) && !hasSkylight) {
-            return readColumn(data, x, z, fullChunk, true, mask, tileEntities);
+            return readColumnWithUnknownSkylight(buffer, x, z, fullChunk, true, mask, tileEntities);
         } else if(ex != null) {
+            throw new IOException("Failed to read chunk data.", ex);
+        }
+
+        return column;
+    }
+
+    public static Column readColumn(byte[] buffer, int x, int z, boolean fullChunk, boolean hasSkylight, int mask, CompoundTag[] tileEntities) throws IOException {
+        final ByteBufNetInput in = new ByteBufNetInput(Unpooled.wrappedBuffer(buffer));
+        Throwable ex = null;
+        Column column = null;
+        try {
+            Chunk[] chunks = new Chunk[16];
+            for(int index = 0; index < chunks.length; index++) {
+                if((mask & (1 << index)) != 0) {
+                    BlockStorage blocks = new BlockStorage(in);
+                    NibbleArray3d blocklight = new NibbleArray3d(in, 2048);
+                    NibbleArray3d skylight = hasSkylight ? new NibbleArray3d(in, 2048) : null;
+                    chunks[index] = new Chunk(blocks, blocklight, skylight);
+                }
+            }
+
+            byte biomeData[] = null;
+            if(fullChunk) {
+                biomeData = in.readBytes(256);
+            }
+
+            column = new Column(x, z, chunks, biomeData, tileEntities);
+        } catch(Throwable e) {
+            ex = e;
+        }
+        if(ex != null || in.available() > 0) {
             throw new IOException("Failed to read chunk data.", ex);
         }
 
@@ -293,6 +324,18 @@ public class NetUtil {
         }
         if(fullChunk) {
             out.writeBytes(column.getBiomeData());
+        }
+        return mask;
+    }
+
+    public static int getColumnMask(Column column, boolean fullChunk) {
+        int mask = 0;
+        Chunk chunks[] = column.getChunks();
+        for(int index = 0; index < chunks.length; index++) {
+            Chunk chunk = chunks[index];
+            if(chunk != null && (!fullChunk || !chunk.isEmpty())) {
+                mask |= 1 << index;
+            }
         }
         return mask;
     }

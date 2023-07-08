@@ -53,7 +53,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>52fcafbd46</version>
+            <version>0d5ed6d2ac</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
