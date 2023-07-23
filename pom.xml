@@ -47,14 +47,12 @@
         <dependency>
             <groupId>com.github.steveice10</groupId>
             <artifactId>opennbt</artifactId>
-            <version>1.4</version>
-            <scope>compile</scope>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>1f650c9749</version>
-            <scope>compile</scope>
+            <version>e1e783aa45</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -66,7 +64,6 @@
             <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
             <version>0de5befe37</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -83,13 +80,17 @@
             <groupId>com.nukkitx.fastutil</groupId>
             <artifactId>fastutil-int-sets</artifactId>
             <version>8.5.3</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
     <build>
         <defaultGoal>clean install</defaultGoal>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-wrapper-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
