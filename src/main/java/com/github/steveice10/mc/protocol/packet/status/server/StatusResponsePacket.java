@@ -13,11 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -44,7 +40,7 @@ public class StatusResponsePacket extends MinecraftPacket {
         PlayerInfo players = new PlayerInfo(plrs.get("max").getAsInt(), plrs.get("online").getAsInt(), profiles);
         JsonElement desc = obj.get("description");
         String description = desc.toString();
-        BufferedImage icon = null;
+        byte[] icon = null;
         if(obj.has("favicon")) {
             icon = this.stringToIcon(obj.get("favicon").getAsString());
         }
@@ -91,31 +87,18 @@ public class StatusResponsePacket extends MinecraftPacket {
         out.writeString(obj.toString());
     }
 
-    private BufferedImage stringToIcon(String str) throws IOException {
+    private byte[] stringToIcon(String str) throws IOException {
         if(str.startsWith("data:image/png;base64,")) {
             str = str.substring("data:image/png;base64,".length());
         }
-
-        byte bytes[] = Base64.decode(str.getBytes("UTF-8"));
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        BufferedImage icon = ImageIO.read(in);
-        in.close();
-        if(icon != null && (icon.getWidth() != 64 || icon.getHeight() != 64)) {
-            throw new IOException("Icon must be 64x64.");
-        }
-
-        return icon;
+        return Base64.decode(str.getBytes("UTF-8"));
     }
 
-    private String iconToString(BufferedImage icon) throws IOException {
-        if(icon.getWidth() != 64 || icon.getHeight() != 64) {
-            throw new IOException("Icon must be 64x64.");
+    private String iconToString(byte[] icon) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            out.write(icon);
+            byte[] encoded = Base64.encode(out.toByteArray());
+            return "data:image/png;base64," + new String(encoded, "UTF-8");
         }
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(icon, "PNG", out);
-        out.close();
-        byte encoded[] = Base64.encode(out.toByteArray());
-        return "data:image/png;base64," + new String(encoded, "UTF-8");
     }
 }
