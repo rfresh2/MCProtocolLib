@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>PacketLib</artifactId>
-            <version>3fd701ed8e</version>
+            <version>29bca4a995</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
