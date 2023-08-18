@@ -1,54 +1,53 @@
 package com.github.steveice10.mc.protocol.data.game.entity.metadata;
 
-import com.github.steveice10.mc.protocol.util.ObjectUtil;
+import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.ObjectEntityMetadata;
+import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NonNull;
 
+import java.io.IOException;
 import java.util.Objects;
 
-public class EntityMetadata {
-    private int id;
-    private MetadataType type;
-    private Object value;
+@Data
+@AllArgsConstructor
+public abstract class EntityMetadata<V, T extends MetadataType<V>> {
+    protected final int id;
+    protected final @NonNull T type;
 
-    public EntityMetadata(int id, MetadataType type, Object value) {
-        this.id = id;
-        this.type = type;
-        this.value = value;
-    }
+    /**
+     * May be null depending on type
+     */
+    public abstract V getValue();
 
-    public int getId() {
-        return this.id;
-    }
-
-    public MetadataType getType() {
-        return this.type;
-    }
-
-    public Object getValue() {
-        return this.value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this == o) return true;
-        if(!(o instanceof EntityMetadata)) return false;
-
-        EntityMetadata that = (EntityMetadata) o;
-        return this.id == that.id &&
-                this.type == that.type &&
-                Objects.equals(this.value, that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return ObjectUtil.hashCode(this.id, this.type, this.value);
+    /**
+     * Overridden for primitive classes. This write method still checks for these primitives in the event
+     * they are manually created using {@link ObjectEntityMetadata}.
+     */
+    public void write(MinecraftCodecHelper helper, ByteBuf out) throws IOException {
+        this.type.writeMetadata(helper, out, this.getValue());
     }
 
     @Override
     public String toString() {
-        return ObjectUtil.toString(this);
+        return "EntityMetadata(id=" + id + ", type=" + type + ", value=" + getValue().toString() + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof EntityMetadata)) {
+            return false;
+        }
+        EntityMetadata<?, ?> that = (EntityMetadata<?, ?>) o;
+        return this.id == that.id && this.type == that.type && Objects.equals(this.getValue(), that.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, type, getValue());
     }
 }

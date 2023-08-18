@@ -1,7 +1,6 @@
 package com.github.steveice10.mc.protocol.data.game.scoreboard;
 
 public enum TeamColor {
-    NONE,
     BLACK,
     DARK_BLUE,
     DARK_GREEN,
@@ -17,5 +16,13 @@ public enum TeamColor {
     RED,
     LIGHT_PURPLE,
     YELLOW,
-    WHITE;
+    WHITE,
+    OBFUSCATED,
+    BOLD,
+    STRIKETHROUGH,
+    UNDERLINED,
+    ITALIC,
+    RESET;
+
+    public static final TeamColor[] VALUES = values();
 }

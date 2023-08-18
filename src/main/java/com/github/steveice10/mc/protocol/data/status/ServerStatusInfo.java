@@ -1,7 +1,7 @@
 package com.github.steveice10.mc.protocol.data.status;
 
-import com.github.steveice10.mc.protocol.data.message.Message;
 import lombok.*;
+import net.kyori.adventure.text.Component;
 
 @Data
 @Setter(AccessLevel.NONE)
@@ -9,7 +9,7 @@ import lombok.*;
 public class ServerStatusInfo {
     private @NonNull VersionInfo versionInfo;
     private @NonNull PlayerInfo playerInfo;
-    private @NonNull
-    Message description;
-    private byte[] icon;
+    private @NonNull Component description;
+    private byte[] iconPng;
+    private boolean enforcesSecureChat;
 }

@@ -23,8 +23,18 @@ public enum PaintingType {
     WITHER,
     FIGHTERS,
     POINTER,
-    PIG_SCENE,
+    PIGSCENE,
     BURNING_SKULL,
     SKELETON,
+    EARTH,
+    WIND,
+    WATER,
+    FIRE,
     DONKEY_KONG;
+
+    private static final PaintingType[] VALUES = values();
+
+    public static PaintingType from(int id) {
+        return VALUES[id];
+    }
 }
