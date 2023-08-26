@@ -4,7 +4,7 @@ import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
 import io.netty.buffer.ByteBuf;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class BooleanMetadataType extends MetadataType<Boolean> {
     private final BooleanReader primitiveReader;
@@ -20,32 +20,32 @@ public class BooleanMetadataType extends MetadataType<Boolean> {
     }
 
     @Override
-    public EntityMetadata<Boolean, BooleanMetadataType> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws IOException {
+    public EntityMetadata<Boolean, BooleanMetadataType> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws UncheckedIOException {
         return this.primitiveFactory.createPrimitive(id, this, this.primitiveReader.readPrimitive(input));
     }
 
-    public void writeMetadataPrimitive(ByteBuf output, boolean value) throws IOException {
+    public void writeMetadataPrimitive(ByteBuf output, boolean value) throws UncheckedIOException {
        this.primitiveWriter.writePrimitive(output, value);
     }
 
     @FunctionalInterface
     public interface BooleanReader extends BasicReader<Boolean> {
-        boolean readPrimitive(ByteBuf input) throws IOException;
+        boolean readPrimitive(ByteBuf input) throws UncheckedIOException;
 
         @Deprecated
         @Override
-        default Boolean read(ByteBuf input) throws IOException {
+        default Boolean read(ByteBuf input) throws UncheckedIOException {
             return this.readPrimitive(input);
         }
     }
 
     @FunctionalInterface
     public interface BooleanWriter extends BasicWriter<Boolean> {
-        void writePrimitive(ByteBuf output, boolean value) throws IOException;
+        void writePrimitive(ByteBuf output, boolean value) throws UncheckedIOException;
 
         @Deprecated
         @Override
-        default void write(ByteBuf output, Boolean value) throws IOException {
+        default void write(ByteBuf output, Boolean value) throws UncheckedIOException {
             this.writePrimitive(output, value);
         }
     }

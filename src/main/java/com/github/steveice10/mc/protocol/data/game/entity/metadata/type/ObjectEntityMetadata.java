@@ -5,7 +5,7 @@ import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
 import lombok.NonNull;
 
 public class ObjectEntityMetadata<T> extends EntityMetadata<T, MetadataType<T>> {
-    private final T value;
+    private T value;
 
     public ObjectEntityMetadata(int id, @NonNull MetadataType<T> type, T value) {
         super(id, type);
@@ -15,5 +15,10 @@ public class ObjectEntityMetadata<T> extends EntityMetadata<T, MetadataType<T>> 
     @Override
     public T getValue() {
         return value;
+    }
+
+    @Override
+    public void setValue(T value) {
+        this.value = value;
     }
 }

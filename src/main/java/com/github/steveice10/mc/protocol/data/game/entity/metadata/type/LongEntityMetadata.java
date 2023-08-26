@@ -6,10 +6,10 @@ import com.github.steveice10.mc.protocol.data.game.entity.metadata.LongMetadataT
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class LongEntityMetadata extends EntityMetadata<Long, LongMetadataType> {
-    private final long value;
+    private long value;
 
     public LongEntityMetadata(int id, @NonNull LongMetadataType type, long value) {
         super(id, type);
@@ -27,7 +27,12 @@ public class LongEntityMetadata extends EntityMetadata<Long, LongMetadataType> {
     }
 
     @Override
-    public void write(MinecraftCodecHelper helper, ByteBuf out) throws IOException {
+    public void setValue(final Long value) {
+        this.value = value;
+    }
+
+    @Override
+    public void write(MinecraftCodecHelper helper, ByteBuf out) throws UncheckedIOException {
         this.type.writeMetadataPrimitive(helper, out, value);
     }
 }

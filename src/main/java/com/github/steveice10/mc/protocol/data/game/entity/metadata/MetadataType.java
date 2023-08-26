@@ -14,6 +14,7 @@ import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,40 +76,40 @@ public class MetadataType<T> {
         VALUES.add(this);
     }
 
-    public EntityMetadata<T, ? extends MetadataType<T>> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws IOException {
+    public EntityMetadata<T, ? extends MetadataType<T>> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws UncheckedIOException {
         return this.metadataFactory.create(id, this, this.reader.read(helper, input));
     }
 
-    public void writeMetadata(MinecraftCodecHelper helper, ByteBuf output, T value) throws IOException {
+    public void writeMetadata(MinecraftCodecHelper helper, ByteBuf output, T value) throws UncheckedIOException {
         this.writer.write(helper, output, value);
     }
 
     public interface Reader<V> {
         V read(ByteBuf input) throws IOException;
 
-        V read(MinecraftCodecHelper helper, ByteBuf input) throws IOException;
+        V read(MinecraftCodecHelper helper, ByteBuf input) throws UncheckedIOException;
     }
 
     public interface Writer<V> {
         void write(ByteBuf output, V value) throws IOException;
 
-        void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws IOException;
+        void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws UncheckedIOException;
     }
 
     @FunctionalInterface
     public interface BasicReader<V> extends Reader<V> {
-        V read(ByteBuf input) throws IOException;
+        V read(ByteBuf input) throws UncheckedIOException;
 
-        default V read(MinecraftCodecHelper helper, ByteBuf input) throws IOException {
+        default V read(MinecraftCodecHelper helper, ByteBuf input) throws UncheckedIOException {
             return this.read(input);
         }
     }
 
     @FunctionalInterface
     public interface BasicWriter<V> extends Writer<V> {
-        void write(ByteBuf output, V value) throws IOException;
+        void write(ByteBuf output, V value) throws UncheckedIOException;
 
-        default void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws IOException {
+        default void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws UncheckedIOException {
             this.write(output, value);
         }
     }
@@ -119,7 +120,7 @@ public class MetadataType<T> {
             throw new UnsupportedOperationException("This reader needs a codec helper!");
         }
 
-        V read(MinecraftCodecHelper helper, ByteBuf input) throws IOException;
+        V read(MinecraftCodecHelper helper, ByteBuf input) throws UncheckedIOException;
     }
 
     @FunctionalInterface
@@ -128,7 +129,7 @@ public class MetadataType<T> {
             throw new UnsupportedOperationException("This writer needs a codec helper!");
         }
 
-        void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws IOException;
+        void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws UncheckedIOException;
     }
 
     @FunctionalInterface
@@ -174,7 +175,7 @@ public class MetadataType<T> {
         };
     }
 
-    public static MetadataType<?> read(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+    public static MetadataType<?> read(ByteBuf in, MinecraftCodecHelper helper) throws UncheckedIOException {
         int id = helper.readVarInt(in);
         if (id >= VALUES.size()) {
             throw new IllegalArgumentException("Received id " + id + " for MetadataType when the maximum was " + VALUES.size() + "!");

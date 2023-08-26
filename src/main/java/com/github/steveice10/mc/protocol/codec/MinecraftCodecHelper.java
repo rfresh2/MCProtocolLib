@@ -3,10 +3,7 @@ package com.github.steveice10.mc.protocol.codec;
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.DefaultComponentSerializer;
 import com.github.steveice10.mc.protocol.data.game.Identifier;
-import com.github.steveice10.mc.protocol.data.game.chunk.BitStorage;
-import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSection;
-import com.github.steveice10.mc.protocol.data.game.chunk.DataPalette;
-import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
+import com.github.steveice10.mc.protocol.data.game.chunk.*;
 import com.github.steveice10.mc.protocol.data.game.chunk.palette.*;
 import com.github.steveice10.mc.protocol.data.game.entity.Effect;
 import com.github.steveice10.mc.protocol.data.game.entity.EntityEvent;
@@ -32,11 +29,13 @@ import com.github.steveice10.mc.protocol.data.game.level.sound.SoundCategory;
 import com.github.steveice10.mc.protocol.data.game.recipe.Ingredient;
 import com.github.steveice10.mc.protocol.data.game.statistic.StatisticCategory;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
 import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
 import com.github.steveice10.packetlib.codec.BasePacketCodecHelper;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -48,6 +47,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.function.*;
 
@@ -148,73 +148,89 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public CompoundTag readTag(ByteBuf buf) throws IOException {
+    public CompoundTag readTag(ByteBuf buf) throws UncheckedIOException {
         return readTag(buf, CompoundTag.class);
     }
 
     @Nullable
-    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) throws IOException {
-        Tag tag = NBTIO.readTag(new InputStream() {
-            @Override
-            public int read() {
-                return buf.readUnsignedByte();
+    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
+        try {
+            Tag tag = NBTIO.readTag(new InputStream() {
+                @Override
+                public int read() {
+                    return buf.readUnsignedByte();
+                }
+            });
+            if (tag == null) {
+                return null;
             }
-        });
 
-        if (tag == null) {
-            return null;
+            if (tag.getClass() != expected) {
+                throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
+            }
+
+            return expected.cast(tag);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        if (tag.getClass() != expected) {
-            throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
-        }
-
-        return expected.cast(tag);
     }
 
-    public CompoundTag readTagLE(ByteBuf buf) throws IOException {
+    public CompoundTag readTagLE(ByteBuf buf) throws UncheckedIOException {
         return readTagLE(buf, CompoundTag.class);
     }
 
     @Nullable
-    public <T extends Tag> T readTagLE(ByteBuf buf, Class<T> expected) throws IOException {
-        Tag tag = NBTIO.readTag(new InputStream() {
-            @Override
-            public int read() {
-                return buf.readUnsignedByte();
-            }
-        }, true);
+    public <T extends Tag> T readTagLE(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
+        try {
+            Tag tag = NBTIO.readTag(new InputStream() {
+                @Override
+                public int read() {
+                    return buf.readUnsignedByte();
+                }
+            }, true);
 
-        if (tag == null) {
-            return null;
+            if (tag == null) {
+                return null;
+            }
+
+            if (tag.getClass() != expected) {
+                throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
+            }
+
+            return expected.cast(tag);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public <T extends Tag> void writeTag(ByteBuf buf, T tag) throws UncheckedIOException {
+        try {
+            NBTIO.writeTag(new OutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                    buf.writeByte(b);
+                }
+            }, tag);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
 
-        if (tag.getClass() != expected) {
-            throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
+    }
+
+    public <T extends Tag> void writeTagLE(ByteBuf buf, T tag) throws UncheckedIOException {
+        try {
+            NBTIO.writeTag(new OutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                    buf.writeByte(b);
+                }
+            }, tag, true);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        return expected.cast(tag);
     }
 
-    public <T extends Tag> void writeTag(ByteBuf buf, T tag) throws IOException {
-        NBTIO.writeTag(new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                buf.writeByte(b);
-            }
-        }, tag);
-    }
-
-    public <T extends Tag> void writeTagLE(ByteBuf buf, T tag) throws IOException {
-        NBTIO.writeTag(new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                buf.writeByte(b);
-            }
-        }, tag, true);
-    }
-
-    public ItemStack readItemStack(ByteBuf buf) throws IOException {
+    public ItemStack readItemStack(ByteBuf buf) throws UncheckedIOException {
         boolean present = buf.readBoolean();
         if (!present) {
             return null;
@@ -224,7 +240,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new ItemStack(item, buf.readByte(), this.readTag(buf));
     }
 
-    public void writeItemStack(ByteBuf buf, ItemStack item) throws IOException {
+    public void writeItemStack(ByteBuf buf, ItemStack item) throws UncheckedIOException {
         buf.writeBoolean(item != null);
         if (item != null) {
             this.writeVarInt(buf, item.getId());
@@ -325,7 +341,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeString(buf, DefaultComponentSerializer.get().serialize(component));
     }
 
-    public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) throws IOException {
+    public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) throws UncheckedIOException {
         List<EntityMetadata<?, ?>> ret = new ArrayList<>();
         int id;
         while ((id = buf.readUnsignedByte()) != 255) {
@@ -335,7 +351,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return ret.toArray(new EntityMetadata[0]);
     }
 
-    public void writeEntityMetadata(ByteBuf buf, EntityMetadata<?, ?>[] metadata) throws IOException {
+    public void writeEntityMetadata(ByteBuf buf, EntityMetadata<?, ?>[] metadata) throws UncheckedIOException {
         for (EntityMetadata<?, ?> meta : metadata) {
             this.writeMetadata(buf, meta);
         }
@@ -343,12 +359,12 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         buf.writeByte(255);
     }
 
-    public EntityMetadata<?, ?> readMetadata(ByteBuf buf, int id) throws IOException {
+    public EntityMetadata<?, ?> readMetadata(ByteBuf buf, int id) throws UncheckedIOException {
         MetadataType<?> type = this.readMetadataType(buf);
         return type.readMetadata(this, buf, id);
     }
 
-    public void writeMetadata(ByteBuf buf, EntityMetadata<?, ?> metadata) throws IOException {
+    public void writeMetadata(ByteBuf buf, EntityMetadata<?, ?> metadata) throws UncheckedIOException {
         buf.writeByte(metadata.getId());
         this.writeMetadataType(buf, metadata.getType());
         metadata.write(this, buf);
@@ -386,17 +402,17 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeEnum(buf, type);
     }
 
-    public Particle readParticle(ByteBuf buf) throws IOException {
+    public Particle readParticle(ByteBuf buf) throws UncheckedIOException {
         ParticleType particleType = this.readParticleType(buf);
         return new Particle(particleType, this.readParticleData(buf, particleType));
     }
 
-    public void writeParticle(ByteBuf buf, Particle particle) throws IOException {
+    public void writeParticle(ByteBuf buf, Particle particle) throws UncheckedIOException {
         this.writeEnum(buf, particle.getType());
         this.writeParticleData(buf, particle.getType(), particle.getData());
     }
 
-    public ParticleData readParticleData(ByteBuf buf, ParticleType type) throws IOException {
+    public ParticleData readParticleData(ByteBuf buf, ParticleType type) throws UncheckedIOException {
         switch (type) {
             case BLOCK:
             case BLOCK_MARKER:
@@ -431,7 +447,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) throws IOException {
+    public void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) throws UncheckedIOException {
         switch (type) {
             case BLOCK:
             case BLOCK_MARKER:
@@ -631,7 +647,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         buf.writeByte(event.ordinal());
     }
 
-    public Ingredient readRecipeIngredient(ByteBuf buf) throws IOException {
+    public Ingredient readRecipeIngredient(ByteBuf buf) throws UncheckedIOException {
         ItemStack[] options = new ItemStack[this.readVarInt(buf)];
         for (int i = 0; i < options.length; i++) {
             options[i] = this.readItemStack(buf);
@@ -640,14 +656,14 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new Ingredient(options);
     }
 
-    public void writeRecipeIngredient(ByteBuf buf, Ingredient ingredient) throws IOException {
+    public void writeRecipeIngredient(ByteBuf buf, Ingredient ingredient) throws UncheckedIOException {
         this.writeVarInt(buf, ingredient.getOptions().length);
         for (ItemStack option : ingredient.getOptions()) {
             this.writeItemStack(buf, option);
         }
     }
 
-    public DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType, int globalPaletteBits) throws IOException {
+    public DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType, int globalPaletteBits) throws UncheckedIOException {
         int bitsPerEntry = buf.readByte() & 0xFF;
         Palette palette = this.readPalette(buf, paletteType, bitsPerEntry);
         BitStorage storage;
@@ -687,7 +703,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeLongArray(buf, data);
     }
 
-    private Palette readPalette(ByteBuf buf, PaletteType paletteType, int bitsPerEntry) throws IOException {
+    private Palette readPalette(ByteBuf buf, PaletteType paletteType, int bitsPerEntry) throws UncheckedIOException {
         if (bitsPerEntry == 0) {
             return new SingletonPalette(this.readVarInt(buf));
         }
@@ -700,7 +716,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public ChunkSection readChunkSection(ByteBuf buf, int globalBiomePaletteBits) throws IOException {
+    public ChunkSection readChunkSection(ByteBuf buf, int globalBiomePaletteBits) throws UncheckedIOException {
         int blockCount = buf.readShort();
 
         DataPalette chunkPalette = this.readDataPalette(buf, PaletteType.CHUNK, DataPalette.GLOBAL_PALETTE_BITS_PER_ENTRY);

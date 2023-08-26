@@ -6,7 +6,7 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import lombok.EqualsAndHashCode;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
  * A palette backed by a map.
@@ -25,7 +25,7 @@ public class MapPalette implements Palette {
         this.idToState = new int[this.maxId + 1];
     }
 
-    public MapPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+    public MapPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) throws UncheckedIOException {
         this(bitsPerEntry);
 
         int paletteLength = helper.readVarInt(in);

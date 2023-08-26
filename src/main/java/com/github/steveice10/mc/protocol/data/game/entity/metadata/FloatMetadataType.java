@@ -4,7 +4,7 @@ import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.FloatEntityMetadata;
 import io.netty.buffer.ByteBuf;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class FloatMetadataType extends MetadataType<Float> {
     private final FloatReader primitiveReader;
@@ -13,39 +13,39 @@ public class FloatMetadataType extends MetadataType<Float> {
 
     protected FloatMetadataType(FloatReader reader, FloatWriter writer, FloatEntityMetadataFactory metadataFactory) {
         super(reader, writer, metadataFactory);
-        
+
         this.primitiveReader = reader;
         this.primitiveWriter = writer;
         this.primitiveFactory = metadataFactory;
     }
 
     @Override
-    public EntityMetadata<Float, FloatMetadataType> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws IOException {
+    public EntityMetadata<Float, FloatMetadataType> readMetadata(MinecraftCodecHelper helper, ByteBuf input, int id) throws UncheckedIOException {
         return this.primitiveFactory.createPrimitive(id, this, this.primitiveReader.readPrimitive(input));
     }
 
-    public void writeMetadataPrimitive(ByteBuf output, float value) throws IOException {
+    public void writeMetadataPrimitive(ByteBuf output, float value) throws UncheckedIOException {
         this.primitiveWriter.writePrimitive(output, value);
     }
 
     @FunctionalInterface
     public interface FloatReader extends BasicReader<Float> {
-        float readPrimitive(ByteBuf input) throws IOException;
+        float readPrimitive(ByteBuf input) throws UncheckedIOException;
 
         @Deprecated
         @Override
-        default Float read(ByteBuf input) throws IOException {
+        default Float read(ByteBuf input) throws UncheckedIOException {
             return this.readPrimitive(input);
         }
     }
 
     @FunctionalInterface
     public interface FloatWriter extends BasicWriter<Float> {
-        void writePrimitive(ByteBuf output, float value) throws IOException;
+        void writePrimitive(ByteBuf output, float value) throws UncheckedIOException;
 
         @Deprecated
         @Override
-        default void write(ByteBuf output, Float value) throws IOException {
+        default void write(ByteBuf output, Float value) throws UncheckedIOException {
             this.writePrimitive(output, value);
         }
     }

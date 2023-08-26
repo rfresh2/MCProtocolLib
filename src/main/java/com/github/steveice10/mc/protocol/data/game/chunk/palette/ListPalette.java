@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
  * A palette backed by a List.
@@ -24,7 +24,7 @@ public class ListPalette implements Palette {
         this.data = new int[this.maxId + 1];
     }
 
-    public ListPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+    public ListPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) throws UncheckedIOException {
         this(bitsPerEntry);
 
         int paletteLength = helper.readVarInt(in);

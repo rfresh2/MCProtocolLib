@@ -20,7 +20,7 @@ public class ClientboundContainerSetContentPacket implements MinecraftPacket {
     private final @NonNull ItemStack[] items;
     private final ItemStack carriedItem;
 
-    public ClientboundContainerSetContentPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+    public ClientboundContainerSetContentPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.containerId = in.readUnsignedByte();
         this.stateId = helper.readVarInt(in);
         this.items = new ItemStack[helper.readVarInt(in)];

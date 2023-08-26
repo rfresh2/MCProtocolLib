@@ -6,10 +6,10 @@ import com.github.steveice10.mc.protocol.data.game.entity.metadata.FloatMetadata
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class FloatEntityMetadata extends EntityMetadata<Float, FloatMetadataType> {
-    private final float value;
+    private float value;
 
     public FloatEntityMetadata(int id, @NonNull FloatMetadataType type, float value) {
         super(id, type);
@@ -27,7 +27,12 @@ public class FloatEntityMetadata extends EntityMetadata<Float, FloatMetadataType
     }
 
     @Override
-    public void write(MinecraftCodecHelper helper, ByteBuf out) throws IOException {
+    public void setValue(Float value) {
+        this.value = value;
+    }
+
+    @Override
+    public void write(MinecraftCodecHelper helper, ByteBuf out) throws UncheckedIOException {
         this.type.writeMetadataPrimitive(out, this.value);
     }
 }

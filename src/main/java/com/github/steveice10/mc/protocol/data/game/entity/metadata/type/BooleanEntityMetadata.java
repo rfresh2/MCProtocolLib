@@ -6,10 +6,10 @@ import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadat
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class BooleanEntityMetadata extends EntityMetadata<Boolean, BooleanMetadataType> {
-    private final boolean value;
+    private boolean value;
 
     public BooleanEntityMetadata(int id, @NonNull BooleanMetadataType type, boolean value) {
         super(id, type);
@@ -27,7 +27,12 @@ public class BooleanEntityMetadata extends EntityMetadata<Boolean, BooleanMetada
     }
 
     @Override
-    public void write(MinecraftCodecHelper helper, ByteBuf out) throws IOException {
+    public void setValue(Boolean value) {
+        this.value = value;
+    }
+
+    @Override
+    public void write(MinecraftCodecHelper helper, ByteBuf out) throws UncheckedIOException {
         this.type.writeMetadataPrimitive(out, this.value);
     }
 }
