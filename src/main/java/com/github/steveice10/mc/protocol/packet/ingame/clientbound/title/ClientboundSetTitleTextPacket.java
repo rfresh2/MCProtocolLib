@@ -16,10 +16,12 @@ import java.io.IOException;
 @With
 @AllArgsConstructor
 public class ClientboundSetTitleTextPacket implements MinecraftPacket {
+    private final String textRaw;
     private final @Nullable Component text;
 
     public ClientboundSetTitleTextPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
-        this.text = helper.readComponent(in);
+        this.textRaw = helper.readString(in);
+        this.text = DefaultComponentSerializer.get().deserialize(this.textRaw);
     }
 
     @Override

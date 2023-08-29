@@ -2,6 +2,7 @@ package com.github.steveice10.mc.protocol.packet.ingame.clientbound;
 
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
+import com.github.steveice10.mc.protocol.data.DefaultComponentSerializer;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,11 +15,13 @@ import java.io.IOException;
 @With
 @AllArgsConstructor
 public class ClientboundSystemChatPacket implements MinecraftPacket {
+    private final String rawContent;
     private final Component content;
     private final boolean overlay;
 
     public ClientboundSystemChatPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.content = helper.readComponent(in);
+        this.rawContent = helper.readString(in, 262144);
+        this.content = DefaultComponentSerializer.get().deserialize(rawContent);
         this.overlay = in.readBoolean();
     }
 
