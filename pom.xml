@@ -15,8 +15,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
-        <adventure.version>4.9.3</adventure.version>
-        <netty.version>4.1.96.Final</netty.version>
+        <adventure.version>4.14.0</adventure.version>
+        <netty.version>4.1.97.Final</netty.version>
         <argLine></argLine>
     </properties>
 
@@ -84,6 +84,21 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-serializer-gson-legacy-impl</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-legacy</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-ansi</artifactId>
+            <version>${adventure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-logger-slf4j</artifactId>
             <version>${adventure.version}</version>
         </dependency>
         <dependency>
