@@ -17,6 +17,11 @@ import java.util.Map;
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     private final @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
 
+    // silly lombok
+    public ClientboundUpdateTagsPacket(final Map<String, Map<String, int[]>> tags) {
+        this.tags.putAll(tags);
+    }
+
     public ClientboundUpdateTagsPacket(ByteBuf in, MinecraftCodecHelper helper) {
         int totalTagCount = helper.readVarInt(in);
         for (int i = 0; i < totalTagCount; i++) {
