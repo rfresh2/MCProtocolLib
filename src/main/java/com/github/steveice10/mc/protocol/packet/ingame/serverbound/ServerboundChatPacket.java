@@ -11,17 +11,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.BitSet;
-
 @Data
 @With
 @AllArgsConstructor
 public class ServerboundChatPacket implements MinecraftPacket {
-    private final @NotNull String message;
+    private @NotNull String message;
     private final long timeStamp;
     private final long salt;
     private final byte @Nullable[] signature;
     private final int offset;
     private final BitSet acknowledgedMessages;
+
+    // default unsigned chat packet
+    public ServerboundChatPacket(final String message) {
+        this.message = message;
+        this.timeStamp = System.currentTimeMillis();
+        this.salt = 0;
+        this.signature = null;
+        this.offset = 0;
+        this.acknowledgedMessages = BitSet.valueOf(new byte[20]);
+    }
 
     public ServerboundChatPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.message = helper.readString(in);
