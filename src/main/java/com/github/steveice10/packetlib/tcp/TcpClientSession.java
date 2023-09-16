@@ -68,51 +68,64 @@ public class TcpClientSession extends TcpSession {
         this.codecHelper = protocol.createHelper();
     }
 
+    public ChannelInitializer<Channel> buildChannelInitializer() {
+        boolean debug = getFlag(BuiltinFlags.PRINT_DEBUG, false);
+        return new ChannelInitializer<Channel>() {
+            @Override
+            public void initChannel(Channel channel) {
+                PacketProtocol protocol = getPacketProtocol();
+                protocol.newClientSession(TcpClientSession.this);
+
+                channel.config().setOption(ChannelOption.IP_TOS, 0x18);
+                try {
+                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+                } catch (ChannelException e) {
+                    if(debug) {
+                        LOGGER.debug("Exception while trying to set TCP_NODELAY", e);
+                    }
+                }
+
+                ChannelPipeline pipeline = channel.pipeline();
+
+                refreshReadTimeoutHandler(channel);
+                refreshWriteTimeoutHandler(channel);
+
+                addProxy(pipeline);
+
+                pipeline.addLast("sizer", new TcpPacketSizer(TcpClientSession.this));
+                pipeline.addLast("codec", new TcpPacketCodec(TcpClientSession.this, true));
+                pipeline.addLast("manager", TcpClientSession.this);
+
+                addHAProxySupport(pipeline);
+            }
+        };
+    }
+
+    public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
+        if (CHANNEL_CLASS == null) {
+            createTcpEventLoopGroup();
+        }
+        final Bootstrap bootstrap = new Bootstrap();
+        bootstrap.channel(CHANNEL_CLASS);
+        bootstrap.handler(initializer).group(EVENT_LOOP_GROUP).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
+        return bootstrap;
+    }
+
     @Override
     public void connect(boolean wait) {
+        connect(wait, buildBootstrap(buildChannelInitializer()));
+    }
+
+    public void connect(boolean wait, Bootstrap bootstrap) {
         if(this.disconnected) {
             throw new IllegalStateException("Session has already been disconnected.");
         }
-
-        boolean debug = getFlag(BuiltinFlags.PRINT_DEBUG, false);
 
         if (CHANNEL_CLASS == null) {
             createTcpEventLoopGroup();
         }
 
         try {
-            final Bootstrap bootstrap = new Bootstrap();
-            bootstrap.channel(CHANNEL_CLASS);
-            bootstrap.handler(new ChannelInitializer<Channel>() {
-                @Override
-                public void initChannel(Channel channel) {
-                    PacketProtocol protocol = getPacketProtocol();
-                    protocol.newClientSession(TcpClientSession.this);
-
-                    channel.config().setOption(ChannelOption.IP_TOS, 0x18);
-                    try {
-                        channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-                    } catch (ChannelException e) {
-                        if(debug) {
-                            LOGGER.debug("Exception while trying to set TCP_NODELAY", e);
-                        }
-                    }
-
-                    ChannelPipeline pipeline = channel.pipeline();
-
-                    refreshReadTimeoutHandler(channel);
-                    refreshWriteTimeoutHandler(channel);
-
-                    addProxy(pipeline);
-
-                    pipeline.addLast("sizer", new TcpPacketSizer(TcpClientSession.this));
-                    pipeline.addLast("codec", new TcpPacketCodec(TcpClientSession.this, true));
-                    pipeline.addLast("manager", TcpClientSession.this);
-
-                    addHAProxySupport(pipeline);
-                }
-            }).group(EVENT_LOOP_GROUP).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
-
             InetSocketAddress remoteAddress = resolveAddress();
             bootstrap.remoteAddress(remoteAddress);
             bootstrap.localAddress(bindAddress, bindPort);
