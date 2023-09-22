@@ -4,13 +4,16 @@ import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 
 /**
  * A palette backed by a map.
  */
+@AllArgsConstructor
 @EqualsAndHashCode
 public class MapPalette implements Palette {
     private final int maxId;
@@ -65,5 +68,12 @@ public class MapPalette implements Palette {
         } else {
             return 0;
         }
+    }
+
+    @Override
+    public MapPalette copy() {
+        MapPalette mapPalette = new MapPalette(this.maxId, Arrays.copyOf(this.idToState, this.idToState.length), this.nextId);
+        mapPalette.stateToId.putAll(this.stateToId);
+        return mapPalette;
     }
 }

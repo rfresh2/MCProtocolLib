@@ -5,7 +5,7 @@
 
     <groupId>com.github.rfresh2</groupId>
     <artifactId>MCProtocolLib</artifactId>
-    <version>2.0</version>
+    <version>2.2</version>
     <packaging>jar</packaging>
 
     <name>MCProtocolLib</name>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.github.steveice10</groupId>
             <artifactId>opennbt</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

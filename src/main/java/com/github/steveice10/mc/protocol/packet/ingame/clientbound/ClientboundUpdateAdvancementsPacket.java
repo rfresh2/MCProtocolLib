@@ -51,7 +51,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
         this.advancements = new Advancement[helper.readVarInt(in)];
         for (int i = 0; i < this.advancements.length; i++) {
             String id = helper.readString(in);
-            String parentId = in.readBoolean() ? helper.readString(in) : null;
+            String parentId = helper.readNullable(in, helper::readString);
             DisplayData displayData = null;
             if (in.readBoolean()) {
                 Component title = helper.readComponent(in);
@@ -71,12 +71,6 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 displayData = new DisplayData(title, description, icon, frameType, showToast, hidden, posX, posY, backgroundTexture);
             }
 
-            List<String> criteria = new ArrayList<>();
-            int criteriaCount = helper.readVarInt(in);
-            for (int j = 0; j < criteriaCount; j++) {
-                criteria.add(helper.readString(in));
-            }
-
             List<List<String>> requirements = new ArrayList<>();
             int requirementCount = helper.readVarInt(in);
             for (int j = 0; j < requirementCount; j++) {
@@ -91,7 +85,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
 
             boolean sendTelemetryEvent = in.readBoolean();
 
-            this.advancements[i] = new Advancement(id, criteria, requirements, parentId, displayData, sendTelemetryEvent);
+            this.advancements[i] = new Advancement(id, requirements, parentId, displayData, sendTelemetryEvent);
         }
 
         this.removedAdvancements = new String[helper.readVarInt(in)];
@@ -162,11 +156,6 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 out.writeFloat(displayData.getPosY());
             } else {
                 out.writeBoolean(false);
-            }
-
-            helper.writeVarInt(out, advancement.getCriteria().size());
-            for (String criterion : advancement.getCriteria()) {
-                helper.writeString(out, criterion);
             }
 
             helper.writeVarInt(out, advancement.getRequirements().size());
