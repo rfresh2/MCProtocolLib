@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - feature/1.20 #TEMPOARY
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+          distribution: temurin
+      - uses: s4u/maven-settings-action@v2.8.0
+        with:
+          servers: '[{"id": "opencollab-release-repo", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}"},{"id": "opencollab-snapshot-repo", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}"}]'
+      - name: Deploy with Maven
+        run: mvn deploy -B -P deploy
+        env:
+          MAVEN_USERNAME: ${{ vars.DEPLOY_USER }}
+          MAVEN_PASSWORD: ${{ secrets.DEPLOY_PASS }}
