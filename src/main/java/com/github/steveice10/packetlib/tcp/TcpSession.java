@@ -30,7 +30,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     /**
      * Controls whether non-priority packets are handled in a separate event loop
      */
-    public static boolean USE_EVENT_LOOP_FOR_PACKETS = true;
+    public static boolean USE_EVENT_LOOP_FOR_PACKETS = false;
     private static EventLoopGroup PACKET_EVENT_LOOP;
     private static final int WAIT_FOR_SHUTDOWN_IN_MS = 2000;
 
