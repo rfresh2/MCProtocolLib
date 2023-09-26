@@ -105,11 +105,7 @@ public class TcpClientSession extends TcpSession {
 
                     addProxy(pipeline);
 
-                    int size = protocol.getPacketHeader().getLengthSize();
-                    if (size > 0) {
-                        pipeline.addLast("sizer", new TcpPacketSizer(TcpClientSession.this, size));
-                    }
-
+                    pipeline.addLast("sizer", new TcpPacketSizer(TcpClientSession.this));
                     pipeline.addLast("codec", new TcpPacketCodec(TcpClientSession.this, true));
                     pipeline.addLast("manager", TcpClientSession.this);
 
