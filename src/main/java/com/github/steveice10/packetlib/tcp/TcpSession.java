@@ -9,12 +9,10 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import net.kyori.adventure.text.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
@@ -27,18 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
-    /**
-     * Controls whether non-priority packets are handled in a separate event loop
-     */
-    public static boolean USE_EVENT_LOOP_FOR_PACKETS = false;
-    private static EventLoopGroup PACKET_EVENT_LOOP;
-    private static final int WAIT_FOR_SHUTDOWN_IN_MS = 2000;
-
     protected String host;
     protected int port;
     private final PacketProtocol protocol;
-    private final EventLoop eventLoop = createEventLoop();
-
     private int compressionThreshold = -1;
     private int connectTimeout = 30;
     private int readTimeout = 30;
@@ -306,20 +295,6 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         }
     }
 
-    private @Nullable EventLoop createEventLoop() {
-        if (!USE_EVENT_LOOP_FOR_PACKETS) {
-            return null;
-        }
-
-        if (PACKET_EVENT_LOOP == null) {
-            // See TcpClientSession.newThreadFactory() for details on
-            // daemon threads and their interaction with the runtime.
-            PACKET_EVENT_LOOP = new DefaultEventLoopGroup(new DefaultThreadFactory(this.getClass(), true));
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> PACKET_EVENT_LOOP.shutdownGracefully().awaitUninterruptibly(WAIT_FOR_SHUTDOWN_IN_MS)));
-        }
-        return PACKET_EVENT_LOOP.next();
-    }
-
     public Channel getChannel() {
         return this.channel;
     }
@@ -401,10 +376,6 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
-        if (!packet.isPriority() && eventLoop != null) {
-            eventLoop.execute(() -> this.callPacketReceived(packet));
-        } else {
-            this.callPacketReceived(packet);
-        }
+        this.callPacketReceived(packet);
     }
 }
