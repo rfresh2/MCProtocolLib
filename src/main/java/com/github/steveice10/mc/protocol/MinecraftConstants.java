@@ -83,6 +83,8 @@ public final class MinecraftConstants {
      */
     public static final String SRV_RECORD_PREFIX = "_minecraft";
 
+    public static final String SERVER_CLOSING_MESSAGE = "Server closed.";
+
     private MinecraftConstants() {
     }
 }

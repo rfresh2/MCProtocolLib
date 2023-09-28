@@ -1,5 +1,6 @@
 package com.github.steveice10.packetlib;
 
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.packetlib.event.server.*;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 
@@ -155,7 +156,7 @@ public abstract class AbstractServer implements Server {
         this.callEvent(new ServerClosingEvent(this));
         for(Session session : this.getSessions()) {
             if(session.isConnected()) {
-                session.disconnect("Server closed.");
+                session.disconnect(MinecraftConstants.SERVER_CLOSING_MESSAGE);
             }
         }
 
