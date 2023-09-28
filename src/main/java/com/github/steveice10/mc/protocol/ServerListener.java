@@ -23,11 +23,10 @@ import com.github.steveice10.mc.protocol.packet.status.clientbound.ClientboundSt
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundPingRequestPacket;
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundStatusRequestPacket;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.event.session.ConnectedEvent;
-import com.github.steveice10.packetlib.event.session.DisconnectingEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.security.KeyPair;
@@ -70,12 +69,12 @@ public class ServerListener extends SessionAdapter {
     }
 
     @Override
-    public void connected(ConnectedEvent event) {
-        event.getSession().setFlag(MinecraftConstants.PING_KEY, 0);
+    public void connected(Session session) {
+        session.setFlag(MinecraftConstants.PING_KEY, 0);
     }
 
     @Override
-    public void packetReceived(Session session, Packet packet) {
+    public void packetReceived(@NotNull Session session, @NotNull Packet packet) {
         MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.HANDSHAKE) {
             if (packet instanceof ClientIntentionPacket) {
@@ -172,12 +171,12 @@ public class ServerListener extends SessionAdapter {
     }
 
     @Override
-    public void disconnecting(DisconnectingEvent event) {
-        MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
+    public void disconnecting(Session session, Component reason, Throwable cause) {
+        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.LOGIN) {
-            event.getSession().send(new ClientboundLoginDisconnectPacket(event.getReason()));
+            session.send(new ClientboundLoginDisconnectPacket(reason));
         } else if (protocol.getState() == ProtocolState.GAME) {
-            event.getSession().send(new ClientboundDisconnectPacket(event.getReason()));
+            session.send(new ClientboundDisconnectPacket(reason));
         }
     }
 

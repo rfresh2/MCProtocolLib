@@ -3,7 +3,6 @@ package com.github.steveice10.packetlib.tcp;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
 import com.github.steveice10.packetlib.codec.PacketDefinition;
-import com.github.steveice10.packetlib.event.session.PacketErrorEvent;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.buffer.ByteBuf;
@@ -31,16 +30,13 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
         try {
             int packetId = this.client ? packetProtocol.getServerboundId(packet) : packetProtocol.getClientboundId(packet);
             PacketDefinition definition = this.client ? packetProtocol.getServerboundDefinition(packetId) : packetProtocol.getClientboundDefinition(packetId);
-            
+
             packetProtocol.getPacketHeader().writePacketId(buf, codecHelper, packetId);
             definition.getSerializer().serialize(buf, codecHelper, packet);
         } catch (Throwable t) {
             // Reset writer index to make sure incomplete data is not written out.
             buf.writerIndex(initial);
-
-            PacketErrorEvent e = new PacketErrorEvent(this.session, t);
-            this.session.callEvent(e);
-            if (!e.shouldSuppress()) {
+            if (!this.session.callPacketError(t)) {
                 throw t;
             }
         }
@@ -69,10 +65,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
         } catch (Throwable t) {
             // Advance buffer to end to make sure remaining data in this packet is skipped.
             buf.readerIndex(buf.readerIndex() + buf.readableBytes());
-
-            PacketErrorEvent e = new PacketErrorEvent(this.session, t);
-            this.session.callEvent(e);
-            if (!e.shouldSuppress()) {
+            if (!this.session.callPacketError(t)) {
                 throw t;
             }
         }

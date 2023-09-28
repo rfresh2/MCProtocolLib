@@ -2,7 +2,7 @@ package com.github.steveice10.packetlib.tcp;
 
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.event.session.*;
+import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.channel.*;
@@ -130,14 +130,64 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void callEvent(SessionEvent event) {
+    public Packet callPacketSending(final Packet packet) {
+        Packet toSend = packet;
         try {
             for (SessionListener listener : this.listeners) {
-                event.call(listener);
+                toSend = listener.packetSending(this, toSend);
+                // short circuit posting to other listeners if its cancelled
+                if (toSend == null) break;
             }
         } catch (Throwable t) {
             exceptionCaught(null, t);
         }
+        return toSend;
+    }
+
+    @Override
+    public void callConnected() {
+        try {
+            for (SessionListener listener : this.listeners) {
+                listener.connected(this);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+    }
+
+    @Override
+    public void callDisconnecting(final Component reason, final Throwable cause) {
+        try {
+            for (SessionListener listener : this.listeners) {
+                listener.disconnecting(this, reason, cause);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+    }
+
+    @Override
+    public void callDisconnected(final Component reason, final Throwable cause) {
+        try {
+            for (SessionListener listener : this.listeners) {
+                listener.disconnected(this, reason, cause);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+    }
+
+    @Override
+    public boolean callPacketError(final Throwable throwable) {
+        boolean suppress = false;
+        try {
+            for (SessionListener listener : this.listeners) {
+                suppress |= listener.packetError(this, throwable);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+        return suppress;
     }
 
     @Override
@@ -231,12 +281,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if(this.channel == null) {
             return;
         }
-
-        PacketSendingEvent sendingEvent = new PacketSendingEvent(this, packet);
-        this.callEvent(sendingEvent);
-
-        if (!sendingEvent.isCancelled()) {
-            final Packet toSend = sendingEvent.getPacket();
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
             this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
                 if(future.isSuccess()) {
                     callPacketSent(toSend);
@@ -296,11 +342,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.channel.write(new ClientboundDelimiterPacket());
         final List<Packet> sentPacketList = new ArrayList<>(packets.length);
         for (Packet packet : packets) {
-            PacketSendingEvent sendingEvent = new PacketSendingEvent(this, packet);
-            this.callEvent(sendingEvent);
-
-            if (!sendingEvent.isCancelled()) {
-                final Packet toSend = sendingEvent.getPacket();
+            final Packet toSend = this.callPacketSending(packet);
+            if (toSend != null) {
                 this.channel.write(toSend);
                 sentPacketList.add(toSend);
             }
@@ -336,15 +379,15 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.disconnected = true;
 
         if (this.channel != null && this.channel.isOpen()) {
-            this.callEvent(new DisconnectingEvent(this, reason, cause));
+            this.callDisconnecting(reason, cause);
             try {
                 this.channel.flush().close().await(5, TimeUnit.SECONDS);
             } catch (final Exception e) {
                 this.exceptionCaught(null, e);
             }
-            callEvent(new DisconnectedEvent(this, reason != null ? reason : Component.text("Connection closed."), cause));
+            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
         } else {
-            this.callEvent(new DisconnectedEvent(this, reason != null ? reason : Component.text("Connection closed."), cause));
+            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
         }
     }
 
@@ -398,10 +441,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
             ctx.channel().close();
             return;
         }
-
         this.channel = ctx.channel();
-
-        this.callEvent(new ConnectedEvent(this));
+        this.callConnected();
     }
 
     @Override

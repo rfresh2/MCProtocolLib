@@ -12,12 +12,12 @@ import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import com.github.steveice10.packetlib.tcp.TcpServer;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -118,7 +118,7 @@ public class MinecraftProtocolTest {
         public ClientboundLoginPacket packet;
 
         @Override
-        public void packetReceived(Session session, Packet packet) {
+        public void packetReceived(@NotNull Session session, @NotNull Packet packet) {
             if (packet instanceof ClientboundLoginPacket) {
                 this.packet = (ClientboundLoginPacket) packet;
                 this.login.countDown();
@@ -128,10 +128,10 @@ public class MinecraftProtocolTest {
 
     private static class DisconnectListener extends SessionAdapter {
         @Override
-        public void disconnected(DisconnectedEvent event) {
-            System.err.println("Disconnected: " + event.getReason());
-            if (event.getCause() != null) {
-                event.getCause().printStackTrace();
+        public void disconnected(Session session, Component reason, Throwable cause) {
+            System.err.println("Disconnected: " + reason);
+            if (cause != null) {
+                cause.printStackTrace();
             }
         }
     }

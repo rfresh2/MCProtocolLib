@@ -26,11 +26,11 @@ import com.github.steveice10.mc.protocol.packet.status.clientbound.ClientboundSt
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundPingRequestPacket;
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundStatusRequestPacket;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.event.session.ConnectedEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -44,7 +44,7 @@ public class ClientListener extends SessionAdapter {
     private final @NonNull ProtocolState targetState;
 
     @Override
-    public void packetReceived(Session session, Packet packet) {
+    public void packetReceived(@NotNull Session session, @NotNull Packet packet) {
         MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.LOGIN) {
             if (packet instanceof ClientboundHelloPacket) {
@@ -133,12 +133,12 @@ public class ClientListener extends SessionAdapter {
     }
 
     @Override
-    public void connected(ConnectedEvent event) {
-        MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
+    public void connected(Session session) {
+        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
         if (this.targetState == ProtocolState.LOGIN) {
-            event.getSession().send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), event.getSession().getHost(), event.getSession().getPort(), HandshakeIntent.LOGIN));
+            session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.LOGIN));
         } else if (this.targetState == ProtocolState.STATUS) {
-            event.getSession().send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), event.getSession().getHost(), event.getSession().getPort(), HandshakeIntent.STATUS));
+            session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.STATUS));
         }
     }
 }

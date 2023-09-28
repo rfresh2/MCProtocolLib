@@ -1,7 +1,6 @@
 package com.github.steveice10.packetlib;
 
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
-import com.github.steveice10.packetlib.event.session.SessionEvent;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
@@ -146,18 +145,19 @@ public interface Session {
     public void removeListener(SessionListener listener);
 
     /**
-     * Calls an event on the listeners of this session.
-     *
-     * @param event Event to call.
-     */
-    void callEvent(SessionEvent event);
-
-    /**
      * Notifies all listeners that a packet was just received.
      *
      * @param packet Packet to notify.
      */
     void callPacketReceived(Packet packet);
+
+    Packet callPacketSending(Packet packet);
+
+    void callConnected();
+
+    void callDisconnecting(Component reason, Throwable cause);
+
+    void callDisconnected(Component reason, Throwable cause);
 
     /**
      * Notifies all listeners that a packet was just sent.
@@ -165,6 +165,10 @@ public interface Session {
      * @param packet Packet to notify.
      */
     void callPacketSent(Packet packet);
+
+    boolean callPacketError(Throwable throwable);
+
+
 
     /**
      * Gets the compression packet length threshold for this session (-1 = disabled).
