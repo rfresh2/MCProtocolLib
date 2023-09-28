@@ -12,7 +12,7 @@ public class SessionAdapter implements SessionListener {
     public void packetReceived(Session session, Packet packet) { }
 
     @Override
-    public Packet packetSending(Session session,Packet packet) {
+    public Packet packetSending(Session session, Packet packet) {
         return packet;
     }
 

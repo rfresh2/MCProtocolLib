@@ -335,12 +335,46 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
+    public void sendBundleDirect(@NonNull List<Packet> packets) {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        for (Packet packet : packets) {
+            this.channel.write(packet);
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        this.channel.flush();
+    }
+
+    @Override
     public void sendBundle(@NonNull Packet... packets) {
         if(this.channel == null) {
             return;
         }
         this.channel.write(new ClientboundDelimiterPacket());
         final List<Packet> sentPacketList = new ArrayList<>(packets.length);
+        for (Packet packet : packets) {
+            final Packet toSend = this.callPacketSending(packet);
+            if (toSend != null) {
+                this.channel.write(toSend);
+                sentPacketList.add(toSend);
+            }
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        this.channel.flush();
+        for (Packet packet : sentPacketList) {
+            callPacketSent(packet);
+        }
+    }
+
+    @Override
+    public void sendBundle(@NonNull List<Packet> packets) {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        final List<Packet> sentPacketList = new ArrayList<>(packets.size());
         for (Packet packet : packets) {
             final Packet toSend = this.callPacketSending(packet);
             if (toSend != null) {

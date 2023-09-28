@@ -266,7 +266,8 @@ public interface Session {
     void flush();
 
     void sendBundleDirect(@NonNull Packet... packets);
-
+    void sendBundleDirect(@NonNull List<Packet> packets);
+    void sendBundle(@NonNull List<Packet> packets);
     void sendBundle(@NonNull Packet... packets);
 
     /**
