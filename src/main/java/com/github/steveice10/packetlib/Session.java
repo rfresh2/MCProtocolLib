@@ -5,6 +5,7 @@ import com.github.steveice10.packetlib.event.session.SessionEvent;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
+import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -241,13 +242,28 @@ public interface Session {
      *
      * @param packet Packet to send.
      */
-    public void send(Packet packet);
+    void send(@NonNull Packet packet);
 
     /**
      * Sends a packet without calling listeners
      * @param packet Packet to send
      */
-    public void sendDirect(Packet packet);
+    void sendDirect(@NonNull Packet packet);
+
+    /**
+     * Writes a packet without flushing
+     * @param packet Packet to send
+     */
+    void sendDelayedDirect(@NonNull Packet packet);
+
+    /**
+     * Flushes all pending packets.
+     */
+    void flush();
+
+    void sendBundleDirect(@NonNull Packet... packets);
+
+    void sendBundle(@NonNull Packet... packets);
 
     /**
      * Disconnects the session.

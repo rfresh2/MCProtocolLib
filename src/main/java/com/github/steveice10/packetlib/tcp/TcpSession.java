@@ -1,5 +1,6 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.*;
 import com.github.steveice10.packetlib.packet.Packet;
@@ -9,17 +10,16 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.NonNull;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -227,7 +227,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void send(Packet packet) {
+    public void send(@NotNull Packet packet) {
         if(this.channel == null) {
             return;
         }
@@ -248,7 +248,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void sendDirect(Packet packet) {
+    public void sendDirect(@NotNull Packet packet) {
         if(this.channel == null) {
             return;
         }
@@ -257,6 +257,59 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 exceptionCaught(null, future.cause());
             }
         });
+    }
+
+    @Override
+    public void sendDelayedDirect(@NotNull Packet packet) {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.write(packet);
+    }
+
+    @Override
+    public void flush() {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.flush();
+    }
+
+    @Override
+    public void sendBundleDirect(@NonNull Packet... packets) {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        for (Packet packet : packets) {
+            this.channel.write(packet);
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        this.channel.flush();
+    }
+
+    @Override
+    public void sendBundle(@NonNull Packet... packets) {
+        if(this.channel == null) {
+            return;
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        final List<Packet> sentPacketList = new ArrayList<>(packets.length);
+        for (Packet packet : packets) {
+            PacketSendingEvent sendingEvent = new PacketSendingEvent(this, packet);
+            this.callEvent(sendingEvent);
+
+            if (!sendingEvent.isCancelled()) {
+                final Packet toSend = sendingEvent.getPacket();
+                this.channel.write(toSend);
+                sentPacketList.add(toSend);
+            }
+        }
+        this.channel.write(new ClientboundDelimiterPacket());
+        this.channel.flush();
+        for (Packet packet : sentPacketList) {
+            callPacketSent(packet);
+        }
     }
 
     @Override
