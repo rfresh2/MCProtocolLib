@@ -5,10 +5,9 @@ This project is forked from [GeyserMC/MCProtocolLib](https://github.com/GeyserMC
 
 ## Features
 
-* Supports Minecraft 1.12.2
-* Many issues fixed regarding block/chunk data handling
-* Optimized performance
-* JDK17
+* Supports Minecraft 1.20.1
+* Optimized performance with velocity native compression and encryption 
+* bug fixes and more public interfaces where I find them useful
 
 ## Building the Source
 MCProtocolLib uses Maven to manage dependencies. Simply run 'mvn clean install' in the source's directory.
