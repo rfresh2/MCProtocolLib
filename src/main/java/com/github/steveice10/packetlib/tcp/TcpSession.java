@@ -278,7 +278,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void send(@NotNull Packet packet) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         final Packet toSend = this.callPacketSending(packet);
@@ -295,7 +295,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendDirect(@NotNull Packet packet) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.writeAndFlush(packet).addListener((ChannelFutureListener) future -> {
@@ -307,7 +307,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendDelayedDirect(@NotNull Packet packet) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.write(packet);
@@ -315,7 +315,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void flush() {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.flush();
@@ -323,7 +323,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendBundleDirect(@NonNull Packet... packets) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.write(new ClientboundDelimiterPacket());
@@ -336,7 +336,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendBundleDirect(@NonNull List<Packet> packets) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.write(new ClientboundDelimiterPacket());
@@ -349,7 +349,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendBundle(@NonNull Packet... packets) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.write(new ClientboundDelimiterPacket());
@@ -379,7 +379,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public void sendBundle(@NonNull List<Packet> packets) {
-        if(this.channel == null) {
+        if(this.channel == null || !this.channel.isActive()) {
             return;
         }
         this.channel.write(new ClientboundDelimiterPacket());
