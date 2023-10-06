@@ -360,7 +360,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 this.channel.write(toSend);
                 sentPacketList.add(toSend);
             }
-            if (sentPacketList.size() > 4090) {
+            if (sentPacketList.size() > 1000) {
                 this.channel.write(new ClientboundDelimiterPacket());
                 this.channel.flush();
                 for (Packet sentPacket : sentPacketList) {
@@ -390,7 +390,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 this.channel.write(toSend);
                 sentPacketList.add(toSend);
             }
-            if (sentPacketList.size() > 4090) {
+            if (sentPacketList.size() > 1000) {
                 this.channel.write(new ClientboundDelimiterPacket());
                 this.channel.flush();
                 for (Packet sentPacket : sentPacketList) {
