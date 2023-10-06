@@ -20,8 +20,7 @@ import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
@@ -405,6 +404,21 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         for (Packet packet : sentPacketList) {
             callPacketSent(packet);
         }
+    }
+
+    @Override
+    public void sendAsync(final @NotNull Packet packet) {
+        ForkJoinPool.commonPool().execute(() -> send(packet));
+    }
+
+    @Override
+    public void sendAsync(final @NonNull Packet packet, final @NonNull ExecutorService executorService) {
+        executorService.execute(() -> send(packet));
+    }
+
+    @Override
+    public void sendScheduledAsync(@NonNull Packet packet, @NonNull ScheduledExecutorService executorService, long delay, TimeUnit unit) {
+        executorService.schedule(() -> send(packet), delay, unit);
     }
 
     @Override

@@ -12,6 +12,9 @@ import javax.crypto.SecretKey;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A network session.
@@ -269,6 +272,9 @@ public interface Session {
     void sendBundleDirect(@NonNull List<Packet> packets);
     void sendBundle(@NonNull List<Packet> packets);
     void sendBundle(@NonNull Packet... packets);
+    void sendAsync(@NonNull Packet packet);
+    void sendAsync(@NonNull Packet packet, @NonNull ExecutorService executorService);
+    void sendScheduledAsync(@NonNull Packet packet, @NonNull ScheduledExecutorService executorService, long delay, TimeUnit unit);
 
     /**
      * Disconnects the session.
