@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <adventure.version>4.14.0</adventure.version>
-        <netty.version>4.1.99.Final</netty.version>
+        <netty.version>4.1.100.Final</netty.version>
         <argLine></argLine>
     </properties>
 

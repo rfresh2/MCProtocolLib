@@ -20,7 +20,8 @@ import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
@@ -325,12 +326,14 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if(this.channel == null || !this.channel.isActive()) {
             return;
         }
-        this.channel.write(new ClientboundDelimiterPacket());
-        for (Packet packet : packets) {
-            this.channel.write(packet);
-        }
-        this.channel.write(new ClientboundDelimiterPacket());
-        this.channel.flush();
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            for (Packet packet : packets) {
+                this.channel.write(packet);
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+        });
     }
 
     @Override
@@ -338,12 +341,14 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if(this.channel == null || !this.channel.isActive()) {
             return;
         }
-        this.channel.write(new ClientboundDelimiterPacket());
-        for (Packet packet : packets) {
-            this.channel.write(packet);
-        }
-        this.channel.write(new ClientboundDelimiterPacket());
-        this.channel.flush();
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            for (Packet packet : packets) {
+                this.channel.write(packet);
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+        });
     }
 
     @Override
@@ -351,29 +356,31 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if(this.channel == null || !this.channel.isActive()) {
             return;
         }
-        this.channel.write(new ClientboundDelimiterPacket());
-        final List<Packet> sentPacketList = new ArrayList<>(packets.length);
-        for (Packet packet : packets) {
-            final Packet toSend = this.callPacketSending(packet);
-            if (toSend != null) {
-                this.channel.write(toSend);
-                sentPacketList.add(toSend);
-            }
-            if (sentPacketList.size() > 1000) {
-                this.channel.write(new ClientboundDelimiterPacket());
-                this.channel.flush();
-                for (Packet sentPacket : sentPacketList) {
-                    callPacketSent(sentPacket);
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            final List<Packet> sentPacketList = new ArrayList<>(packets.length);
+            for (Packet packet : packets) {
+                final Packet toSend = this.callPacketSending(packet);
+                if (toSend != null) {
+                    this.channel.write(toSend);
+                    sentPacketList.add(toSend);
                 }
-                sentPacketList.clear();
-                this.channel.write(new ClientboundDelimiterPacket());
+                if (sentPacketList.size() > 1000) {
+                    this.channel.write(new ClientboundDelimiterPacket());
+                    this.channel.flush();
+                    for (Packet sentPacket : sentPacketList) {
+                        callPacketSent(sentPacket);
+                    }
+                    sentPacketList.clear();
+                    this.channel.write(new ClientboundDelimiterPacket());
+                }
             }
-        }
-        this.channel.write(new ClientboundDelimiterPacket());
-        this.channel.flush();
-        for (Packet packet : sentPacketList) {
-            callPacketSent(packet);
-        }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+            for (Packet packet : sentPacketList) {
+                callPacketSent(packet);
+            }
+        });
     }
 
     @Override
@@ -381,44 +388,47 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if(this.channel == null || !this.channel.isActive()) {
             return;
         }
-        this.channel.write(new ClientboundDelimiterPacket());
-        final List<Packet> sentPacketList = new ArrayList<>(packets.size());
-        for (Packet packet : packets) {
-            final Packet toSend = this.callPacketSending(packet);
-            if (toSend != null) {
-                this.channel.write(toSend);
-                sentPacketList.add(toSend);
-            }
-            if (sentPacketList.size() > 1000) {
-                this.channel.write(new ClientboundDelimiterPacket());
-                this.channel.flush();
-                for (Packet sentPacket : sentPacketList) {
-                    callPacketSent(sentPacket);
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            final List<Packet> sentPacketList = new ArrayList<>(packets.size());
+            for (Packet packet : packets) {
+                final Packet toSend = this.callPacketSending(packet);
+                if (toSend != null) {
+                    this.channel.write(toSend);
+                    sentPacketList.add(toSend);
                 }
-                sentPacketList.clear();
-                this.channel.write(new ClientboundDelimiterPacket());
+                if (sentPacketList.size() > 1000) {
+                    this.channel.write(new ClientboundDelimiterPacket());
+                    this.channel.flush();
+                    for (Packet sentPacket : sentPacketList) {
+                        callPacketSent(sentPacket);
+                    }
+                    sentPacketList.clear();
+                    this.channel.write(new ClientboundDelimiterPacket());
+                }
             }
-        }
-        this.channel.write(new ClientboundDelimiterPacket());
-        this.channel.flush();
-        for (Packet packet : sentPacketList) {
-            callPacketSent(packet);
-        }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+            for (Packet packet : sentPacketList) {
+                callPacketSent(packet);
+            }
+        });
     }
 
     @Override
     public void sendAsync(final @NotNull Packet packet) {
-        ForkJoinPool.commonPool().execute(() -> send(packet));
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> send(packet));
     }
 
     @Override
-    public void sendAsync(final @NonNull Packet packet, final @NonNull ExecutorService executorService) {
-        executorService.execute(() -> send(packet));
-    }
-
-    @Override
-    public void sendScheduledAsync(@NonNull Packet packet, @NonNull ScheduledExecutorService executorService, long delay, TimeUnit unit) {
-        executorService.schedule(() -> send(packet), delay, unit);
+    public void sendScheduledAsync(@NonNull Packet packet, long delay, TimeUnit unit) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().schedule(() -> send(packet), delay, unit);
     }
 
     @Override
