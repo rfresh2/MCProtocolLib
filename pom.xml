@@ -61,8 +61,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.steveice10</groupId>
-            <artifactId>opennbt</artifactId>
+            <groupId>com.github.rfresh2</groupId>
+            <artifactId>OpenNBT</artifactId>
             <version>1.5</version>
         </dependency>
         <dependency>
