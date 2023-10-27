@@ -3,7 +3,10 @@ package com.github.steveice10.mc.protocol.codec;
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.DefaultComponentSerializer;
 import com.github.steveice10.mc.protocol.data.game.Identifier;
-import com.github.steveice10.mc.protocol.data.game.chunk.*;
+import com.github.steveice10.mc.protocol.data.game.chunk.BitStorage;
+import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSection;
+import com.github.steveice10.mc.protocol.data.game.chunk.DataPalette;
+import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
 import com.github.steveice10.mc.protocol.data.game.chunk.palette.*;
 import com.github.steveice10.mc.protocol.data.game.entity.Effect;
 import com.github.steveice10.mc.protocol.data.game.entity.EntityEvent;
@@ -29,13 +32,13 @@ import com.github.steveice10.mc.protocol.data.game.level.sound.SoundCategory;
 import com.github.steveice10.mc.protocol.data.game.recipe.Ingredient;
 import com.github.steveice10.mc.protocol.data.game.statistic.StatisticCategory;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import com.github.steveice10.mc.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
+import com.github.steveice10.opennbt.MNBTIO;
 import com.github.steveice10.opennbt.NBTIO;
+import com.github.steveice10.opennbt.mini.MNBT;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
 import com.github.steveice10.packetlib.codec.BasePacketCodecHelper;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -44,10 +47,7 @@ import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -152,6 +152,35 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return readTag(buf, CompoundTag.class);
     }
 
+    public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
+        try {
+            MNBT mnbt = new MNBT();
+            mnbt.read(new DataInputStream(new InputStream() {
+                @Override
+                public int read() {
+                    return buf.readUnsignedByte();
+                }
+            }));
+            if (mnbt.isEmpty()) return null;
+            else return mnbt;
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
+        try {
+            MNBTIO.write(new DataOutputStream(new OutputStream() {
+                @Override
+                public void write(int b) {
+                    buf.writeByte(b);
+                }
+            }), mnbt);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     @Nullable
     public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
         try {
@@ -237,7 +266,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
 
         int item = this.readVarInt(buf);
-        return new ItemStack(item, buf.readByte(), this.readTag(buf));
+        return new ItemStack(item, buf.readByte(), this.readMNBT(buf));
     }
 
     public void writeItemStack(ByteBuf buf, ItemStack item) throws UncheckedIOException {
@@ -245,7 +274,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         if (item != null) {
             this.writeVarInt(buf, item.getId());
             buf.writeByte(item.getAmount());
-            this.writeTag(buf, item.getNbt());
+            this.writeMNBT(buf, item.getNbt());
         }
     }
 

@@ -1,6 +1,6 @@
 package com.github.steveice10.mc.protocol.data.game.entity.metadata;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
 public class ItemStack {
     private final int id;
     private final int amount;
-    private final CompoundTag nbt;
+    private final MNBT nbt;
 
     public ItemStack(int id) {
         this(id, 1);
