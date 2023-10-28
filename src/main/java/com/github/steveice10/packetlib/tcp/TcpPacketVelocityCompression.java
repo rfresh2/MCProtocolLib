@@ -19,12 +19,12 @@ public class TcpPacketVelocityCompression extends ByteToMessageCodec<ByteBuf> {
     private final Session session;
     private final boolean validateDecompression;
     private final VelocityCompressor velocityCompressor;
-    private static final Logger LOGGER = LoggerFactory.getLogger(TcpPacketVelocityCompression.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger("Proxy");
     public TcpPacketVelocityCompression(Session session, boolean validateDecompression) {
         this.session = session;
         this.validateDecompression = validateDecompression;
         this.velocityCompressor = Natives.compress.get().create(4);
-        LOGGER.debug("Velocity compression initialized with {} variant.", Natives.compress.getLoadedVariant());
+        LOGGER.debug("Velocity {} compression initialized.", Natives.compress.getLoadedVariant());
     }
 
     @Override
