@@ -1,6 +1,6 @@
 package com.github.steveice10.mc.protocol.data.game.level.block;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,5 +16,5 @@ public class BlockEntityInfo {
     private int y;
     private int z;
     private BlockEntityType type;
-    private @Nullable CompoundTag nbt;
+    private @Nullable MNBT nbt;
 }
