@@ -136,7 +136,8 @@ public class ServerListener extends SessionAdapter {
                 }
 
                 ServerStatusInfo info = builder.buildInfo(session);
-                session.send(new ClientboundStatusResponsePacket(info));
+                if (info == null) session.disconnect("bye");
+                else session.send(new ClientboundStatusResponsePacket(info));
             } else if (packet instanceof ServerboundPingRequestPacket) {
                 session.send(new ClientboundPongResponsePacket(((ServerboundPingRequestPacket) packet).getPingTime()));
             }
@@ -156,7 +157,7 @@ public class ServerListener extends SessionAdapter {
     public void packetSent(Session session, Packet packet) {
         if (packet instanceof ClientboundLoginCompressionPacket) {
             session.setCompressionThreshold(((ClientboundLoginCompressionPacket) packet).getThreshold(), true);
-            session.send(new ClientboundGameProfilePacket((GameProfile) session.getFlag(MinecraftConstants.PROFILE_KEY)));
+            session.send(new ClientboundGameProfilePacket(session.getFlag(MinecraftConstants.PROFILE_KEY)));
         } else if (packet instanceof ClientboundGameProfilePacket) {
             ((MinecraftProtocol) session.getPacketProtocol()).setState(ProtocolState.GAME);
             ServerLoginHandler handler = session.getFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY);
