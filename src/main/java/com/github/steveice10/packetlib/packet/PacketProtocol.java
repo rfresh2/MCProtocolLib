@@ -8,10 +8,10 @@ import com.github.steveice10.packetlib.codec.PacketSerializer;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import java.io.IOException;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /**
  * A protocol for packet sending and receiving.
@@ -21,8 +21,8 @@ public abstract class PacketProtocol {
     private final Int2ObjectMap<PacketDefinition<? extends Packet, ?>> serverbound = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectMap<PacketDefinition<? extends Packet, ?>> clientbound = new Int2ObjectOpenHashMap<>();
 
-    private final Map<Class<? extends Packet>, Integer> clientboundIds = new IdentityHashMap<>();
-    private final Map<Class<? extends Packet>, Integer> serverboundIds = new IdentityHashMap<>();
+    private final Reference2IntMap<Class<? extends Packet>> clientboundIds = new Reference2IntOpenHashMap<>();
+    private final Reference2IntMap<Class<? extends Packet>> serverboundIds = new Reference2IntOpenHashMap<>();
 
     /**
      * Gets the prefix used when locating SRV records for this protocol.
@@ -166,8 +166,8 @@ public abstract class PacketProtocol {
      * @throws IllegalArgumentException If the packet is not registered.
      */
     public int getClientboundId(Class<? extends Packet> packetClass) {
-        Integer packetId = this.clientboundIds.get(packetClass);
-        if(packetId == null) {
+        int packetId = this.clientboundIds.getOrDefault(packetClass, -1);
+        if(packetId == -1) {
             throw new IllegalArgumentException("Unregistered clientbound packet class: " + packetClass.getName());
         }
 
@@ -232,8 +232,8 @@ public abstract class PacketProtocol {
      * @throws IllegalArgumentException If the packet is not registered.
      */
     public int getServerboundId(Class<? extends Packet> packetClass) {
-        Integer packetId = this.serverboundIds.get(packetClass);
-        if(packetId == null) {
+        int packetId = this.serverboundIds.getOrDefault(packetClass, -1);
+        if(packetId == -1) {
             throw new IllegalArgumentException("Unregistered serverbound packet class: " + packetClass.getName());
         }
 

@@ -7,9 +7,8 @@ import com.github.steveice10.packetlib.codec.PacketCodecHelper;
 import com.github.steveice10.packetlib.codec.PacketDefinition;
 import com.github.steveice10.packetlib.packet.PacketHeader;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
-
-import java.util.HashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class PacketStateCodec extends PacketProtocol {
 
@@ -43,8 +42,8 @@ public class PacketStateCodec extends PacketProtocol {
     }
 
     public static class Builder {
-        private final Map<Integer, PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> clientboundPackets = new HashMap<>();
-        private final Map<Integer, PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> serverboundPackets = new HashMap<>();
+        private final Int2ObjectMap<PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> clientboundPackets = new Int2ObjectOpenHashMap<>();
+        private final Int2ObjectMap<PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> serverboundPackets = new Int2ObjectOpenHashMap<>();
 
         public <T extends MinecraftPacket> Builder registerClientboundPacket(int id, Class<T> packetClass, PacketFactory<T, MinecraftCodecHelper> factory) {
             this.clientboundPackets.put(id, new PacketDefinition<>(id, packetClass, new MinecraftPacketSerializer<>(factory)));
@@ -58,14 +57,8 @@ public class PacketStateCodec extends PacketProtocol {
 
         public PacketStateCodec build() {
             PacketStateCodec codec = new PacketStateCodec();
-            for (Map.Entry<Integer, PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> entry : this.clientboundPackets.entrySet()) {
-                codec.registerClientbound(entry.getValue());
-            }
-
-            for (Map.Entry<Integer, PacketDefinition<? extends MinecraftPacket, MinecraftCodecHelper>> entry : this.serverboundPackets.entrySet()) {
-                codec.registerServerbound(entry.getValue());
-            }
-
+            this.clientboundPackets.values().forEach(codec::registerClientbound);
+            this.serverboundPackets.values().forEach(codec::registerServerbound);
             return codec;
         }
     }
