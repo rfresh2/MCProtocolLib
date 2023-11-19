@@ -17,6 +17,7 @@
         <jdk.version>17</jdk.version>
         <adventure.version>4.14.0</adventure.version>
         <netty.version>4.1.101.Final</netty.version>
+        <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
         <argLine></argLine>
     </properties>
 
@@ -123,24 +124,24 @@
             <version>2.10.1</version>
         </dependency>
         <dependency>
-            <groupId>com.nukkitx.fastutil</groupId>
-            <artifactId>fastutil-int-sets</artifactId>
-            <version>8.5.3</version>
+            <groupId>org.cloudburstmc.fastutil.sets</groupId>
+            <artifactId>int-sets</artifactId>
+            <version>${fastutil.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.nukkitx.fastutil</groupId>
-            <artifactId>fastutil-int-object-maps</artifactId>
-            <version>8.5.3</version>
+            <groupId>org.cloudburstmc.fastutil.maps</groupId>
+            <artifactId>int-object-maps</artifactId>
+            <version>${fastutil.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.nukkitx.fastutil</groupId>
-            <artifactId>fastutil-object-int-maps</artifactId>
-            <version>8.5.3</version>
+            <groupId>org.cloudburstmc.fastutil.maps</groupId>
+            <artifactId>object-int-maps</artifactId>
+            <version>${fastutil.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.nukkitx.fastutil</groupId>
-            <artifactId>fastutil-reference-int-maps</artifactId>
-            <version>8.5.3</version>
+            <groupId>org.cloudburstmc.fastutil.maps</groupId>
+            <artifactId>reference-int-maps</artifactId>
+            <version>${fastutil.version}</version>
         </dependency>
         <dependency>
             <groupId>com.velocitypowered</groupId>
