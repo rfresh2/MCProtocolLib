@@ -123,7 +123,7 @@ public class ServerListener extends SessionAdapter {
                 }
 
                 SecretKey key = keyPacket.getSecretKey(privateKey);
-                session.enableEncryption(protocol.enableEncryption(key));
+                session.enableEncryption(key);
                 new Thread(new UserAuthTask(session, key)).start();
             } else if (packet instanceof ServerboundLoginAcknowledgedPacket) {
                 ((MinecraftProtocol) session.getPacketProtocol()).setState(ProtocolState.CONFIGURATION);

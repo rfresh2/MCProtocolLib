@@ -11,7 +11,6 @@ import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
@@ -24,11 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_COMPRESSION_THRESHOLD;
-import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_INFO_BUILDER_KEY;
-import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_INFO_HANDLER_KEY;
-import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_LOGIN_HANDLER_KEY;
-import static com.github.steveice10.mc.protocol.MinecraftConstants.VERIFY_USERS_KEY;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -135,10 +130,10 @@ public class MinecraftProtocolTest {
 
     private static class DisconnectListener extends SessionAdapter {
         @Override
-        public void disconnected(DisconnectedEvent event) {
-            System.err.println("Disconnected: " + event.getReason());
-            if (event.getCause() != null) {
-                event.getCause().printStackTrace();
+        public void disconnected(Session session, Component reason, Throwable cause) {
+            System.err.println("Disconnected: " + reason);
+            if (cause != null) {
+                cause.printStackTrace();
             }
         }
     }
