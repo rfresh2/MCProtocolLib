@@ -12,7 +12,9 @@ public enum GameEvent {
     THUNDER_STRENGTH,
     PUFFERFISH_STING_SOUND,
     AFFECTED_BY_ELDER_GUARDIAN,
-    ENABLE_RESPAWN_SCREEN;
+    ENABLE_RESPAWN_SCREEN,
+    LIMITED_CRAFTING,
+    LEVEL_CHUNKS_LOAD_START;
 
     private static final GameEvent[] VALUES = values();
 

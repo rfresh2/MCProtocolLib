@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -17,10 +18,10 @@ import java.io.IOException;
 public class ClientboundContainerSetContentPacket implements MinecraftPacket {
     private final int containerId;
     private final int stateId;
-    private final @NonNull ItemStack[] items;
-    private final ItemStack carriedItem;
+    private final @Nullable ItemStack @NonNull [] items;
+    private final @Nullable ItemStack carriedItem;
 
-    public ClientboundContainerSetContentPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundContainerSetContentPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.containerId = in.readUnsignedByte();
         this.stateId = helper.readVarInt(in);
         this.items = new ItemStack[helper.readVarInt(in)];

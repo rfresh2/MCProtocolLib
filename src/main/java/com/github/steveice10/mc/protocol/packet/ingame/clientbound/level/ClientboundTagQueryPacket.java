@@ -6,8 +6,8 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -16,16 +16,16 @@ import java.io.IOException;
 @AllArgsConstructor
 public class ClientboundTagQueryPacket implements MinecraftPacket {
     private final int transactionId;
-    private final @NonNull CompoundTag nbt;
+    private final @Nullable CompoundTag nbt;
 
     public ClientboundTagQueryPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.transactionId = helper.readVarInt(in);
-        this.nbt = helper.readTag(in);
+        this.nbt = helper.readAnyTag(in);
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws IOException {
         helper.writeVarInt(out, this.transactionId);
-        helper.writeTag(out, this.nbt);
+        helper.writeAnyTag(out, this.nbt);
     }
 }

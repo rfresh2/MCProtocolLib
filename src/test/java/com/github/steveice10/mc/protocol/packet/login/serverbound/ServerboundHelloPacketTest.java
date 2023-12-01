@@ -1,11 +1,13 @@
 package com.github.steveice10.mc.protocol.packet.login.serverbound;
 
 import com.github.steveice10.mc.protocol.packet.PacketTest;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.util.UUID;
 
 public class ServerboundHelloPacketTest extends PacketTest {
-    @Before
+    @BeforeEach
     public void setup() {
-        this.setPackets(new ServerboundHelloPacket("Username", null));
+        this.setPackets(new ServerboundHelloPacket("Username", UUID.randomUUID()));
     }
 }

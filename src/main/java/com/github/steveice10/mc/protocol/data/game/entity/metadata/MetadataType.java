@@ -1,7 +1,12 @@
 package com.github.steveice10.mc.protocol.data.game.entity.metadata;
 
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.*;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.ByteEntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.FloatEntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.IntEntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.LongEntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.ObjectEntityMetadata;
 import com.github.steveice10.mc.protocol.data.game.entity.object.Direction;
 import com.github.steveice10.mc.protocol.data.game.entity.type.PaintingType;
 import com.github.steveice10.mc.protocol.data.game.level.particle.Particle;
@@ -13,8 +18,6 @@ import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,16 +61,7 @@ public class MetadataType<T> {
     protected final Writer<T> writer;
     protected final EntityMetadataFactory<T> metadataFactory;
 
-    protected MetadataType(BasicReader<T> reader, BasicWriter<T> writer, EntityMetadataFactory<T> metadataFactory) {
-        this.id = VALUES.size();
-        this.reader = reader;
-        this.writer = writer;
-        this.metadataFactory = metadataFactory;
-
-        VALUES.add(this);
-    }
-
-    protected MetadataType(HelperReader<T> reader, HelperWriter<T> writer, EntityMetadataFactory<T> metadataFactory) {
+    protected MetadataType(Reader<T> reader, Writer<T> writer, EntityMetadataFactory<T> metadataFactory) {
         this.id = VALUES.size();
         this.reader = reader;
         this.writer = writer;
@@ -84,15 +78,12 @@ public class MetadataType<T> {
         this.writer.write(helper, output, value);
     }
 
+    @FunctionalInterface
     public interface Reader<V> {
-        V read(ByteBuf input) throws IOException;
-
         V read(MinecraftCodecHelper helper, ByteBuf input) throws UncheckedIOException;
     }
 
     public interface Writer<V> {
-        void write(ByteBuf output, V value) throws IOException;
-
         void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws UncheckedIOException;
     }
 
@@ -115,24 +106,6 @@ public class MetadataType<T> {
     }
 
     @FunctionalInterface
-    public interface HelperReader<V> extends Reader<V> {
-        default V read(ByteBuf input) throws IOException {
-            throw new UnsupportedOperationException("This reader needs a codec helper!");
-        }
-
-        V read(MinecraftCodecHelper helper, ByteBuf input) throws UncheckedIOException;
-    }
-
-    @FunctionalInterface
-    public interface HelperWriter<V> extends Writer<V> {
-        default void write(ByteBuf output, V value) throws IOException {
-            throw new UnsupportedOperationException("This writer needs a codec helper!");
-        }
-
-        void write(MinecraftCodecHelper helper, ByteBuf output, V value) throws UncheckedIOException;
-    }
-
-    @FunctionalInterface
     public interface EntityMetadataFactory<V> {
         EntityMetadata<V, ? extends MetadataType<V>> create(int id, MetadataType<V> type, V value);
     }
@@ -147,7 +120,7 @@ public class MetadataType<T> {
         };
     }
 
-    private static <T> HelperReader<Optional<T>> optionalReader(HelperReader<T> reader) {
+    private static <T> Reader<Optional<T>> optionalReader(Reader<T> reader) {
         return (helper, input) -> {
             if (!input.readBoolean()) {
                 return Optional.empty();
@@ -158,19 +131,19 @@ public class MetadataType<T> {
     }
 
     private static <T> BasicWriter<Optional<T>> optionalWriter(BasicWriter<T> writer) {
-        return (ouput, value) -> {
-              ouput.writeBoolean(value.isPresent());
-              if (value.isPresent()) {
-                  writer.write(ouput, value.get());
-              }
+        return (output, value) -> {
+            output.writeBoolean(value.isPresent());
+            if (value.isPresent()) {
+                writer.write(output, value.get());
+            }
         };
     }
 
-    private static <T> HelperWriter<Optional<T>> optionalWriter(HelperWriter<T> writer) {
-        return (helper, ouput, value) -> {
-            ouput.writeBoolean(value.isPresent());
+    private static <T> Writer<Optional<T>> optionalWriter(Writer<T> writer) {
+        return (helper, output, value) -> {
+            output.writeBoolean(value.isPresent());
             if (value.isPresent()) {
-                writer.write(helper, ouput, value.get());
+                writer.write(helper, output, value.get());
             }
         };
     }

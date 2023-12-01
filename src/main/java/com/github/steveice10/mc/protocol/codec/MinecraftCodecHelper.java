@@ -3,6 +3,14 @@ package com.github.steveice10.mc.protocol.codec;
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.DefaultComponentSerializer;
 import com.github.steveice10.mc.protocol.data.game.Identifier;
+import com.github.steveice10.mc.protocol.CheckedBiConsumer;
+import com.github.steveice10.mc.protocol.CheckedFunction;
+import com.github.steveice10.mc.protocol.data.DefaultComponentSerializer;
+import com.github.steveice10.mc.protocol.data.game.Identifier;
+import com.github.steveice10.mc.protocol.data.game.chat.numbers.BlankFormat;
+import com.github.steveice10.mc.protocol.data.game.chat.numbers.FixedFormat;
+import com.github.steveice10.mc.protocol.data.game.chat.numbers.NumberFormat;
+import com.github.steveice10.mc.protocol.data.game.chat.numbers.StyledFormat;
 import com.github.steveice10.mc.protocol.data.game.chunk.BitStorage;
 import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSection;
 import com.github.steveice10.mc.protocol.data.game.chunk.DataPalette;
@@ -14,6 +22,26 @@ import com.github.steveice10.mc.protocol.data.game.entity.attribute.ModifierOper
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.*;
 import com.github.steveice10.mc.protocol.data.game.entity.object.Direction;
 import com.github.steveice10.mc.protocol.data.game.entity.player.BlockBreakStage;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.GlobalPalette;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.ListPalette;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.MapPalette;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.Palette;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.PaletteType;
+import com.github.steveice10.mc.protocol.data.game.chunk.palette.SingletonPalette;
+import com.github.steveice10.mc.protocol.data.game.entity.Effect;
+import com.github.steveice10.mc.protocol.data.game.entity.EntityEvent;
+import com.github.steveice10.mc.protocol.data.game.entity.attribute.ModifierOperation;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.GlobalPos;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.ItemStack;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.Pose;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.SnifferState;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.VillagerData;
+import com.github.steveice10.mc.protocol.data.game.entity.object.Direction;
+import com.github.steveice10.mc.protocol.data.game.entity.player.BlockBreakStage;
+import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
+import com.github.steveice10.mc.protocol.data.game.entity.player.PlayerSpawnInfo;
 import com.github.steveice10.mc.protocol.data.game.entity.type.PaintingType;
 import com.github.steveice10.mc.protocol.data.game.level.LightUpdateData;
 import com.github.steveice10.mc.protocol.data.game.level.block.BlockEntityType;
@@ -21,6 +49,17 @@ import com.github.steveice10.mc.protocol.data.game.level.event.LevelEvent;
 import com.github.steveice10.mc.protocol.data.game.level.event.LevelEventType;
 import com.github.steveice10.mc.protocol.data.game.level.event.UnknownLevelEvent;
 import com.github.steveice10.mc.protocol.data.game.level.particle.*;
+import com.github.steveice10.mc.protocol.data.game.level.particle.BlockParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.DustColorTransitionParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.DustParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.FallingDustParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.ItemParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.Particle;
+import com.github.steveice10.mc.protocol.data.game.level.particle.ParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.ParticleType;
+import com.github.steveice10.mc.protocol.data.game.level.particle.SculkChargeParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.ShriekParticleData;
+import com.github.steveice10.mc.protocol.data.game.level.particle.VibrationParticleData;
 import com.github.steveice10.mc.protocol.data.game.level.particle.positionsource.BlockPositionSource;
 import com.github.steveice10.mc.protocol.data.game.level.particle.positionsource.EntityPositionSource;
 import com.github.steveice10.mc.protocol.data.game.level.particle.positionsource.PositionSource;
@@ -38,6 +77,11 @@ import com.github.steveice10.opennbt.mini.MNBT;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
 import com.github.steveice10.packetlib.codec.BasePacketCodecHelper;
+import com.github.steveice10.opennbt.NBTIO;
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.github.steveice10.packetlib.codec.BasePacketCodecHelper;
+import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +94,23 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.function.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
+import java.util.function.ToIntFunction;
 
 @RequiredArgsConstructor
 public class MinecraftCodecHelper extends BasePacketCodecHelper {
@@ -148,8 +209,47 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public CompoundTag readTag(ByteBuf buf) throws UncheckedIOException {
-        return readTag(buf, CompoundTag.class);
+    @Nullable
+    public CompoundTag readAnyTag(ByteBuf buf) throws UncheckedIOException {
+        return readAnyTag(buf, CompoundTag.class);
+    }
+
+    @NotNull
+    public CompoundTag readAnyTagOrThrow(ByteBuf buf) throws UncheckedIOException {
+        CompoundTag tag = readAnyTag(buf);
+        if (tag == null) {
+            throw new IllegalArgumentException("Got end-tag when trying to read CompoundTag");
+        }
+        return tag;
+    }
+
+    @Nullable
+    public <T extends Tag> T readAnyTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
+        Tag tag = NBTIO.readAnyTag(new InputStream() {
+            @Override
+            public int read() {
+                return buf.readUnsignedByte();
+            }
+        });
+
+        if (tag == null) {
+            return null;
+        }
+
+        if (!expected.isInstance(tag)) {
+            throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
+        }
+
+        return expected.cast(tag);
+    }
+
+    public <T extends Tag> void writeAnyTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
+        NBTIO.writeAnyTag(new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                buf.writeByte(b);
+            }
+        }, tag);
     }
 
     public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
@@ -176,84 +276,6 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
                     buf.writeByte(b);
                 }
             }), mnbt);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    @Nullable
-    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
-        try {
-            Tag tag = NBTIO.readTag(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            });
-            if (tag == null) {
-                return null;
-            }
-
-            if (tag.getClass() != expected) {
-                throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
-            }
-
-            return expected.cast(tag);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public CompoundTag readTagLE(ByteBuf buf) throws UncheckedIOException {
-        return readTagLE(buf, CompoundTag.class);
-    }
-
-    @Nullable
-    public <T extends Tag> T readTagLE(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
-        try {
-            Tag tag = NBTIO.readTag(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            }, true);
-
-            if (tag == null) {
-                return null;
-            }
-
-            if (tag.getClass() != expected) {
-                throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
-            }
-
-            return expected.cast(tag);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public <T extends Tag> void writeTag(ByteBuf buf, T tag) throws UncheckedIOException {
-        try {
-            NBTIO.writeTag(new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    buf.writeByte(b);
-                }
-            }, tag);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-    }
-
-    public <T extends Tag> void writeTagLE(ByteBuf buf, T tag) throws UncheckedIOException {
-        try {
-            NBTIO.writeTag(new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    buf.writeByte(b);
-                }
-            }, tag, true);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -362,12 +384,28 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeVarInt(buf, e.ordinal());
     }
 
-    public Component readComponent(ByteBuf buf) {
-        return DefaultComponentSerializer.get().deserialize(this.readString(buf, 262144));
+    public Component readComponent(ByteBuf buf) throws UncheckedIOException {
+        try {
+            // do not use CompoundTag, as mojang serializes a plaintext component as just a single StringTag
+            Tag tag = readAnyTag(buf, Tag.class);
+            if (tag == null) {
+                throw new IllegalArgumentException("Got end-tag when trying to read Component");
+            }
+            JsonElement json = ComponentSerializer.tagComponentToJson(tag);
+            return DefaultComponentSerializer.get().deserializeFromTree(json);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public void writeComponent(ByteBuf buf, Component component) {
-        this.writeString(buf, DefaultComponentSerializer.get().serialize(component));
+    public void writeComponent(ByteBuf buf, Component component) throws UncheckedIOException {
+        try {
+            JsonElement json = DefaultComponentSerializer.get().serializeToTree(component);
+            Tag tag = ComponentSerializer.jsonComponentToTag(json);
+            writeAnyTag(buf, tag);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) throws UncheckedIOException {
@@ -421,6 +459,31 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     public void writeGlobalPos(ByteBuf buf, GlobalPos pos) {
         this.writeString(buf, pos.getDimension());
         this.writePosition(buf, pos.getPosition());
+    }
+
+    public PlayerSpawnInfo readPlayerSpawnInfo(ByteBuf buf) {
+        String dimension = this.readString(buf);
+        String worldName = this.readString(buf);
+        long hashedSeed = buf.readLong();
+        GameMode gameMode = GameMode.byId(buf.readByte());
+        GameMode previousGamemode = GameMode.byNullableId(buf.readByte());
+        boolean debug = buf.readBoolean();
+        boolean flat = buf.readBoolean();
+        GlobalPos lastDeathPos = this.readNullable(buf, this::readGlobalPos);
+        int portalCooldown = this.readVarInt(buf);
+        return new PlayerSpawnInfo(dimension, worldName, hashedSeed, gameMode, previousGamemode, debug, flat, lastDeathPos, portalCooldown);
+    }
+
+    public void writePlayerSpawnInfo(ByteBuf buf, PlayerSpawnInfo info) {
+        this.writeString(buf, info.getDimension());
+        this.writeString(buf, info.getWorldName());
+        buf.writeLong(info.getHashedSeed());
+        buf.writeByte(info.getGameMode().ordinal());
+        buf.writeByte(GameMode.toNullableId(info.getPreviousGamemode()));
+        buf.writeBoolean(info.isDebug());
+        buf.writeBoolean(info.isFlat());
+        this.writeNullable(buf, info.getLastDeathPos(), this::writeGlobalPos);
+        this.writeVarInt(buf, info.getPortalCooldown());
     }
 
     public ParticleType readParticleType(ByteBuf buf) {
@@ -516,8 +579,40 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
+    public NumberFormat readNumberFormat(ByteBuf buf) throws UncheckedIOException {
+        int id = this.readVarInt(buf);
+        switch (id) {
+            case 0:
+                return BlankFormat.INSTANCE;
+            case 1:
+                return new StyledFormat(this.readAnyTagOrThrow(buf));
+            case 2:
+                return new FixedFormat(this.readComponent(buf));
+            default:
+                throw new IllegalArgumentException("Unknown number format type: " + id);
+        }
+    }
+
+    public void writeNumberFormat(ByteBuf buf, NumberFormat numberFormat) throws UncheckedIOException {
+        if (numberFormat instanceof BlankFormat) {
+            this.writeVarInt(buf, 0);
+        } else if (numberFormat instanceof StyledFormat) {
+            StyledFormat styledFormat = (StyledFormat) numberFormat;
+
+            this.writeVarInt(buf, 1);
+            this.writeAnyTag(buf, styledFormat.getStyle());
+        } else if (numberFormat instanceof FixedFormat) {
+            FixedFormat fixedFormat = (FixedFormat) numberFormat;
+
+            this.writeVarInt(buf, 2);
+            this.writeComponent(buf, fixedFormat.getValue());
+        } else {
+            throw new IllegalArgumentException("Unknown number format: " + numberFormat);
+        }
+    }
+
     public PositionSource readPositionSource(ByteBuf buf) {
-        PositionSourceType type = PositionSourceType.from(this.readResourceLocation(buf));
+        PositionSourceType type = PositionSourceType.from(this.readVarInt(buf));
         switch (type) {
             case BLOCK:
                 return new BlockPositionSource(this.readPosition(buf));
@@ -529,7 +624,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public void writePositionSource(ByteBuf buf, PositionSource positionSource) {
-        this.writeResourceLocation(buf, positionSource.getType().getResourceLocation());
+        this.writeVarInt(buf, positionSource.getType().ordinal());
         if (positionSource instanceof BlockPositionSource) {
             this.writePosition(buf, ((BlockPositionSource) positionSource).getPosition());
         } else if (positionSource instanceof EntityPositionSource) {
@@ -583,8 +678,15 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
+    @NotNull
     public BlockEntityType readBlockEntityType(ByteBuf buf) {
-        return BlockEntityType.from(this.readVarInt(buf));
+        int id = this.readVarInt(buf);
+        BlockEntityType type = BlockEntityType.from(id);
+
+        if (type == null) {
+            throw new IllegalArgumentException("Unknown BlockEntityType: " + id);
+        }
+        return type;
     }
 
     public void writeBlockEntityType(ByteBuf buf, BlockEntityType type) {
@@ -800,20 +902,14 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     public GameProfile.Property readProperty(ByteBuf buf) {
         String name = this.readString(buf);
         String value = this.readString(buf);
-        if (buf.readBoolean()) {
-            return new GameProfile.Property(name, value, this.readString(buf));
-        } else {
-            return new GameProfile.Property(name, value);
-        }
+        String signature = this.readNullable(buf, this::readString);
+        return new GameProfile.Property(name, value, signature);
     }
 
     public void writeProperty(ByteBuf buf, GameProfile.Property property) {
         this.writeString(buf, property.getName());
         this.writeString(buf, property.getValue());
-        buf.writeBoolean(property.hasSignature());
-        if (property.hasSignature()) {
-            this.writeString(buf, property.getSignature());
-        }
+        this.writeNullable(buf, property.getSignature(), this::writeString);
     }
 
     public <T> T readById(ByteBuf buf, IntFunction<T> registry, Function<ByteBuf, T> custom) {

@@ -7,10 +7,10 @@ import com.github.steveice10.mc.protocol.data.game.recipe.Recipe;
 import com.github.steveice10.mc.protocol.data.game.recipe.RecipeType;
 import com.github.steveice10.mc.protocol.data.game.recipe.data.*;
 import com.github.steveice10.mc.protocol.packet.PacketTest;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class ServerDeclareRecipesTest extends PacketTest {
-    @Before
+    @BeforeEach
     public void setup() {
         this.setPackets(
                 new ClientboundUpdateRecipesPacket(

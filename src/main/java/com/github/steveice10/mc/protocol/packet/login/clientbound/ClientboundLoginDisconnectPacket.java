@@ -16,19 +16,23 @@ import java.io.IOException;
 @With
 @AllArgsConstructor
 public class ClientboundLoginDisconnectPacket implements MinecraftPacket {
+
+    private static final int MAX_COMPONENT_STRING_LENGTH = 262144;
+
     private final @NonNull Component reason;
 
     public ClientboundLoginDisconnectPacket(String text) {
         this(DefaultComponentSerializer.get().deserialize(text));
     }
 
-    public ClientboundLoginDisconnectPacket(ByteBuf in, MinecraftCodecHelper codecHelper) throws IOException {
-        this.reason = DefaultComponentSerializer.get().deserialize(codecHelper.readString(in));
+    public ClientboundLoginDisconnectPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+        // uses the old json serialization rather than the 1.20.3 NBT serialization
+        this.reason = DefaultComponentSerializer.get().deserialize(helper.readString(in, MAX_COMPONENT_STRING_LENGTH));
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws IOException {
-        helper.writeComponent(out, this.reason);
+        helper.writeString(out, DefaultComponentSerializer.get().serialize(reason));
     }
 
     @Override

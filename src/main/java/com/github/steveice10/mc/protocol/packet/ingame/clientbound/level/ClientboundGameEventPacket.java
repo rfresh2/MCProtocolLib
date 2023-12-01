@@ -21,7 +21,9 @@ public class ClientboundGameEventPacket implements MinecraftPacket {
         this.notification = GameEvent.from(in.readUnsignedByte());
         float value = in.readFloat();
         // TODO: Handle this in MinecraftCodecHelper
-        if (this.notification == GameEvent.CHANGE_GAMEMODE) {
+        if (this.notification == GameEvent.AFFECTED_BY_ELDER_GUARDIAN) {
+            this.value = new ElderGuardianEffectValue(value);
+        } else if (this.notification == GameEvent.CHANGE_GAMEMODE) {
             this.value = GameMode.byId((int) value);
         } else if (this.notification == GameEvent.DEMO_MESSAGE) {
             this.value = DemoMessageValue.from((int) value);
@@ -29,6 +31,8 @@ public class ClientboundGameEventPacket implements MinecraftPacket {
             this.value = EnterCreditsValue.from((int) value);
         } else if (this.notification == GameEvent.ENABLE_RESPAWN_SCREEN) {
             this.value = RespawnScreenValue.from((int) value);
+        } else if (this.notification == GameEvent.LIMITED_CRAFTING) {
+            this.value = LimitedCraftingValue.from((int) value);
         } else if (this.notification == GameEvent.RAIN_STRENGTH) {
             this.value = new RainStrengthValue(value);
         } else if (this.notification == GameEvent.THUNDER_STRENGTH) {

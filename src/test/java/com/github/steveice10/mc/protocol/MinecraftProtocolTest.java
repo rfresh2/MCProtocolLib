@@ -2,37 +2,35 @@ package com.github.steveice10.mc.protocol;
 
 import com.github.steveice10.mc.protocol.codec.MinecraftCodec;
 import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
+import com.github.steveice10.mc.protocol.data.game.entity.player.PlayerSpawnInfo;
 import com.github.steveice10.mc.protocol.data.status.PlayerInfo;
 import com.github.steveice10.mc.protocol.data.status.ServerStatusInfo;
 import com.github.steveice10.mc.protocol.data.status.VersionInfo;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoBuilder;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import com.github.steveice10.opennbt.NBTIO;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import com.github.steveice10.packetlib.tcp.TcpServer;
 import net.kyori.adventure.text.Component;
-import org.jetbrains.annotations.NotNull;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.zip.GZIPInputStream;
 
-import static com.github.steveice10.mc.protocol.MinecraftConstants.*;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_COMPRESSION_THRESHOLD;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_INFO_BUILDER_KEY;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_INFO_HANDLER_KEY;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.SERVER_LOGIN_HANDLER_KEY;
+import static com.github.steveice10.mc.protocol.MinecraftConstants.VERIFY_USERS_KEY;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MinecraftProtocolTest {
     private static final String HOST = "localhost";
@@ -45,22 +43,31 @@ public class MinecraftProtocolTest {
             null,
             false
     );
-    private static final ClientboundLoginPacket JOIN_GAME_PACKET = new ClientboundLoginPacket(0, false, GameMode.SURVIVAL, GameMode.SURVIVAL, new String[]{"minecraft:world"}, loadLoginRegistry(), "overworld", "minecraft:world", 100, 0, 16, 16, false, false, false, false, null, 100);
+    private static final ClientboundLoginPacket JOIN_GAME_PACKET = new ClientboundLoginPacket(0, false, new String[]{"minecraft:world"}, 0, 16, 16, false, false, false, new PlayerSpawnInfo("overworld", "minecraft:world", 100, GameMode.SURVIVAL, GameMode.SURVIVAL, false, false, null, 100));
 
     private static Server server;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupServer() {
         server = new TcpServer(HOST, PORT, MinecraftProtocol::new);
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
         server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
-        server.setGlobalFlag(SERVER_LOGIN_HANDLER_KEY, (ServerLoginHandler) session -> session.send(JOIN_GAME_PACKET));
+        server.setGlobalFlag(SERVER_LOGIN_HANDLER_KEY, (ServerLoginHandler) session -> {
+            // Seems like in this setup the server can reply too quickly to ServerboundFinishConfigurationPacket
+            // before the client can transition CONFIGURATION -> GAME. There is probably something wrong here and this is just a band-aid.
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+                System.err.println("Failed to wait to send ClientboundLoginPacket: " + e.getMessage());
+            }
+            session.send(JOIN_GAME_PACKET);
+        });
 
-        assertTrue("Could not bind server.", server.bind(true).isListening());
+        assertTrue(server.bind(true).isListening(), "Could not bind server.");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownServer() {
         if (server != null) {
             server.close(true);
@@ -78,8 +85,8 @@ public class MinecraftProtocolTest {
             session.connect();
 
             handler.status.await(4, SECONDS);
-            assertNotNull("Failed to get server info.", handler.info);
-            assertEquals("Received incorrect server info.", SERVER_INFO, handler.info);
+            assertNotNull(handler.info, "Failed to get server info.");
+            assertEquals(SERVER_INFO, handler.info, "Received incorrect server info.");
         } finally {
             session.disconnect("Status test complete.");
         }
@@ -95,8 +102,8 @@ public class MinecraftProtocolTest {
             session.connect();
 
             listener.login.await(4, SECONDS);
-            assertNotNull("Failed to log in.", listener.packet);
-            assertEquals("Received incorrect join packet.", JOIN_GAME_PACKET, listener.packet);
+            assertNotNull(listener.packet, "Failed to log in.");
+            assertEquals(JOIN_GAME_PACKET, listener.packet, "Received incorrect join packet.");
         } finally {
             session.disconnect("Login test complete.");
         }
@@ -118,7 +125,7 @@ public class MinecraftProtocolTest {
         public ClientboundLoginPacket packet;
 
         @Override
-        public void packetReceived(@NotNull Session session, @NotNull Packet packet) {
+        public void packetReceived(Session session, Packet packet) {
             if (packet instanceof ClientboundLoginPacket) {
                 this.packet = (ClientboundLoginPacket) packet;
                 this.login.countDown();
@@ -128,21 +135,11 @@ public class MinecraftProtocolTest {
 
     private static class DisconnectListener extends SessionAdapter {
         @Override
-        public void disconnected(Session session, Component reason, Throwable cause) {
-            System.err.println("Disconnected: " + reason);
-            if (cause != null) {
-                cause.printStackTrace();
+        public void disconnected(DisconnectedEvent event) {
+            System.err.println("Disconnected: " + event.getReason());
+            if (event.getCause() != null) {
+                event.getCause().printStackTrace();
             }
-        }
-    }
-
-    public static CompoundTag loadLoginRegistry() {
-        try (InputStream inputStream = MinecraftProtocolTest.class.getClassLoader().getResourceAsStream("networkCodec.nbt");
-            DataInputStream stream = new DataInputStream(new GZIPInputStream(inputStream))) {
-            return (CompoundTag) NBTIO.readTag((DataInput) stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new AssertionError("Unable to load network codec.");
         }
     }
 }
