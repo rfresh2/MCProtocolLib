@@ -3,7 +3,6 @@ package com.github.steveice10.mc.protocol.packet.common.clientbound;
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
@@ -13,9 +12,12 @@ import java.util.Map;
 
 @Data
 @With
-@AllArgsConstructor
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
-    private final @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
+    private @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
+
+    public ClientboundUpdateTagsPacket(final Map<String, Map<String, int[]>> tags) {
+        this.tags = tags;
+    }
 
     public ClientboundUpdateTagsPacket(ByteBuf in, MinecraftCodecHelper helper) {
         int totalTagCount = helper.readVarInt(in);
