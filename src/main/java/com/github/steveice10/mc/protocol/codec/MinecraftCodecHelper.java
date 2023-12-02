@@ -209,8 +209,22 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
         try {
-            MNBT mnbt = new MNBT();
-            mnbt.read(new DataInputStream(new InputStream() {
+            var mnbt = MNBTIO.read(new DataInputStream(new InputStream() {
+                @Override
+                public int read() {
+                    return buf.readUnsignedByte();
+                }
+            }));
+            if (mnbt.isEmpty()) return null;
+            else return mnbt;
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public MNBT readAnyMNBT(ByteBuf buf) throws UncheckedIOException {
+        try {
+            var mnbt = MNBTIO.readAny(new DataInputStream(new InputStream() {
                 @Override
                 public int read() {
                     return buf.readUnsignedByte();
@@ -243,7 +257,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
 
         int item = this.readVarInt(buf);
-        return new ItemStack(item, buf.readByte(), this.readMNBT(buf));
+        return new ItemStack(item, buf.readByte(), this.readAnyMNBT(buf));
     }
 
     public void writeItemStack(ByteBuf buf, ItemStack item) throws UncheckedIOException {
@@ -601,11 +615,11 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public Effect readEffect(ByteBuf buf) {
-        return Effect.from(this.readVarInt(buf) - 1);
+        return Effect.from(this.readVarInt(buf));
     }
 
     public void writeEffect(ByteBuf buf, Effect effect) {
-        this.writeVarInt(buf, effect.ordinal() + 1);
+        this.writeVarInt(buf, effect.ordinal());
     }
 
     public BlockBreakStage readBlockBreakStage(ByteBuf buf) {
