@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>OpenNBT</artifactId>
-            <version>d6d9da42e2</version>
+            <version>55f0e50753</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

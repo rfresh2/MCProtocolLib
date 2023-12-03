@@ -7,20 +7,18 @@ import com.github.steveice10.mc.protocol.data.game.level.block.BlockEntityInfo;
 import com.github.steveice10.mc.protocol.data.game.level.block.BlockEntityType;
 import com.github.steveice10.opennbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
+import lombok.*;
 
 import java.io.IOException;
 
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "chunkData")
 public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     private final int x;
     private final int z;
-    private final @NonNull byte[] chunkData;
+    private final byte @NonNull [] chunkData;
     private final @NonNull MNBT heightMaps;
     private final @NonNull BlockEntityInfo[] blockEntities;
     private final @NonNull LightUpdateData lightData;
@@ -63,4 +61,6 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
 
         helper.writeLightUpdateData(out, this.lightData);
     }
+
+
 }
