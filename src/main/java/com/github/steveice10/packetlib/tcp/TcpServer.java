@@ -1,9 +1,9 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.AbstractServer;
 import com.github.steveice10.packetlib.BuiltinFlags;
 import com.github.steveice10.packetlib.helper.TransportHelper;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -26,7 +26,7 @@ public class TcpServer extends AbstractServer {
     private Channel channel;
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
 
-    public TcpServer(String host, int port, Supplier<? extends PacketProtocol> protocol) {
+    public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol) {
         super(host, port, protocol);
     }
 
@@ -60,7 +60,7 @@ public class TcpServer extends AbstractServer {
             @Override
             public void initChannel(Channel channel) {
                 InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-                PacketProtocol protocol = createPacketProtocol();
+                MinecraftProtocol protocol = createPacketProtocol();
 
                 TcpSession session = new TcpServerSession(address.getHostName(), address.getPort(), protocol, TcpServer.this);
                 session.getPacketProtocol().newServerSession(TcpServer.this, session);

@@ -1,10 +1,10 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.channel.*;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -27,7 +27,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
     protected String host;
     protected int port;
-    private final PacketProtocol protocol;
+    private final MinecraftProtocol protocol;
     private int compressionThreshold = -1;
     private int connectTimeout = 30;
     private int readTimeout = 30;
@@ -39,7 +39,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     private Channel channel;
     protected boolean disconnected = false;
 
-    public TcpSession(String host, int port, PacketProtocol protocol) {
+    public TcpSession(String host, int port, MinecraftProtocol protocol) {
         this.host = host;
         this.port = port;
         this.protocol = protocol;
@@ -75,7 +75,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public PacketProtocol getPacketProtocol() {
+    public MinecraftProtocol getPacketProtocol() {
         return this.protocol;
     }
 

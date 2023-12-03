@@ -1,9 +1,9 @@
 package com.github.steveice10.packetlib;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +64,7 @@ public interface Session {
      *
      * @return The session's packet protocol.
      */
-    public PacketProtocol getPacketProtocol();
+    public MinecraftProtocol getPacketProtocol();
 
     /**
      * Gets the session's {@link PacketCodecHelper}.

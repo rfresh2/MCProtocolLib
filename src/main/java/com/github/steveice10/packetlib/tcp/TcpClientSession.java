@@ -1,5 +1,6 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.BuiltinFlags;
 import com.github.steveice10.packetlib.ProxyInfo;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
@@ -53,19 +54,19 @@ public class TcpClientSession extends TcpSession {
     private final ProxyInfo proxy;
     private final PacketCodecHelper codecHelper;
 
-    public TcpClientSession(String host, int port, PacketProtocol protocol) {
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol) {
         this(host, port, protocol, null);
     }
 
-    public TcpClientSession(String host, int port, PacketProtocol protocol, ProxyInfo proxy) {
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol, ProxyInfo proxy) {
         this(host, port, "0.0.0.0", 0, protocol, proxy);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, PacketProtocol protocol) {
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol) {
         this(host, port, bindAddress, bindPort, protocol, null);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, PacketProtocol protocol, ProxyInfo proxy) {
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, ProxyInfo proxy) {
         super(host, port, protocol);
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
