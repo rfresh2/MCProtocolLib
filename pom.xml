@@ -10,15 +10,15 @@
 
     <name>MCProtocolLib</name>
     <description>A library for communicating with a Minecraft client or server.</description>
-    <url>http://github.com/rfresh2/MCProtocolLib/</url>
+    <url>https://github.com/rfresh2/MCProtocolLib/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
-        <adventure.version>4.14.0</adventure.version>
+        <adventure.version>4.15.0</adventure.version>
         <netty.version>4.1.101.Final</netty.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
-        <argLine></argLine>
+        <argLine/>
     </properties>
 
     <licenses>
@@ -58,6 +58,16 @@
             <id>paper</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>sonatype-oss-snapshots1</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -75,7 +85,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>736019231d</version>
+            <version>bd19255f49</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -115,7 +125,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.8.2</version>
+            <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
