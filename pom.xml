@@ -15,10 +15,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
-        <adventure.version>4.14.0</adventure.version>
+        <adventure.version>4.15.0</adventure.version>
         <netty.version>4.1.101.Final</netty.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
-        <argLine></argLine>
+        <argLine/>
     </properties>
 
     <licenses>
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>OpenNBT</artifactId>
-            <version>cf02a976dd</version>
+            <version>d6b054f641</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>736019231d</version>
+            <version>bd19255f49</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
