@@ -15,8 +15,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
-        <adventure.version>4.15.0</adventure.version>
         <netty.version>4.1.104.Final</netty.version>
+        <adventure.version>4.14.0</adventure.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
         <argLine/>
     </properties>
