@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <netty.version>4.1.104.Final</netty.version>
-        <adventure.version>4.14.0</adventure.version>
+        <adventure.version>4.15.0</adventure.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
         <argLine/>
     </properties>
@@ -24,7 +24,7 @@
     <licenses>
         <license>
             <name>MIT</name>
-            <url>http://www.opensource.org/licenses/mit-license.html</url>
+            <url>https://www.opensource.org/licenses/mit-license.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -84,7 +84,7 @@
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-gson-legacy-impl</artifactId>
+            <artifactId>adventure-text-serializer-json-legacy-impl</artifactId>
             <version>${adventure.version}</version>
         </dependency>
         <dependency>
@@ -95,11 +95,6 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-serializer-ansi</artifactId>
-            <version>${adventure.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-logger-slf4j</artifactId>
             <version>${adventure.version}</version>
         </dependency>
         <dependency>
