@@ -5,7 +5,7 @@
 
     <groupId>com.github.rfresh2</groupId>
     <artifactId>MCProtocolLib</artifactId>
-    <version>2.1</version>
+    <version>1.20.4</version>
     <packaging>jar</packaging>
 
     <name>MCProtocolLib</name>
