@@ -5,7 +5,7 @@ This project is forked from [GeyserMC/MCProtocolLib](https://github.com/GeyserMC
 
 ## Features
 
-* Supports Minecraft 1.20.1
+* Supports Minecraft 1.20.4
 * Optimized performance with velocity native compression and encryption 
 * bug fixes and more public interfaces where I find them useful
 
