@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>bd19255f49</version>
+            <version>1491d2a0d2</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
