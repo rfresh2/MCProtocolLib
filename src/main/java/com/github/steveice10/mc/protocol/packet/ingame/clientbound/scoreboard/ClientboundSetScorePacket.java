@@ -4,7 +4,9 @@ import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import com.github.steveice10.mc.protocol.data.game.chat.numbers.NumberFormat;
 import io.netty.buffer.ByteBuf;
-import lombok.*;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +14,6 @@ import java.io.IOException;
 
 @Data
 @With
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClientboundSetScorePacket implements MinecraftPacket {
     private final @NonNull String owner;
     private final @NonNull String objective;
@@ -29,6 +30,14 @@ public class ClientboundSetScorePacket implements MinecraftPacket {
         this.value = value;
         this.display = null;
         this.numberFormat = null;
+    }
+
+    public ClientboundSetScorePacket(@NonNull String owner, @NonNull String objective, int value, @NonNull Component display, @NonNull NumberFormat numberFormat) {
+        this.owner = owner;
+        this.objective = objective;
+        this.value = value;
+        this.display = display;
+        this.numberFormat = numberFormat;
     }
 
     public ClientboundSetScorePacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
