@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.github.rfresh2</groupId>
             <artifactId>MCAuthLib</artifactId>
-            <version>d96d102c50</version>
+            <version>33c55f1571</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
