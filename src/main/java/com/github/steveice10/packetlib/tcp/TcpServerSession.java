@@ -1,7 +1,7 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.HashMap;
@@ -11,7 +11,7 @@ public class TcpServerSession extends TcpSession {
     private final TcpServer server;
     private final PacketCodecHelper codecHelper;
 
-    public TcpServerSession(String host, int port, PacketProtocol protocol, TcpServer server) {
+    public TcpServerSession(String host, int port, MinecraftProtocol protocol, TcpServer server) {
         super(host, port, protocol);
         this.server = server;
         this.codecHelper = protocol.createHelper();

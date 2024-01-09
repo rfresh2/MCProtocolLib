@@ -75,7 +75,7 @@ public class ServerListener extends SessionAdapter {
 
     @Override
     public void packetReceived(@NotNull Session session, @NotNull Packet packet) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.HANDSHAKE) {
             if (packet instanceof ClientIntentionPacket) {
                 ClientIntentionPacket intentionPacket = (ClientIntentionPacket) packet;
@@ -159,7 +159,7 @@ public class ServerListener extends SessionAdapter {
             session.setCompressionThreshold(((ClientboundLoginCompressionPacket) packet).getThreshold(), true);
             session.send(new ClientboundGameProfilePacket(session.getFlag(MinecraftConstants.PROFILE_KEY)));
         } else if (packet instanceof ClientboundGameProfilePacket) {
-            ((MinecraftProtocol) session.getPacketProtocol()).setState(ProtocolState.GAME);
+            session.getPacketProtocol().setState(ProtocolState.GAME);
             ServerLoginHandler handler = session.getFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY);
             if (handler != null) {
                 handler.loggedIn(session);
@@ -173,7 +173,7 @@ public class ServerListener extends SessionAdapter {
 
     @Override
     public void disconnecting(Session session, Component reason, Throwable cause) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.LOGIN) {
             session.send(new ClientboundLoginDisconnectPacket(reason));
         } else if (protocol.getState() == ProtocolState.GAME) {

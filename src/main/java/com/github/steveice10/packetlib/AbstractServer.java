@@ -1,8 +1,8 @@
 package com.github.steveice10.packetlib;
 
 import com.github.steveice10.mc.protocol.MinecraftConstants;
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.event.server.*;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -10,14 +10,14 @@ import java.util.function.Supplier;
 public abstract class AbstractServer implements Server {
     private final String host;
     private final int port;
-    private final Supplier<? extends PacketProtocol> protocolSupplier;
+    private final Supplier<? extends MinecraftProtocol> protocolSupplier;
 
     private final List<Session> sessions = new ArrayList<>();
 
     private final Map<String, Object> flags = new HashMap<>();
     private final List<ServerListener> listeners = new ArrayList<>();
 
-    public AbstractServer(String host, int port, Supplier<? extends PacketProtocol> protocolSupplier) {
+    public AbstractServer(String host, int port, Supplier<? extends MinecraftProtocol> protocolSupplier) {
         this.host = host;
         this.port = port;
         this.protocolSupplier = protocolSupplier;
@@ -34,11 +34,11 @@ public abstract class AbstractServer implements Server {
     }
 
     @Override
-    public Supplier<? extends PacketProtocol> getPacketProtocol() {
+    public Supplier<? extends MinecraftProtocol> getPacketProtocol() {
         return this.protocolSupplier;
     }
 
-    protected PacketProtocol createPacketProtocol() {
+    protected MinecraftProtocol createPacketProtocol() {
         return this.protocolSupplier.get();
     }
 
