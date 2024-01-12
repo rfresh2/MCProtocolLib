@@ -14,10 +14,12 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
 import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
 import io.netty.util.concurrent.Future;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TcpServer extends AbstractServer {
@@ -25,6 +27,8 @@ public class TcpServer extends AbstractServer {
     private Class<? extends ServerSocketChannel> serverSocketChannel;
     private Channel channel;
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
+    @Setter
+    private Consumer<Channel> initChannelConsumer;
 
     public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol) {
         super(host, port, protocol);
@@ -56,31 +60,12 @@ public class TcpServer extends AbstractServer {
             }
         }
 
-        ChannelFuture future = new ServerBootstrap().channel(this.serverSocketChannel).childHandler(new ChannelInitializer<Channel>() {
-            @Override
-            public void initChannel(Channel channel) {
-                InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-                MinecraftProtocol protocol = createPacketProtocol();
-
-                TcpSession session = new TcpServerSession(address.getHostName(), address.getPort(), protocol, TcpServer.this);
-                session.getPacketProtocol().newServerSession(TcpServer.this, session);
-
-                channel.config().setOption(ChannelOption.IP_TOS, 0x18);
-                try {
-                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-                } catch (ChannelException ignored) {
-                }
-
-                ChannelPipeline pipeline = channel.pipeline();
-
-                session.refreshReadTimeoutHandler(channel);
-                session.refreshWriteTimeoutHandler(channel);
-
-                pipeline.addLast("sizer", new TcpPacketSizer(session));
-                pipeline.addLast("codec", new TcpPacketCodec(session, false));
-                pipeline.addLast("manager", session);
-            }
-        }).group(this.group).localAddress(this.getHost(), this.getPort()).bind();
+        ChannelFuture future = new ServerBootstrap()
+            .channel(this.serverSocketChannel)
+            .childHandler(buildChannelInitializer())
+            .group(this.group)
+            .localAddress(this.getHost(), this.getPort())
+            .bind();
 
         if(wait) {
             try {
@@ -104,6 +89,39 @@ public class TcpServer extends AbstractServer {
                 }
             });
         }
+    }
+
+    private ChannelInitializer<Channel> buildChannelInitializer() {
+        return new ChannelInitializer<>() {
+            @Override
+            public void initChannel(Channel channel) {
+                InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+                MinecraftProtocol protocol = createPacketProtocol();
+
+                TcpSession session = new TcpServerSession(address.getHostName(),
+                                                          address.getPort(),
+                                                          protocol,
+                                                          TcpServer.this);
+                session.getPacketProtocol().newServerSession(TcpServer.this, session);
+
+                channel.config().setOption(ChannelOption.IP_TOS, 0x18);
+                try {
+                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+                } catch (ChannelException ignored) {
+                }
+
+                ChannelPipeline pipeline = channel.pipeline();
+
+                session.refreshReadTimeoutHandler(channel);
+                session.refreshWriteTimeoutHandler(channel);
+
+                pipeline.addLast("sizer", new TcpPacketSizer(session));
+                pipeline.addLast("codec", new TcpPacketCodec(session, false));
+                pipeline.addLast("manager", session);
+                if (initChannelConsumer != null)
+                    initChannelConsumer.accept(channel);
+            }
+        };
     }
 
     @Override
