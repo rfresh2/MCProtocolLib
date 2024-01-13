@@ -27,6 +27,7 @@ import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class TcpClientSession extends TcpSession {
     private static final String IP_REGEX = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
@@ -53,6 +55,8 @@ public class TcpClientSession extends TcpSession {
     private final int bindPort;
     private final ProxyInfo proxy;
     private final PacketCodecHelper codecHelper;
+    @Setter
+    private Consumer<Channel> initChannelConsumer;
 
     public TcpClientSession(String host, int port, MinecraftProtocol protocol) {
         this(host, port, protocol, null);
@@ -103,6 +107,8 @@ public class TcpClientSession extends TcpSession {
                 pipeline.addLast("manager", TcpClientSession.this);
 
                 addHAProxySupport(pipeline);
+                if (initChannelConsumer != null)
+                    initChannelConsumer.accept(channel);
             }
         };
     }
