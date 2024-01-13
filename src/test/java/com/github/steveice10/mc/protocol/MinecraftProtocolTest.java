@@ -51,7 +51,11 @@ public class MinecraftProtocolTest {
 
     @BeforeClass
     public static void setupServer() {
-        server = new TcpServer(HOST, PORT, MinecraftProtocol::new);
+        server = new TcpServer(HOST, PORT, () -> {
+            var protocol = new MinecraftProtocol();
+            protocol.setUseDefaultListeners(true);
+            return protocol;
+        });
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
         server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
@@ -70,7 +74,9 @@ public class MinecraftProtocolTest {
 
     @Test
     public void testStatus() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol());
+        var protocol = new MinecraftProtocol();
+        protocol.setUseDefaultListeners(true);
+        Session session = new TcpClientSession(HOST, PORT, protocol);
         try {
             ServerInfoHandlerTest handler = new ServerInfoHandlerTest();
             session.setFlag(SERVER_INFO_HANDLER_KEY, handler);
@@ -87,7 +93,9 @@ public class MinecraftProtocolTest {
 
     @Test
     public void testLogin() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol("Username"));
+        var protocol = new MinecraftProtocol("Username");
+        protocol.setUseDefaultListeners(true);
+        Session session = new TcpClientSession(HOST, PORT, protocol);
         try {
             LoginListenerTest listener = new LoginListenerTest();
             session.addListener(listener);
