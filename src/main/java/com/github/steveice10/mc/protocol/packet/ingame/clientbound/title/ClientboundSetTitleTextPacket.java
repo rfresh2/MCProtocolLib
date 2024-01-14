@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
 import net.kyori.adventure.text.Component;
-import org.jetbrains.annotations.Nullable;
+import lombok.NonNull;
 
 import java.io.IOException;
 
@@ -15,14 +15,14 @@ import java.io.IOException;
 @With
 @AllArgsConstructor
 public class ClientboundSetTitleTextPacket implements MinecraftPacket {
-    private final @Nullable Component text;
+    private final @NonNull Component text;
 
-    public ClientboundSetTitleTextPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundSetTitleTextPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.text = helper.readComponent(in);
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws IOException {
-        helper.writeComponent(out, getText() != null ? getText() : Component.text("null"));
+        helper.writeComponent(out, this.text);
     }
 }
