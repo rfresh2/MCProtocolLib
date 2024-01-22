@@ -5,6 +5,7 @@ import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
+@ToString(exclude = {"publicKey", "keySignature"})
 public class PlayerListEntry {
     private final @NonNull UUID profileId;
     private @NonNull GameProfile profile;

@@ -6,6 +6,7 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import lombok.With;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.IOException;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "registry")
 public class ClientboundRegistryDataPacket implements MinecraftPacket {
     private final CompoundTag registry;
 

@@ -7,16 +7,14 @@ import com.github.steveice10.mc.protocol.data.game.command.CommandParser;
 import com.github.steveice10.mc.protocol.data.game.command.CommandType;
 import com.github.steveice10.mc.protocol.data.game.command.properties.*;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
+import lombok.*;
 
 import java.util.OptionalInt;
 
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "nodes")
 public class ClientboundCommandsPacket implements MinecraftPacket {
     private static final int FLAG_TYPE_MASK = 0x03;
     private static final int FLAG_EXECUTABLE = 0x04;

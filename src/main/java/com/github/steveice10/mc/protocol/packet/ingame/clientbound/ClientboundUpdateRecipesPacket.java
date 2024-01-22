@@ -9,16 +9,14 @@ import com.github.steveice10.mc.protocol.data.game.recipe.Recipe;
 import com.github.steveice10.mc.protocol.data.game.recipe.RecipeType;
 import com.github.steveice10.mc.protocol.data.game.recipe.data.*;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
+import lombok.*;
 
 import java.io.IOException;
 
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "recipes")
 public class ClientboundUpdateRecipesPacket implements MinecraftPacket {
     private final @NonNull Recipe[] recipes;
 

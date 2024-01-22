@@ -5,6 +5,7 @@ import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.With;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @Data
 @With
+@ToString(exclude = "tags")
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     private @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
 
