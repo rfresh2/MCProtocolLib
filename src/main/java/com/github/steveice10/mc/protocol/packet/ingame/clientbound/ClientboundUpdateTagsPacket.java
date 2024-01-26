@@ -3,10 +3,7 @@ package com.github.steveice10.mc.protocol.packet.ingame.clientbound;
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
+import lombok.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +11,7 @@ import java.util.Map;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "tags")
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     private final @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
 

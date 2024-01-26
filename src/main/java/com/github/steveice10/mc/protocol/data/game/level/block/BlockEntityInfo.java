@@ -2,15 +2,13 @@ package com.github.steveice10.mc.protocol.data.game.level.block;
 
 import com.github.steveice10.opennbt.mini.MNBT;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.ToString;
 import org.jetbrains.annotations.Nullable;
 
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
 @AllArgsConstructor
+@ToString(exclude = "nbt")
 public class BlockEntityInfo {
     private int x;
     private int y;

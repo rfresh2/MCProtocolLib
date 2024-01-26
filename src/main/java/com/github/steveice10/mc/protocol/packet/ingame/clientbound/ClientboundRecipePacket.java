@@ -12,6 +12,7 @@ import java.util.Arrays;
 @Data
 @With
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString(exclude = {"recipeIdsToChange", "recipeIdsToInit"})
 public class ClientboundRecipePacket implements MinecraftPacket {
     private final @NonNull UnlockRecipesAction action;
 

@@ -5,6 +5,7 @@ import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +15,7 @@ import java.io.IOException;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "iconBytes")
 public class ClientboundServerDataPacket implements MinecraftPacket {
     private final Component motd;
     private final byte @Nullable[] iconBytes;
