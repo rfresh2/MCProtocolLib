@@ -10,7 +10,7 @@
 
     <name>MCProtocolLib</name>
     <description>A library for communicating with a Minecraft client or server.</description>
-    <url>http://github.com/rfresh2/MCProtocolLib/</url>
+    <url>https://github.com/rfresh2/MCProtocolLib/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
