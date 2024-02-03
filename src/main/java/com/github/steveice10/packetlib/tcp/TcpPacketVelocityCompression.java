@@ -20,10 +20,10 @@ public class TcpPacketVelocityCompression extends ByteToMessageCodec<ByteBuf> {
     private final boolean validateDecompression;
     private final VelocityCompressor velocityCompressor;
     private static final Logger LOGGER = LoggerFactory.getLogger("Proxy");
-    public TcpPacketVelocityCompression(Session session, boolean validateDecompression) {
+    public TcpPacketVelocityCompression(Session session, int compressionLevel, boolean validateDecompression) {
         this.session = session;
         this.validateDecompression = validateDecompression;
-        this.velocityCompressor = Natives.compress.get().create(4);
+        this.velocityCompressor = Natives.compress.get().create(compressionLevel);
         LOGGER.debug("Velocity {} compression initialized.", Natives.compress.getLoadedVariant());
     }
 

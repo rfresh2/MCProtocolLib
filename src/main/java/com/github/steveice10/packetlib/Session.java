@@ -181,10 +181,11 @@ public interface Session {
     /**
      * Sets the compression packet length threshold for this session (-1 = disabled).
      *
-     * @param threshold The new compression threshold.
+     * @param threshold             The new compression threshold.
+     * @param level                 Higher level = more compression, but more CPU. -1 = default level
      * @param validateDecompression whether to validate that the decompression fits within size checks.
      */
-    void setCompressionThreshold(int threshold, boolean validateDecompression);
+    void setCompressionThreshold(int threshold, final int level, boolean validateDecompression);
 
     /**
      * Enables encryption for this session.

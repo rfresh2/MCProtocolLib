@@ -156,7 +156,7 @@ public class ServerListener extends SessionAdapter {
     @Override
     public void packetSent(Session session, Packet packet) {
         if (packet instanceof ClientboundLoginCompressionPacket) {
-            session.setCompressionThreshold(((ClientboundLoginCompressionPacket) packet).getThreshold(), true);
+            session.setCompressionThreshold(((ClientboundLoginCompressionPacket) packet).getThreshold(), -1, true);
             session.send(new ClientboundGameProfilePacket(session.getFlag(MinecraftConstants.PROFILE_KEY)));
         } else if (packet instanceof ClientboundGameProfilePacket) {
             session.getPacketProtocol().setState(ProtocolState.GAME);
