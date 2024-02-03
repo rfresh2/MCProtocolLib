@@ -218,12 +218,12 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void setCompressionThreshold(int threshold, boolean validateDecompression) {
+    public void setCompressionThreshold(int threshold, final int level, boolean validateDecompression) {
         this.compressionThreshold = threshold;
         if (this.channel != null) {
             if (this.compressionThreshold >= 0) {
                 if (this.channel.pipeline().get("compression") == null) {
-                    this.channel.pipeline().addAfter("sizer", "compression", new TcpPacketVelocityCompression(this, validateDecompression));
+                    this.channel.pipeline().addAfter("sizer", "compression", new TcpPacketVelocityCompression(this, level, validateDecompression));
                 }
             } else if (this.channel.pipeline().get("compression") != null) {
                 this.channel.pipeline().remove("compression");
