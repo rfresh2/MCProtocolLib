@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 @AllArgsConstructor
 public class ItemStack {
     private final int id;
-    private final int amount;
+    private int amount;
     private final @Nullable MNBT nbt;
 
     public ItemStack(int id) {
