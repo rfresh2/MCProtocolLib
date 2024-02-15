@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class ItemStack {
     private final int id;
-    private final int amount;
+    private int amount;
     private final MNBT nbt;
 
     public ItemStack(int id) {
