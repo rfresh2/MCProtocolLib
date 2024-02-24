@@ -16,7 +16,7 @@ import java.util.BitSet;
 @AllArgsConstructor
 public class ServerboundChatPacket implements MinecraftPacket {
     private @NotNull String message;
-    private final long timeStamp;
+    private long timeStamp;
     private final long salt;
     private final byte @Nullable[] signature;
     private final int offset;

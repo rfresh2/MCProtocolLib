@@ -227,7 +227,7 @@
 
     <build>
         <defaultGoal>clean install</defaultGoal>
-        <sourceDirectory>target/generated-sources/delombok</sourceDirectory>
+<!--        <sourceDirectory>target/generated-sources/delombok</sourceDirectory>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
