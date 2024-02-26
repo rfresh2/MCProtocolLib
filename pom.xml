@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <netty.version>4.1.107.Final</netty.version>
-        <adventure.version>4.15.0</adventure.version>
+        <adventure.version>4.16.0</adventure.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
         <argLine/>
     </properties>
@@ -220,7 +220,7 @@
         <dependency>
             <groupId>io.netty.incubator</groupId>
             <artifactId>netty-incubator-transport-native-io_uring</artifactId>
-            <version>0.0.24.Final</version>
+            <version>0.0.25.Final</version>
             <classifier>linux-x86_64</classifier>
         </dependency>
     </dependencies>
@@ -337,7 +337,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>generate-delomboked-sources-jar</id>
