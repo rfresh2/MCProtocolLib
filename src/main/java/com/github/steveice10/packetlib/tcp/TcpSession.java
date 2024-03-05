@@ -294,6 +294,23 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
+    public void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
+            this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
+                if(future.isSuccess()) {
+                    callPacketSent(toSend);
+                } else {
+                    exceptionCaught(null, future.cause());
+                }
+            }).addListener(listener);
+        }
+    }
+
+    @Override
     public void sendDirect(@NotNull Packet packet) {
         if(this.channel == null || !this.channel.isActive()) {
             return;

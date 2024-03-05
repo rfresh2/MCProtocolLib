@@ -4,6 +4,7 @@ import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
+import io.netty.channel.ChannelFutureListener;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -249,6 +250,8 @@ public interface Session {
      * @param packet Packet to send.
      */
     void send(@NonNull Packet packet);
+
+    void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
 
     /**
      * Sends a packet without calling listeners
