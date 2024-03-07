@@ -6,8 +6,9 @@ import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.PacketCodec;
 import com.github.steveice10.mc.protocol.codec.PacketStateCodec;
 import com.github.steveice10.mc.protocol.data.ProtocolState;
-import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.io.NBTIO;
+import com.github.steveice10.opennbt.tag.limiter.TagLimiter;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
@@ -23,7 +24,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -255,7 +255,7 @@ public class MinecraftProtocol extends PacketProtocol {
     public static CompoundTag loadNetworkCodec() {
         try (InputStream inputStream = Objects.requireNonNull(MinecraftProtocol.class.getClassLoader().getResourceAsStream("networkCodec.nbt")) ;
              DataInputStream stream = new DataInputStream(new GZIPInputStream(inputStream))) {
-            return (CompoundTag) NBTIO.readTag((DataInput) stream);
+            return NBTIO.readTag(stream, TagLimiter.noop(), true, CompoundTag.class);
         } catch (Exception e) {
             throw new AssertionError("Unable to load network codec.", e);
         }

@@ -62,6 +62,6 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
         }
 
         out.writeByte(flags);
-        helper.writeNullable(out, this.factorData, helper::writeAnyTag);
+        helper.writeNullable(out, this.factorData, helper::writeTag);
     }
 }

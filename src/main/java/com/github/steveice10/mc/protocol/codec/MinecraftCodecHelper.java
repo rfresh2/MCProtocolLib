@@ -38,11 +38,12 @@ import com.github.steveice10.mc.protocol.data.game.level.sound.SoundCategory;
 import com.github.steveice10.mc.protocol.data.game.recipe.Ingredient;
 import com.github.steveice10.mc.protocol.data.game.statistic.StatisticCategory;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import com.github.steveice10.opennbt.MNBTIO;
-import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.mini.MNBT;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.github.steveice10.opennbt.tag.io.MNBTIO;
+import com.github.steveice10.opennbt.tag.io.NBTIO;
+import com.github.steveice10.opennbt.tag.limiter.TagLimiter;
 import com.github.steveice10.packetlib.codec.BasePacketCodecHelper;
 import com.google.gson.JsonElement;
 import io.netty.buffer.ByteBuf;
@@ -157,13 +158,13 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public CompoundTag readAnyTag(ByteBuf buf) throws UncheckedIOException {
-        return readAnyTag(buf, CompoundTag.class);
+    public CompoundTag readTag(ByteBuf buf) throws UncheckedIOException {
+        return readTag(buf, CompoundTag.class);
     }
 
     @NotNull
     public CompoundTag readAnyTagOrThrow(ByteBuf buf) throws UncheckedIOException {
-        CompoundTag tag = readAnyTag(buf);
+        CompoundTag tag = readTag(buf);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read CompoundTag");
         }
@@ -171,50 +172,41 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public <T extends Tag> T readAnyTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
-        try {
-            Tag tag = NBTIO.readAnyTag(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            });
-
-            if (tag == null) {
-                return null;
-            }
-
-            if (!expected.isInstance(tag)) {
-                throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
-            }
-
-            return expected.cast(tag);
+    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) throws UncheckedIOException {
+        if (buf.readByte() == 0) {
+            return null;
+        }
+        buf.readerIndex(buf.readerIndex() - 1);
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            return NBTIO.readTag(in, TagLimiter.noop(), false, expected);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    public <T extends Tag> void writeAnyTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
-        try {
-            NBTIO.writeAnyTag(new OutputStream() {
-                @Override
-                public void write(int b) {
-                    buf.writeByte(b);
-                }
-            }, tag);
+    public <T extends Tag> void writeTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
+        if (tag == null) {
+            buf.writeByte(0);
+            return;
+        }
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            NBTIO.writeTag(out, tag, false);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
-        try {
-            var mnbt = MNBTIO.read(new DataInputStream(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            }));
+    public <T extends Tag> void writeNamedTag(ByteBuf buf, CompoundTag tag, String name) throws UncheckedIOException {
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            NBTIO.writeTag(out, tag, false);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public MNBT readNamedMNBT(ByteBuf buf) throws UncheckedIOException {
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            var mnbt = MNBTIO.read(in, true);
             if (mnbt.isEmpty()) return null;
             else return mnbt;
         } catch (final IOException e) {
@@ -222,14 +214,9 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public MNBT readAnyMNBT(ByteBuf buf) throws UncheckedIOException {
-        try {
-            var mnbt = MNBTIO.readAny(new DataInputStream(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            }));
+    public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            var mnbt = MNBTIO.read(in, false);
             if (mnbt.isEmpty()) return null;
             else return mnbt;
         } catch (final IOException e) {
@@ -238,16 +225,29 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
-        try {
-            MNBTIO.write(new DataOutputStream(new OutputStream() {
-                @Override
-                public void write(int b) {
-                    buf.writeByte(b);
-                }
-            }), mnbt);
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            MNBTIO.write(out, mnbt);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private DataInputStream byteBufToDataInputStream(ByteBuf buf) {
+        return new DataInputStream(new InputStream() {
+            @Override
+            public int read() {
+                return buf.readUnsignedByte();
+            }
+        });
+    }
+
+    private DataOutputStream byteBufToDataOutputStream(ByteBuf buf) {
+        return new DataOutputStream(new OutputStream() {
+            @Override
+            public void write(int b) {
+                buf.writeByte(b);
+            }
+        });
     }
 
     public ItemStack readItemStack(ByteBuf buf) throws UncheckedIOException {
@@ -257,7 +257,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
 
         int item = this.readVarInt(buf);
-        return new ItemStack(item, buf.readByte(), this.readAnyMNBT(buf));
+        return new ItemStack(item, buf.readByte(), this.readMNBT(buf));
     }
 
     public void writeItemStack(ByteBuf buf, ItemStack item) throws UncheckedIOException {
@@ -355,7 +355,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public Component readComponent(ByteBuf buf) throws UncheckedIOException {
         // do not use CompoundTag, as mojang serializes a plaintext component as just a single StringTag
-        Tag tag = readAnyTag(buf, Tag.class);
+        Tag tag = readTag(buf, null);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read Component");
         }
@@ -561,7 +561,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             StyledFormat styledFormat = (StyledFormat) numberFormat;
 
             this.writeVarInt(buf, 1);
-            this.writeAnyTag(buf, styledFormat.getStyle());
+            this.writeTag(buf, styledFormat.getStyle());
         } else if (numberFormat instanceof FixedFormat) {
             FixedFormat fixedFormat = (FixedFormat) numberFormat;
 

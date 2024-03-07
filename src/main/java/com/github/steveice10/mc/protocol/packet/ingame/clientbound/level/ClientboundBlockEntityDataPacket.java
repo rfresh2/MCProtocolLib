@@ -25,7 +25,7 @@ public class ClientboundBlockEntityDataPacket implements MinecraftPacket {
     public ClientboundBlockEntityDataPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.position = helper.readPosition(in);
         this.type = helper.readBlockEntityType(in);
-        this.nbt = helper.readAnyMNBT(in);
+        this.nbt = helper.readMNBT(in);
     }
 
     @Override

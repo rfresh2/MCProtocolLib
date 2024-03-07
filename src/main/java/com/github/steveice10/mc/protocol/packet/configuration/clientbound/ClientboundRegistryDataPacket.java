@@ -19,11 +19,11 @@ public class ClientboundRegistryDataPacket implements MinecraftPacket {
     private final CompoundTag registry;
 
     public ClientboundRegistryDataPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
-        this.registry = helper.readAnyTag(in);
+        this.registry = helper.readTag(in);
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws IOException {
-        helper.writeAnyTag(out, this.registry);
+        helper.writeTag(out, this.registry);
     }
 }

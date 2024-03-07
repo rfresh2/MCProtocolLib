@@ -26,7 +26,7 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     public ClientboundLevelChunkWithLightPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.x = in.readInt();
         this.z = in.readInt();
-        this.heightMaps = helper.readAnyMNBT(in);
+        this.heightMaps = helper.readMNBT(in);
         this.chunkData = helper.readByteArray(in);
 
         this.blockEntities = new BlockEntityInfo[helper.readVarInt(in)];
@@ -36,7 +36,7 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
             int blockEntityZ = xz & 15;
             int blockEntityY = in.readShort();
             BlockEntityType type = helper.readBlockEntityType(in);
-            MNBT tag = helper.readAnyMNBT(in);
+            MNBT tag = helper.readMNBT(in);
             this.blockEntities[i] = new BlockEntityInfo(blockEntityX, blockEntityY, blockEntityZ, type, tag);
         }
 
