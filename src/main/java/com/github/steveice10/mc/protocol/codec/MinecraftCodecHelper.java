@@ -67,7 +67,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     private static final int POSITION_Z_SIZE = 38;
     private static final int POSITION_Y_SHIFT = 0xFFF;
     private static final int POSITION_WRITE_SHIFT = 0x3FFFFFF;
-    public static final boolean useBinaryNbtComponentSerializer = true;
+    public static boolean useBinaryNbtComponentSerializer = true;
 
     private final Int2ObjectMap<LevelEventType> levelEvents;
     private final Map<String, BuiltinSound> soundNames;
