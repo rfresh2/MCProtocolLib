@@ -2,6 +2,7 @@ package com.github.steveice10.mc.protocol.codec;
 
 import com.github.steveice10.opennbt.mini.MNBTWriter;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.builtin.IntArrayTag;
 import com.github.steveice10.opennbt.tag.builtin.ListTag;
 import com.github.steveice10.opennbt.tag.io.MNBTIO;
 import org.junit.jupiter.api.Assertions;
@@ -35,6 +36,23 @@ public class MNBTWriterTest {
             writer.writeEndTag();
             writer.writeStringTag("mapKey3", "mapValue3");
             writer.writeEndTag();
+            writer.writeEndTag();
+            var mnbt = writer.toMNBT();
+            var mnbtTag = MNBTIO.read(mnbt);
+            Assertions.assertEquals(compoundTag, mnbtTag);
+        }
+    }
+
+    @Test
+    public void intArrayTagTest() throws Exception {
+        var compoundTag = new CompoundTag();
+        compoundTag.put("intArray", new IntArrayTag(new int[]{0, 1, 2, 3}));
+
+        var compoundTagBytes = MNBTIO.write(compoundTag, false).getData();
+
+        try (MNBTWriter writer = new MNBTWriter()) {
+            writer.writeStartTag();
+            writer.writeIntArrayTag("intArray", new int[]{0, 1, 2, 3});
             writer.writeEndTag();
             var mnbt = writer.toMNBT();
             var mnbtTag = MNBTIO.read(mnbt);

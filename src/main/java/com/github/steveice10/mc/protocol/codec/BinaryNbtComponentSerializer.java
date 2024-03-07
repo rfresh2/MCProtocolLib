@@ -5,6 +5,7 @@ import com.github.steveice10.opennbt.mini.MNBTWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ public class BinaryNbtComponentSerializer {
     private static final Logger LOGGER = getLogger("Proxy");
 
     public static MNBT serializeToMNBT(Component component) {
-        component = component.compact();
+//        component = component.compact();
         try (MNBTWriter writer = new MNBTWriter()) {
             writer.writeStartTag();
             serialize(writer, component);
@@ -59,7 +60,6 @@ public class BinaryNbtComponentSerializer {
                 }
                 writer.writeEndTag();
             }
-            writer.writeEndTag();
         }
     }
 
@@ -104,9 +104,37 @@ public class BinaryNbtComponentSerializer {
                 writer.writeEndTag();
             }
             if (component.style().hoverEvent() != null) {
+                var hover = component.style().hoverEvent().value();
                 writer.writeCompoundTag("hoverEvent");
                 writer.writeStringTag("action", component.style().hoverEvent().action().toString());
-                writer.writeStringTag("value", component.style().hoverEvent().value().toString());
+                writer.writeCompoundTag("contents");
+                if (hover instanceof Component hoverComponent) {
+                    serialize(writer, hoverComponent);
+                } else if (hover instanceof HoverEvent.ShowItem showItem) {
+                    writer.writeStringTag("id", showItem.item().asString());
+                    if (showItem.count() != 1)
+                        writer.writeIntTag("count", showItem.count());
+                    if (showItem.nbt() != null) {
+                        writer.writeStringTag("tag", showItem.nbt().string()); // todo: ??
+                    }
+                } else if (hover instanceof HoverEvent.ShowEntity showEntity) {
+                    writer.writeStringTag("type", showEntity.type().asString());
+                    var uuid = showEntity.id();
+                    writer.writeIntArrayTag("id", new int[]{
+                        (int) (uuid.getMostSignificantBits() >> 32),
+                        (int) uuid.getMostSignificantBits(),
+                        (int) (uuid.getLeastSignificantBits() >> 32),
+                        (int) uuid.getLeastSignificantBits()
+                    });
+                    if (showEntity.name() != null) {
+                        writer.writeCompoundTag("name");
+                        serialize(writer, showEntity.name());
+                        writer.writeEndTag();
+                    }
+                } else {
+                    writer.writeStringTag("value", hover.toString());
+                }
+                writer.writeEndTag();
                 writer.writeEndTag();
             }
             if (component.style().insertion() != null) {
