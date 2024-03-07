@@ -3,7 +3,7 @@ package com.github.steveice10.mc.protocol.packet.ingame.clientbound.entity;
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
 import com.github.steveice10.mc.protocol.data.game.entity.Effect;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +28,7 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
     private final boolean ambient;
     private final boolean showParticles;
     private final boolean showIcon;
-    private final @Nullable CompoundTag factorData;
+    private final @Nullable MNBT factorData;
 
     public ClientboundUpdateMobEffectPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.entityId = helper.readVarInt(in);
@@ -40,7 +40,7 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
         this.ambient = (flags & FLAG_AMBIENT) != 0;
         this.showParticles = (flags & FLAG_SHOW_PARTICLES) != 0;
         this.showIcon = (flags & FLAG_SHOW_ICON) != 0;
-        this.factorData = helper.readNullable(in, helper::readAnyTagOrThrow);
+        this.factorData = helper.readNullable(in, helper::readMNBT);
     }
 
     @Override
@@ -62,6 +62,6 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
         }
 
         out.writeByte(flags);
-        helper.writeNullable(out, this.factorData, helper::writeTag);
+        helper.writeNullable(out, this.factorData, helper::writeMNBT);
     }
 }
