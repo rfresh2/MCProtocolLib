@@ -364,9 +364,8 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public void writeComponent(ByteBuf buf, Component component) throws UncheckedIOException {
-        JsonElement json = DefaultComponentSerializer.get().serializeToTree(component);
-        Tag tag = NbtComponentSerializer.jsonComponentToTag(json);
-        writeAnyTag(buf, tag);
+        var mnbt = BinaryNbtComponentSerializer.serializeToMNBT(component);
+        writeMNBT(buf, mnbt);
     }
 
     public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) throws UncheckedIOException {
