@@ -8,8 +8,9 @@ import com.github.steveice10.mc.protocol.data.status.VersionInfo;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoBuilder;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import com.github.steveice10.opennbt.NBTIO;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.io.NBTIO;
+import com.github.steveice10.opennbt.tag.limiter.TagLimiter;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
@@ -22,7 +23,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,7 +147,7 @@ public class MinecraftProtocolTest {
     public static CompoundTag loadLoginRegistry() {
         try (InputStream inputStream = MinecraftProtocolTest.class.getClassLoader().getResourceAsStream("networkCodec.nbt");
             DataInputStream stream = new DataInputStream(new GZIPInputStream(inputStream))) {
-            return (CompoundTag) NBTIO.readTag((DataInput) stream);
+            return NBTIO.readTag(stream, TagLimiter.noop(), true, CompoundTag.class);
         } catch (IOException e) {
             e.printStackTrace();
             throw new AssertionError("Unable to load network codec.");
