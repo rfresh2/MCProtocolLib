@@ -41,15 +41,15 @@ import java.util.function.Consumer;
 
 public class TcpClientSession extends TcpSession {
     private static final String IP_REGEX = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
-    private static Class<? extends Channel> CHANNEL_CLASS;
-    private static Class<? extends DatagramChannel> DATAGRAM_CHANNEL_CLASS;
-    private static EventLoopGroup EVENT_LOOP_GROUP;
+    public static Class<? extends Channel> CHANNEL_CLASS;
+    public static Class<? extends DatagramChannel> DATAGRAM_CHANNEL_CLASS;
+    public static EventLoopGroup EVENT_LOOP_GROUP;
     /**
      * See {@link EventLoopGroup#shutdownGracefully(long, long, TimeUnit)}
      */
     private static final int SHUTDOWN_QUIET_PERIOD_MS = 100;
     private static final int SHUTDOWN_TIMEOUT_MS = 500;
-    private static Logger LOGGER = LoggerFactory.getLogger("PacketLib");
+    private static Logger LOGGER = LoggerFactory.getLogger("Proxy");
 
     private final String bindAddress;
     private final int bindPort;
@@ -296,7 +296,7 @@ public class TcpClientSession extends TcpSession {
         super.disconnect(reason, cause);
     }
 
-    private static void createTcpEventLoopGroup() {
+    public static void createTcpEventLoopGroup() {
         if (CHANNEL_CLASS != null) {
             return;
         }
@@ -331,5 +331,9 @@ public class TcpClientSession extends TcpSession {
        // killed after SHUTDOWN_TIMEOUT_MS along with the other
        // daemon threads as the runtime exits.
        return new DefaultThreadFactory(TcpClientSession.class, true);
+    }
+
+    public EventLoopGroup getEventLoopGroup() {
+        return EVENT_LOOP_GROUP;
     }
 }
