@@ -23,8 +23,8 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
     private final int containerId;
     private final int stateId;
     private final int slot;
-    private final ContainerActionType action;
-    private final ContainerAction param;
+    private final byte param;
+    private final byte actionType;
     private final ItemStack carriedItem;
     private final @NonNull Int2ObjectMap<ItemStack> changedSlots;
 
@@ -38,12 +38,27 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
             throw new IllegalArgumentException("Slot must be " + CLICK_OUTSIDE_NOT_HOLDING_SLOT
                     + " with param LEFT_CLICK_OUTSIDE_NOT_HOLDING or RIGHT_CLICK_OUTSIDE_NOT_HOLDING");
         }
-
+        int paramId = param.getId();
+        if (action == ContainerActionType.DROP_ITEM) {
+            paramId %= 2;
+        }
+        byte paramByte = (byte) paramId;
+        byte actionByte = (byte) action.ordinal();
         this.containerId = containerId;
         this.stateId = stateId;
         this.slot = slot;
-        this.action = action;
+        this.param = paramByte;
+        this.actionType = actionByte;
+        this.carriedItem = carriedItem;
+        this.changedSlots = changedSlots;
+    }
+
+    public ServerboundContainerClickPacket(final int containerId, final int stateId, final int slot, final byte param, final byte actionType, final ItemStack carriedItem, final @NonNull Int2ObjectMap<ItemStack> changedSlots) {
+        this.containerId = containerId;
+        this.stateId = stateId;
+        this.slot = slot;
         this.param = param;
+        this.actionType = actionType;
         this.carriedItem = carriedItem;
         this.changedSlots = changedSlots;
     }
@@ -52,26 +67,8 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
         this.containerId = in.readByte();
         this.stateId = helper.readVarInt(in);
         this.slot = in.readShort();
-        byte param = in.readByte();
-        this.action = ContainerActionType.from(in.readByte());
-        if (this.action == ContainerActionType.CLICK_ITEM) {
-            this.param = ClickItemAction.from(param);
-        } else if (this.action == ContainerActionType.SHIFT_CLICK_ITEM) {
-            this.param = ShiftClickItemAction.from(param);
-        } else if (this.action == ContainerActionType.MOVE_TO_HOTBAR_SLOT) {
-            this.param = MoveToHotbarAction.from(param);
-        } else if (this.action == ContainerActionType.CREATIVE_GRAB_MAX_STACK) {
-            this.param = CreativeGrabAction.from(param);
-        } else if (this.action == ContainerActionType.DROP_ITEM) {
-            this.param = DropItemAction.from(param + (this.slot != -999 ? 2 : 0));
-        } else if (this.action == ContainerActionType.SPREAD_ITEM) {
-            this.param = SpreadItemAction.from(param);
-        } else if (this.action == ContainerActionType.FILL_STACK) {
-            this.param = FillStackAction.from(param);
-        } else {
-            throw new IllegalStateException();
-        }
-
+        this.param = in.readByte();
+        this.actionType = in.readByte();
         int changedItemsSize = helper.readVarInt(in);
         this.changedSlots = new Int2ObjectOpenHashMap<>(changedItemsSize);
         for (int i = 0; i < changedItemsSize; i++) {
@@ -88,15 +85,8 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
         out.writeByte(this.containerId);
         helper.writeVarInt(out, this.stateId);
         out.writeShort(this.slot);
-
-        int param = this.param.getId();
-        if (this.action == ContainerActionType.DROP_ITEM) {
-            param %= 2;
-        }
-
-        out.writeByte(param);
-        out.writeByte(this.action.ordinal());
-
+        out.writeByte(this.param);
+        out.writeByte(this.actionType);
         helper.writeVarInt(out, this.changedSlots.size());
         for (Int2ObjectMap.Entry<ItemStack> pair : this.changedSlots.int2ObjectEntrySet()) {
             out.writeShort(pair.getIntKey());
@@ -104,5 +94,30 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
         }
 
         helper.writeItemStack(out, this.carriedItem);
+    }
+
+    public ContainerActionType getActionType() {
+        return ContainerActionType.from(actionType);
+    }
+
+    public ContainerAction getActionParam() {
+        var action = getActionType();
+        if (action == ContainerActionType.CLICK_ITEM) {
+            return ClickItemAction.from(param);
+        } else if (action == ContainerActionType.SHIFT_CLICK_ITEM) {
+            return ShiftClickItemAction.from(param);
+        } else if (action == ContainerActionType.MOVE_TO_HOTBAR_SLOT) {
+            return MoveToHotbarAction.from(param);
+        } else if (action == ContainerActionType.CREATIVE_GRAB_MAX_STACK) {
+            return CreativeGrabAction.from(param);
+        } else if (action == ContainerActionType.DROP_ITEM) {
+            return DropItemAction.from(param + (this.slot != -999 ? 2 : 0));
+        } else if (action == ContainerActionType.SPREAD_ITEM) {
+            return SpreadItemAction.from(param);
+        } else if (action == ContainerActionType.FILL_STACK) {
+            return FillStackAction.from(param);
+        } else {
+            throw new IllegalStateException();
+        }
     }
 }
