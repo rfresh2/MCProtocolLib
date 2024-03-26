@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -248,16 +249,19 @@ public interface Session {
      * Sends a packet.
      *
      * @param packet Packet to send.
+     * @return
      */
-    void send(@NonNull Packet packet);
+    Future<Void> send(@NonNull Packet packet);
 
     void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
 
     /**
      * Sends a packet without calling listeners
+     *
      * @param packet Packet to send
+     * @return
      */
-    void sendDirect(@NonNull Packet packet);
+    Future<Void> sendDirect(@NonNull Packet packet);
 
     /**
      * Writes a packet without flushing

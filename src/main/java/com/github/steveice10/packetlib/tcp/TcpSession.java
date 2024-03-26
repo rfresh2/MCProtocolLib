@@ -5,6 +5,7 @@ import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundDe
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
+import com.google.common.util.concurrent.Futures;
 import io.netty.channel.*;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -23,6 +24,7 @@ import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -281,13 +283,13 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void send(@NotNull Packet packet) {
+    public Future<Void> send(@NotNull Packet packet) {
         if(this.channel == null || !this.channel.isActive()) {
-            return;
+            return Futures.immediateVoidFuture();
         }
         final Packet toSend = this.callPacketSending(packet);
         if (toSend != null) {
-            this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
+            return this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
                 if(future.isSuccess()) {
                     callPacketSent(toSend);
                 } else {
@@ -295,6 +297,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 }
             });
         }
+        return this.channel.newSucceededFuture();
     }
 
     @Override
@@ -315,11 +318,11 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void sendDirect(@NotNull Packet packet) {
+    public Future<Void> sendDirect(@NotNull Packet packet) {
         if(this.channel == null || !this.channel.isActive()) {
-            return;
+            return Futures.immediateVoidFuture();
         }
-        this.channel.writeAndFlush(packet).addListener((ChannelFutureListener) future -> {
+        return this.channel.writeAndFlush(packet).addListener((ChannelFutureListener) future -> {
             if(!future.isSuccess()) {
                 exceptionCaught(null, future.cause());
             }
