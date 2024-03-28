@@ -6,6 +6,7 @@ import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.google.common.util.concurrent.Futures;
+import com.velocitypowered.natives.util.Natives;
 import io.netty.channel.*;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
+import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -224,11 +226,23 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.compressionThreshold = threshold;
         if (this.channel != null) {
             if (this.compressionThreshold >= 0) {
-                if (this.channel.pipeline().get("compression") == null) {
-                    this.channel.pipeline().addAfter("sizer", "compression", new TcpPacketVelocityCompression(this, level, validateDecompression));
+                var existingEncoder = (TcpPacketCompressionAndSizeEncoder) this.channel.pipeline().get("compression-encoder");
+                var existingDecoder = (TcpPacketCompressionDecoder) this.channel.pipeline().get("compression-decoder");
+                if (existingDecoder != null && existingEncoder != null) {
+                    return; // we already updated compression threshold on the session field
                 }
-            } else if (this.channel.pipeline().get("compression") != null) {
-                this.channel.pipeline().remove("compression");
+                var compressor = Natives.compress.get().create(level);
+                var encoder = new TcpPacketCompressionAndSizeEncoder(this, compressor);
+                var decoder = new TcpPacketCompressionDecoder(this, validateDecompression, compressor);
+                this.channel.pipeline().addAfter("size-encoder", "compression-encoder", encoder);
+                this.channel.pipeline().addAfter("size-decoder", "compression-decoder", decoder);
+                this.channel.pipeline().remove("size-encoder");
+            } else {
+                var encoder = this.channel.pipeline().remove("compression-encoder");
+                var decoder = this.channel.pipeline().remove("compression-decoder");
+                if (encoder != null && decoder != null) {
+                    this.channel.pipeline().addAfter("size-decoder", "size-encoder", new TcpPacketSizeEncoder(this));
+                }
             }
         }
     }
@@ -238,7 +252,17 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if (channel == null) {
             throw new IllegalStateException("Connect the client before initializing encryption!");
         }
-        channel.pipeline().addBefore("sizer", "encryption", new TcpPacketVelocityEncryptor(key));
+        try {
+            var factory = Natives.cipher.get();
+            var decrypt = factory.forDecryption(key);
+            var encrypt = factory.forEncryption(key);
+            var encoder = new TcpPacketEncryptionEncoder(this, encrypt);
+            var decoder = new TcpPacketEncryptionDecoder(decrypt);
+            this.channel.pipeline().addBefore("size-decoder", "encryption-decoder", decoder);
+            this.channel.pipeline().addBefore("size-encoder", "encryption-encoder", encoder);
+        } catch (final GeneralSecurityException e) {
+            throw new RuntimeException("Failed to initialize encryption.", e);
+        }
     }
 
     @Override

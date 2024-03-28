@@ -102,9 +102,11 @@ public class TcpClientSession extends TcpSession {
 
                 addProxy(pipeline);
 
-                pipeline.addLast("sizer", new TcpPacketSizer(TcpClientSession.this));
-                pipeline.addLast("codec", new TcpPacketCodec(TcpClientSession.this, true));
-                pipeline.addLast("manager", TcpClientSession.this);
+                pipeline
+                    .addLast("size-decoder", new TcpPacketSizeDecoder())
+                    .addLast("size-encoder", new TcpPacketSizeEncoder(TcpClientSession.this))
+                    .addLast("codec", new TcpPacketCodec(TcpClientSession.this, true))
+                    .addLast("manager", TcpClientSession.this);
 
                 addHAProxySupport(pipeline);
                 if (initChannelConsumer != null)
