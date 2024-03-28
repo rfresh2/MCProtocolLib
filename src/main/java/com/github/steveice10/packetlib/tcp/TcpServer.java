@@ -115,9 +115,11 @@ public class TcpServer extends AbstractServer {
                 session.refreshReadTimeoutHandler(channel);
                 session.refreshWriteTimeoutHandler(channel);
 
-                pipeline.addLast("sizer", new TcpPacketSizer(session));
-                pipeline.addLast("codec", new TcpPacketCodec(session, false));
-                pipeline.addLast("manager", session);
+                pipeline
+                    .addLast("size-decoder", new TcpPacketSizeDecoder())
+                    .addLast("size-encoder", new TcpPacketSizeEncoder(session))
+                    .addLast("codec", new TcpPacketCodec(session, false))
+                    .addLast("manager", session);
                 if (initChannelConsumer != null)
                     initChannelConsumer.accept(channel);
             }
