@@ -1,31 +1,28 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.BuiltinFlags;
 import com.github.steveice10.packetlib.ProxyInfo;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.dns.*;
-import io.netty.handler.codec.haproxy.*;
-import io.netty.handler.proxy.HttpProxyHandler;
-import io.netty.handler.proxy.Socks4ProxyHandler;
-import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
+import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
+@Getter
+@Setter
 public class TcpClientSession extends TcpSession {
     private static final String IP_REGEX = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
     /**
@@ -39,8 +36,6 @@ public class TcpClientSession extends TcpSession {
     private final int bindPort;
     private final ProxyInfo proxy;
     private final PacketCodecHelper codecHelper;
-    @Setter
-    private Consumer<Channel> initChannelConsumer;
     private final TcpConnectionManager tcpManager;
 
     public TcpClientSession(String host, int port, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
@@ -65,40 +60,8 @@ public class TcpClientSession extends TcpSession {
     }
 
     public ChannelInitializer<Channel> buildChannelInitializer() {
-        boolean debug = getFlag(BuiltinFlags.PRINT_DEBUG, false);
-        return new ChannelInitializer<Channel>() {
-            @Override
-            public void initChannel(Channel channel) {
-                PacketProtocol protocol = getPacketProtocol();
-                protocol.newClientSession(TcpClientSession.this);
-
-                channel.config().setOption(ChannelOption.IP_TOS, 0x18);
-                try {
-                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-                } catch (ChannelException e) {
-                    if(debug) {
-                        LOGGER.debug("Exception while trying to set TCP_NODELAY", e);
-                    }
-                }
-
-                ChannelPipeline pipeline = channel.pipeline();
-
-                refreshReadTimeoutHandler(channel);
-                refreshWriteTimeoutHandler(channel);
-
-                addProxy(pipeline);
-
-                pipeline
-                    .addLast("size-decoder", new TcpPacketSizeDecoder())
-                    .addLast("size-encoder", new TcpPacketSizeEncoder(TcpClientSession.this))
-                    .addLast("codec", new TcpPacketCodec(TcpClientSession.this, true))
-                    .addLast("manager", TcpClientSession.this);
-
-                addHAProxySupport(pipeline);
-                if (initChannelConsumer != null)
-                    initChannelConsumer.accept(channel);
-            }
-        };
+        return getFlag(MinecraftConstants.CLIENT_CHANNEL_INITIALIZER, TcpClientChannelInitializer.DEFAULT_FACTORY)
+            .create(this);
     }
 
     public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
@@ -216,61 +179,6 @@ public class TcpClientSession extends TcpSession {
                 LOGGER.debug("Failed to resolve host, letting Netty do it instead.", e);
             }
             return InetSocketAddress.createUnresolved(getHost(), getPort());
-        }
-    }
-
-    private void addProxy(ChannelPipeline pipeline) {
-        if(proxy != null) {
-            switch(proxy.getType()) {
-                case HTTP:
-                    if (proxy.isAuthenticated()) {
-                        pipeline.addFirst("proxy", new HttpProxyHandler(proxy.getAddress(), proxy.getUsername(), proxy.getPassword()));
-                    } else {
-                        pipeline.addFirst("proxy", new HttpProxyHandler(proxy.getAddress()));
-                    }
-
-                    break;
-                case SOCKS4:
-                    if (proxy.isAuthenticated()) {
-                        pipeline.addFirst("proxy", new Socks4ProxyHandler(proxy.getAddress(), proxy.getUsername()));
-                    } else {
-                        pipeline.addFirst("proxy", new Socks4ProxyHandler(proxy.getAddress()));
-                    }
-
-                    break;
-                case SOCKS5:
-                    if (proxy.isAuthenticated()) {
-                        pipeline.addFirst("proxy", new Socks5ProxyHandler(proxy.getAddress(), proxy.getUsername(), proxy.getPassword()));
-                    } else {
-                        pipeline.addFirst("proxy", new Socks5ProxyHandler(proxy.getAddress()));
-                    }
-
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unsupported proxy type: " + proxy.getType());
-            }
-        }
-    }
-
-    private void addHAProxySupport(ChannelPipeline pipeline) {
-        InetSocketAddress clientAddress = getFlag(BuiltinFlags.CLIENT_PROXIED_ADDRESS);
-        if (getFlag(BuiltinFlags.ENABLE_CLIENT_PROXY_PROTOCOL, false) && clientAddress != null) {
-            pipeline.addFirst("proxy-protocol-packet-sender", new ChannelInboundHandlerAdapter() {
-                @Override
-                public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                    HAProxyProxiedProtocol proxiedProtocol = clientAddress.getAddress() instanceof Inet4Address ? HAProxyProxiedProtocol.TCP4 : HAProxyProxiedProtocol.TCP6;
-                    InetSocketAddress remoteAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-                    ctx.channel().writeAndFlush(new HAProxyMessage(
-                        HAProxyProtocolVersion.V2, HAProxyCommand.PROXY, proxiedProtocol,
-                        clientAddress.getAddress().getHostAddress(), remoteAddress.getAddress().getHostAddress(),
-                        clientAddress.getPort(), remoteAddress.getPort()
-                    ));
-                    ctx.pipeline().remove(this);
-                    ctx.pipeline().remove("proxy-protocol-encoder");
-                    super.channelActive(ctx);
-                }
-            });
-            pipeline.addFirst("proxy-protocol-encoder", HAProxyMessageEncoder.INSTANCE);
         }
     }
 
