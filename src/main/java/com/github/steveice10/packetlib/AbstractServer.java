@@ -38,7 +38,7 @@ public abstract class AbstractServer implements Server {
         return this.protocolSupplier;
     }
 
-    protected MinecraftProtocol createPacketProtocol() {
+    public MinecraftProtocol createPacketProtocol() {
         return this.protocolSupplier.get();
     }
 

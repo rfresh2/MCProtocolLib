@@ -69,6 +69,16 @@ public final class MinecraftConstants {
     public static final String PING_KEY = "ping";
 
     /**
+     * Custom TcpServerChannelInitializer impl
+     */
+    public static final String SERVER_CHANNEL_INITIALIZER = "server-channel-initializer";
+
+    /**
+     * Custom TcpClientChannelInitializer impl
+     */
+    public static final String CLIENT_CHANNEL_INITIALIZER = "client-channel-initializer";
+
+    /**
      * Session flag for determining the packet compression threshold. Server only.
      */
     public static final String SERVER_COMPRESSION_THRESHOLD = "compression-threshold";

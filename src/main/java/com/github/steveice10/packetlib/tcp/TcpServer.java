@@ -1,22 +1,21 @@
 package com.github.steveice10.packetlib.tcp;
 
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.AbstractServer;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import lombok.Setter;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TcpServer extends AbstractServer {
     private Channel channel;
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
-    @Setter
-    private Consumer<Channel> initChannelConsumer;
     private final TcpConnectionManager tcpManager;
 
     public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol, TcpConnectionManager tcpManager) {
@@ -67,38 +66,8 @@ public class TcpServer extends AbstractServer {
     }
 
     private ChannelInitializer<Channel> buildChannelInitializer() {
-        return new ChannelInitializer<>() {
-            @Override
-            public void initChannel(Channel channel) {
-                InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-                MinecraftProtocol protocol = createPacketProtocol();
-
-                TcpSession session = new TcpServerSession(address.getHostName(),
-                                                          address.getPort(),
-                                                          protocol,
-                                                          TcpServer.this);
-                session.getPacketProtocol().newServerSession(TcpServer.this, session);
-
-                channel.config().setOption(ChannelOption.IP_TOS, 0x18);
-                try {
-                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-                } catch (ChannelException ignored) {
-                }
-
-                ChannelPipeline pipeline = channel.pipeline();
-
-                session.refreshReadTimeoutHandler(channel);
-                session.refreshWriteTimeoutHandler(channel);
-
-                pipeline
-                    .addLast("size-decoder", new TcpPacketSizeDecoder())
-                    .addLast("size-encoder", new TcpPacketSizeEncoder(session))
-                    .addLast("codec", new TcpPacketCodec(session, false))
-                    .addLast("manager", session);
-                if (initChannelConsumer != null)
-                    initChannelConsumer.accept(channel);
-            }
-        };
+        return getGlobalFlag(MinecraftConstants.SERVER_CHANNEL_INITIALIZER, TcpServerChannelInitializer.DEFAULT_FACTORY)
+            .create(this);
     }
 
     @Override
