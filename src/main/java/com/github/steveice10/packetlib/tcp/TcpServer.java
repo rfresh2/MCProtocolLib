@@ -2,18 +2,8 @@ package com.github.steveice10.packetlib.tcp;
 
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.AbstractServer;
-import com.github.steveice10.packetlib.BuiltinFlags;
-import com.github.steveice10.packetlib.helper.TransportHelper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
-import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
-import io.netty.util.concurrent.Future;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +13,15 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TcpServer extends AbstractServer {
-    private EventLoopGroup group;
-    private Class<? extends ServerSocketChannel> serverSocketChannel;
     private Channel channel;
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
     @Setter
     private Consumer<Channel> initChannelConsumer;
+    private final TcpConnectionManager tcpManager;
 
-    public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol) {
+    public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol, TcpConnectionManager tcpManager) {
         super(host, port, protocol);
+        this.tcpManager = tcpManager;
     }
 
     @Override
@@ -41,29 +31,14 @@ public class TcpServer extends AbstractServer {
 
     @Override
     public void bindImpl(boolean wait, final Runnable callback) {
-        if(this.group != null || this.channel != null) {
+        if(this.channel != null) {
             return;
         }
 
-        switch (TransportHelper.determineTransportMethod()) {
-            case IO_URING -> {
-                this.group = new IOUringEventLoopGroup();
-                this.serverSocketChannel = IOUringServerSocketChannel.class;
-            }
-            case EPOLL -> {
-                this.group = new EpollEventLoopGroup();
-                this.serverSocketChannel = EpollServerSocketChannel.class;
-            }
-            case NIO -> {
-                this.group = new NioEventLoopGroup();
-                this.serverSocketChannel = NioServerSocketChannel.class;
-            }
-        }
-
         ChannelFuture future = new ServerBootstrap()
-            .channel(this.serverSocketChannel)
+            .channel(tcpManager.getServerSocketChannelClass())
             .childHandler(buildChannelInitializer())
-            .group(this.group)
+            .group(tcpManager.getBossGroup(), tcpManager.getWorkerGroup())
             .localAddress(this.getHost(), this.getPort())
             .bind();
 
@@ -152,26 +127,7 @@ public class TcpServer extends AbstractServer {
                     });
                 }
             }
-
             this.channel = null;
-        }
-
-        if(this.group != null) {
-            Future<?> future = this.group.shutdownGracefully();
-            if(wait) {
-                try {
-                    future.sync();
-                } catch(InterruptedException e) {
-                }
-            } else {
-                future.addListener((f) -> {
-                    if(!f.isSuccess() && getGlobalFlag(BuiltinFlags.PRINT_DEBUG, false)) {
-                        LOGGER.error("Failed to asynchronously close connection listener.", f.cause());
-                    }
-                });
-            }
-
-            this.group = null;
         }
     }
 }
