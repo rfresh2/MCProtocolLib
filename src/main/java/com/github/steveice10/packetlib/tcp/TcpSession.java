@@ -12,7 +12,9 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -27,6 +29,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+@Getter
+@Setter
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
     protected String host;
@@ -511,10 +515,6 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         }
     }
 
-    public Channel getChannel() {
-        return this.channel;
-    }
-
     protected void refreshReadTimeoutHandler() {
         this.refreshReadTimeoutHandler(this.channel);
     }
@@ -563,6 +563,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         }
         this.channel = ctx.channel();
         this.callConnected();
+        super.channelActive(ctx);
     }
 
     @Override
@@ -570,6 +571,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if (ctx.channel() == this.channel) {
             this.disconnect("Connection closed.");
         }
+        super.channelInactive(ctx);
     }
 
     @Override
@@ -591,5 +593,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         this.callPacketReceived(packet);
+        // add below if we want to add more handlers behind this to the netty pipeline
+//        ctx.fireChannelRead(packet);
     }
 }
