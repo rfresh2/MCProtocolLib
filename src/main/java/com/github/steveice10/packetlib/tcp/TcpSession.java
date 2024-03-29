@@ -593,6 +593,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         this.callPacketReceived(packet);
-        ctx.fireChannelRead(packet);
+        // add below if we want to add more handlers behind this to the netty pipeline
+//        ctx.fireChannelRead(packet);
     }
 }
