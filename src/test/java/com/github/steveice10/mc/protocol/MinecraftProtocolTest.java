@@ -14,6 +14,7 @@ import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpClientSession;
+import com.github.steveice10.packetlib.tcp.TcpConnectionManager;
 import com.github.steveice10.packetlib.tcp.TcpServer;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.AfterAll;
@@ -41,14 +42,16 @@ public class MinecraftProtocolTest {
     private static final ClientboundLoginPacket JOIN_GAME_PACKET = new ClientboundLoginPacket(0, false, new String[]{"minecraft:world"}, 0, 16, 16, false, false, false, new PlayerSpawnInfo("overworld", "minecraft:world", 100, GameMode.SURVIVAL, GameMode.SURVIVAL, false, false, null, 100));
 
     private static Server server;
+    private static TcpConnectionManager tcpManager;
 
     @BeforeAll
     public static void setupServer() {
+        tcpManager = new TcpConnectionManager();
         server = new TcpServer(HOST, PORT, () -> {
             var protocol = new MinecraftProtocol();
             protocol.setUseDefaultListeners(true);
             return protocol;
-        });
+        }, tcpManager);
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
         server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
@@ -72,13 +75,14 @@ public class MinecraftProtocolTest {
             server.close(true);
             server = null;
         }
+        tcpManager.close();
     }
 
     @Test
     public void testStatus() throws InterruptedException {
         var protocol = new MinecraftProtocol();
         protocol.setUseDefaultListeners(true);
-        Session session = new TcpClientSession(HOST, PORT, protocol);
+        Session session = new TcpClientSession(HOST, PORT, protocol, tcpManager);
         try {
             ServerInfoHandlerTest handler = new ServerInfoHandlerTest();
             session.setFlag(SERVER_INFO_HANDLER_KEY, handler);
@@ -97,7 +101,7 @@ public class MinecraftProtocolTest {
     public void testLogin() throws InterruptedException {
         var protocol = new MinecraftProtocol("Username");
         protocol.setUseDefaultListeners(true);
-        Session session = new TcpClientSession(HOST, PORT, protocol);
+        Session session = new TcpClientSession(HOST, PORT, protocol, tcpManager);
         try {
             LoginListenerTest listener = new LoginListenerTest();
             session.addListener(listener);

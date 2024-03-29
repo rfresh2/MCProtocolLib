@@ -4,29 +4,17 @@ import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.BuiltinFlags;
 import com.github.steveice10.packetlib.ProxyInfo;
 import com.github.steveice10.packetlib.codec.PacketCodecHelper;
-import com.github.steveice10.packetlib.helper.TransportHelper;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollDatagramChannel;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.DatagramChannel;
-import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.dns.*;
 import io.netty.handler.codec.haproxy.*;
 import io.netty.handler.proxy.HttpProxyHandler;
 import io.netty.handler.proxy.Socks4ProxyHandler;
 import io.netty.handler.proxy.Socks5ProxyHandler;
-import io.netty.incubator.channel.uring.IOUringDatagramChannel;
-import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
-import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +23,11 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class TcpClientSession extends TcpSession {
     private static final String IP_REGEX = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
-    public static Class<? extends Channel> CHANNEL_CLASS;
-    public static Class<? extends DatagramChannel> DATAGRAM_CHANNEL_CLASS;
-    public static EventLoopGroup EVENT_LOOP_GROUP;
     /**
      * See {@link EventLoopGroup#shutdownGracefully(long, long, TimeUnit)}
      */
@@ -57,25 +41,27 @@ public class TcpClientSession extends TcpSession {
     private final PacketCodecHelper codecHelper;
     @Setter
     private Consumer<Channel> initChannelConsumer;
+    private final TcpConnectionManager tcpManager;
 
-    public TcpClientSession(String host, int port, MinecraftProtocol protocol) {
-        this(host, port, protocol, null);
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
+        this(host, port, protocol, null, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, MinecraftProtocol protocol, ProxyInfo proxy) {
-        this(host, port, "0.0.0.0", 0, protocol, proxy);
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
+        this(host, port, "0.0.0.0", 0, protocol, proxy, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol) {
-        this(host, port, bindAddress, bindPort, protocol, null);
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
+        this(host, port, bindAddress, bindPort, protocol, null, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, ProxyInfo proxy) {
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
         super(host, port, protocol);
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
         this.proxy = proxy;
         this.codecHelper = protocol.createHelper();
+        this.tcpManager = tcpManager;
     }
 
     public ChannelInitializer<Channel> buildChannelInitializer() {
@@ -116,12 +102,11 @@ public class TcpClientSession extends TcpSession {
     }
 
     public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
-        if (CHANNEL_CLASS == null) {
-            createTcpEventLoopGroup();
-        }
-        final Bootstrap bootstrap = new Bootstrap();
-        bootstrap.channel(CHANNEL_CLASS);
-        bootstrap.handler(initializer).group(EVENT_LOOP_GROUP).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
+        final Bootstrap bootstrap = new Bootstrap()
+            .channel(tcpManager.getChannelClass())
+            .handler(initializer)
+            .group(tcpManager.getWorkerGroup())
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
         return bootstrap;
     }
 
@@ -133,10 +118,6 @@ public class TcpClientSession extends TcpSession {
     public void connect(boolean wait, Bootstrap bootstrap) {
         if(this.disconnected) {
             throw new IllegalStateException("Session has already been disconnected.");
-        }
-
-        if (CHANNEL_CLASS == null) {
-            createTcpEventLoopGroup();
         }
 
         try {
@@ -176,8 +157,8 @@ public class TcpClientSession extends TcpSession {
             DnsNameResolver resolver = null;
             AddressedEnvelope<DnsResponse, InetSocketAddress> envelope = null;
             try {
-                resolver = new DnsNameResolverBuilder(EVENT_LOOP_GROUP.next())
-                    .channelType(DATAGRAM_CHANNEL_CLASS)
+                resolver = new DnsNameResolverBuilder(tcpManager.getWorkerGroup().next())
+                    .channelType(tcpManager.getDatagramChannelClass())
                     .build();
                 envelope = resolver.query(new DefaultDnsQuestion(name, DnsRecordType.SRV)).get();
 
@@ -296,46 +277,5 @@ public class TcpClientSession extends TcpSession {
     @Override
     public void disconnect(String reason, Throwable cause) {
         super.disconnect(reason, cause);
-    }
-
-    public static void createTcpEventLoopGroup() {
-        if (CHANNEL_CLASS != null) {
-            return;
-        }
-
-        switch (TransportHelper.determineTransportMethod()) {
-            case IO_URING:
-                EVENT_LOOP_GROUP = new IOUringEventLoopGroup(newThreadFactory());
-                CHANNEL_CLASS = IOUringSocketChannel.class;
-                DATAGRAM_CHANNEL_CLASS = IOUringDatagramChannel.class;
-                break;
-            case EPOLL:
-                EVENT_LOOP_GROUP = new EpollEventLoopGroup(newThreadFactory());
-                CHANNEL_CLASS = EpollSocketChannel.class;
-                DATAGRAM_CHANNEL_CLASS = EpollDatagramChannel.class;
-                break;
-            case NIO:
-                EVENT_LOOP_GROUP = new NioEventLoopGroup(newThreadFactory());
-                CHANNEL_CLASS = NioSocketChannel.class;
-                DATAGRAM_CHANNEL_CLASS = NioDatagramChannel.class;
-                break;
-        }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(
-            () -> EVENT_LOOP_GROUP.shutdownGracefully(SHUTDOWN_QUIET_PERIOD_MS, SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)));
-    }
-
-    protected static ThreadFactory newThreadFactory() {
-       // Create a new daemon thread. When the last non daemon thread ends
-       // the runtime environment will call the shutdown hooks. One of the
-       // hooks will try to shut down the event loop group which will
-       // normally lead to the thread exiting. If not, it will be forcibly
-       // killed after SHUTDOWN_TIMEOUT_MS along with the other
-       // daemon threads as the runtime exits.
-       return new DefaultThreadFactory(TcpClientSession.class, true);
-    }
-
-    public EventLoopGroup getEventLoopGroup() {
-        return EVENT_LOOP_GROUP;
     }
 }
