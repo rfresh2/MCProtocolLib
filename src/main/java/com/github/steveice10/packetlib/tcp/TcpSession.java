@@ -261,7 +261,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
             var decrypt = factory.forDecryption(key);
             var encrypt = factory.forEncryption(key);
             var encoder = new TcpPacketEncryptionEncoder(this, encrypt);
-            var decoder = new TcpPacketEncryptionDecoder(decrypt);
+            var decoder = new TcpPacketEncryptionDecoder(this, decrypt);
             this.channel.pipeline().addBefore("size-decoder", "encryption-decoder", decoder);
             this.channel.pipeline().addBefore("size-encoder", "encryption-encoder", encoder);
         } catch (final GeneralSecurityException e) {

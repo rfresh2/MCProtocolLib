@@ -28,32 +28,38 @@ public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) throws Exception {
-        if(in.readableBytes() != 0) {
-            int size = this.session.getCodecHelper().readVarInt(in);
-            if(size == 0) {
-                out.add(in.retain());
-            } else {
-                if (validateDecompression) { // This is sectioned off as of at least Java Edition 1.18
-                    if (size < this.session.getCompressionThreshold()) {
-                        throw new DecoderException("Badly compressed packet: size of " + size + " is below threshold of " + this.session.getCompressionThreshold() + ".");
+        try {
+            if(in.readableBytes() != 0) {
+                int size = this.session.getCodecHelper().readVarInt(in);
+                if(size == 0) {
+                    out.add(in.retain());
+                } else {
+                    if (validateDecompression) { // This is sectioned off as of at least Java Edition 1.18
+                        if (size < this.session.getCompressionThreshold()) {
+                            throw new DecoderException("Badly compressed packet: size of " + size + " is below threshold of " + this.session.getCompressionThreshold() + ".");
+                        }
+
+                        if (size > MAX_COMPRESSED_SIZE) {
+                            throw new DecoderException("Badly compressed packet: size of " + size + " is larger than protocol maximum of " + MAX_COMPRESSED_SIZE + ".");
+                        }
                     }
 
-                    if (size > MAX_COMPRESSED_SIZE) {
-                        throw new DecoderException("Badly compressed packet: size of " + size + " is larger than protocol maximum of " + MAX_COMPRESSED_SIZE + ".");
+                    final ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), this.compressor, in);
+                    final ByteBuf uncompressed = MoreByteBufUtils.preferredBuffer(ctx.alloc(), compressor, size);
+                    try {
+                        this.compressor.inflate(compatibleIn, uncompressed, size);
+                        out.add(uncompressed);
+                    } catch (final Exception e) {
+                        uncompressed.release();
+                        throw e;
+                    } finally {
+                        compatibleIn.release();
                     }
                 }
-
-                final ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), this.compressor, in);
-                final ByteBuf uncompressed = MoreByteBufUtils.preferredBuffer(ctx.alloc(), compressor, size);
-                try {
-                    this.compressor.inflate(compatibleIn, uncompressed, size);
-                    out.add(uncompressed);
-                } catch (final Exception e) {
-                    uncompressed.release();
-                    throw e;
-                } finally {
-                    compatibleIn.release();
-                }
+            }
+        } catch (final Throwable e) {
+            if (!session.callPacketError(e)) {
+                throw e;
             }
         }
     }
