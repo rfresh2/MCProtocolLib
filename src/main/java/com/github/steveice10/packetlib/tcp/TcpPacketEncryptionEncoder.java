@@ -20,13 +20,19 @@ public class TcpPacketEncryptionEncoder extends MessageToMessageEncoder<ByteBuf>
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        ByteBuf compatible = MoreByteBufUtils.ensureCompatible(ctx.alloc(), cipher, msg);
         try {
-            cipher.process(compatible);
-            out.add(compatible);
-        } catch (Exception e) {
-            compatible.release();
-            throw e;
+            ByteBuf compatible = MoreByteBufUtils.ensureCompatible(ctx.alloc(), cipher, msg);
+            try {
+                cipher.process(compatible);
+                out.add(compatible);
+            } catch (Exception e) {
+                compatible.release();
+                throw e;
+            }
+        } catch (final Throwable e) {
+            if (!session.callPacketError(e)) {
+                throw e;
+            }
         }
     }
 

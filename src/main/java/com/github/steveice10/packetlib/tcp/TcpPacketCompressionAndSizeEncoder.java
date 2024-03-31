@@ -23,34 +23,41 @@ public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<Byt
 
     @Override
     protected void encode(final ChannelHandlerContext ctx, final ByteBuf in, final ByteBuf out) throws Exception {
-        int uncompressed = in.readableBytes();
-        if(uncompressed < this.session.getCompressionThreshold()) {
-            session.getCodecHelper().writeVarInt(out, uncompressed + 1);
-            session.getCodecHelper().writeVarInt(out, 0);
-            out.writeBytes(in);
-        } else {
-            out.writeMedium(0); // Dummy packet length
-            session.getCodecHelper().writeVarInt(out, uncompressed);
-            ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), compressor, in);
+        try {
+            int uncompressed = in.readableBytes();
+            if(uncompressed < this.session.getCompressionThreshold()) {
+                session.getCodecHelper().writeVarInt(out, uncompressed + 1);
+                session.getCodecHelper().writeVarInt(out, 0);
+                out.writeBytes(in);
+            } else {
+                out.writeMedium(0); // Dummy packet length
+                session.getCodecHelper().writeVarInt(out, uncompressed);
+                ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), compressor, in);
 
-            int startCompressed = out.writerIndex();
-            try {
-                compressor.deflate(compatibleIn, out);
-            } finally {
-                compatibleIn.release();
-            }
-            int compressedLength = out.writerIndex() - startCompressed;
-            if (compressedLength >= 1 << 21) {
-                throw new DataFormatException("The server sent a very large (over 2MiB compressed) packet.");
-            }
+                int startCompressed = out.writerIndex();
+                try {
+                    compressor.deflate(compatibleIn, out);
+                } finally {
+                    compatibleIn.release();
+                }
+                int compressedLength = out.writerIndex() - startCompressed;
+                if (compressedLength >= 1 << 21) {
+                    throw new DataFormatException("The server sent a very large (over 2MiB compressed) packet.");
+                }
 
-            int writerIndex = out.writerIndex();
-            int packetLength = out.readableBytes() - 3;
-            out.writerIndex(0);
-            int w = (packetLength & 0x7F | 0x80) << 16 | ((packetLength >>> 7) & 0x7F | 0x80) << 8 | (packetLength >>> 14);
-            out.writeMedium(w); // write actual packet length
-            out.writerIndex(writerIndex);
+                int writerIndex = out.writerIndex();
+                int packetLength = out.readableBytes() - 3;
+                out.writerIndex(0);
+                int w = (packetLength & 0x7F | 0x80) << 16 | ((packetLength >>> 7) & 0x7F | 0x80) << 8 | (packetLength >>> 14);
+                out.writeMedium(w); // write actual packet length
+                out.writerIndex(writerIndex);
+            }
+        } catch (final Throwable e) {
+            if (!session.callPacketError(e)) {
+                throw e;
+            }
         }
+
     }
 
     @Override

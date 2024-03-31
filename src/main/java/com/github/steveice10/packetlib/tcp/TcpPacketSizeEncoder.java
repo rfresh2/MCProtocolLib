@@ -18,8 +18,14 @@ public class TcpPacketSizeEncoder extends MessageToByteEncoder<ByteBuf> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception {
-        session.getPacketProtocol().getPacketHeader().writeLength(out, session.getCodecHelper(), msg.readableBytes());
-        out.writeBytes(msg);
+        try {
+            session.getPacketProtocol().getPacketHeader().writeLength(out, session.getCodecHelper(), msg.readableBytes());
+            out.writeBytes(msg);
+        } catch (final Throwable e) {
+            if (!session.callPacketError(e)) {
+                throw e;
+            }
+        }
     }
 
     @Override
