@@ -2,26 +2,48 @@ package com.github.steveice10.mc.protocol.packet.ingame.clientbound.level;
 
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
+import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSection;
 import com.github.steveice10.mc.protocol.data.game.level.LightUpdateData;
 import com.github.steveice10.mc.protocol.data.game.level.block.BlockEntityInfo;
 import com.github.steveice10.mc.protocol.data.game.level.block.BlockEntityType;
 import com.github.steveice10.opennbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
-import lombok.*;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.ToString;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
 @Data
-@With
-@AllArgsConstructor
-@ToString(exclude = "chunkData")
+@ToString(exclude = {"chunkData", "sections"} )
 public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     private final int x;
     private final int z;
-    private final byte @NonNull [] chunkData;
+    private final byte @Nullable [] chunkData; // must be non-null after deserialization
+    private @Nullable ChunkSection[] sections; // for serialization. preferred if chunkData is null
     private final @NonNull MNBT heightMaps;
     private final @NonNull BlockEntityInfo[] blockEntities;
     private final @NonNull LightUpdateData lightData;
+
+    public ClientboundLevelChunkWithLightPacket(int x, int z, byte[] chunkData, MNBT heightMaps, BlockEntityInfo[] blockEntities, LightUpdateData lightData) {
+        this.x = x;
+        this.z = z;
+        this.chunkData = chunkData;
+        this.heightMaps = heightMaps;
+        this.blockEntities = blockEntities;
+        this.lightData = lightData;
+    }
+
+    public ClientboundLevelChunkWithLightPacket(int x, int z, ChunkSection[] sections, MNBT heightMaps, BlockEntityInfo[] blockEntities, LightUpdateData lightData) {
+        this.x = x;
+        this.z = z;
+        this.chunkData = null;
+        this.sections = sections;
+        this.heightMaps = heightMaps;
+        this.blockEntities = blockEntities;
+        this.lightData = lightData;
+    }
 
     public ClientboundLevelChunkWithLightPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
         this.x = in.readInt();
@@ -48,8 +70,26 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
         out.writeInt(this.x);
         out.writeInt(this.z);
         helper.writeMNBT(out, this.heightMaps);
-        helper.writeVarInt(out, this.chunkData.length);
-        out.writeBytes(this.chunkData);
+        if (this.chunkData == null) {
+            if (this.sections == null) {
+                throw new IllegalStateException("Chunk data and sections are both null.");
+            }
+            out.markWriterIndex();
+            out.writeMedium(0); // Dummy chunk data length varint
+            var start = out.writerIndex();
+            for (int i = 0; i < this.sections.length; i++) {
+                helper.writeChunkSection(out, this.sections[i]);
+            }
+            var end = out.writerIndex();
+            var len = end - start;
+            out.resetWriterIndex();
+            var lenVarInt = (len & 0x7F | 0x80) << 16 | ((len >>> 7) & 0x7F | 0x80) << 8 | (len >>> 14);
+            out.writeMedium(lenVarInt); // write actual chunk data length over dummy bytes
+            out.writerIndex(end);
+        } else {
+            helper.writeVarInt(out, this.chunkData.length);
+            out.writeBytes(this.chunkData);
+        }
 
         helper.writeVarInt(out, this.blockEntities.length);
         for (BlockEntityInfo blockEntity : this.blockEntities) {
