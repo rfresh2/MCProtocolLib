@@ -5,6 +5,8 @@ import com.github.steveice10.packetlib.codec.PacketCodecHelper;
 import com.github.steveice10.packetlib.codec.PacketDefinition;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
+import com.velocitypowered.natives.compression.JavaVelocityCompressor;
+import com.velocitypowered.natives.util.Natives;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
@@ -12,10 +14,12 @@ import io.netty.handler.codec.ByteToMessageCodec;
 import java.util.List;
 
 public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
+    private static final boolean preferDirect = Natives.compress.get() != JavaVelocityCompressor.FACTORY;
     private final Session session;
     private final boolean client;
 
     public TcpPacketCodec(Session session, boolean client) {
+        super(preferDirect);
         this.session = session;
         this.client = client;
     }

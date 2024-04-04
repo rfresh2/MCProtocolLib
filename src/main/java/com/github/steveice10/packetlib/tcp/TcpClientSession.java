@@ -65,12 +65,11 @@ public class TcpClientSession extends TcpSession {
     }
 
     public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
-        final Bootstrap bootstrap = new Bootstrap()
+        return new Bootstrap()
             .channel(tcpManager.getChannelClass())
             .handler(initializer)
             .group(tcpManager.getWorkerGroup())
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
-        return bootstrap;
     }
 
     @Override
