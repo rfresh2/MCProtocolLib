@@ -6,6 +6,7 @@ import com.github.steveice10.packetlib.codec.VarintByteDecoder.DecodeResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.CorruptedFrameException;
 
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -65,9 +66,7 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
                 throw new DataFormatException("VarInt too big. Size: " + reader.getReadVarint() + " bytes read: " + reader.getBytesRead());
             }
         } catch (final Throwable e) {
-            if (!this.session.callPacketError(e)) {
-                throw e;
-            }
+            throw new CorruptedFrameException(e);
         }
     }
 }
