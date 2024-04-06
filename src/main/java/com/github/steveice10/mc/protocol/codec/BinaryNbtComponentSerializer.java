@@ -2,6 +2,7 @@ package com.github.steveice10.mc.protocol.codec;
 
 import com.github.steveice10.opennbt.mini.MNBT;
 import com.github.steveice10.opennbt.mini.MNBTWriter;
+import com.google.gson.internal.LazilyParsedNumber;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -39,26 +40,49 @@ public class BinaryNbtComponentSerializer {
         if (component.fallback() != null) {
             writer.writeStringTag("fallback", component.fallback());
         }
-        if (!component.arguments().isEmpty()) { // TODO: test this
-            writer.writeListTag("with", 10, component.arguments().size());
-            for (int i = 0; i < component.arguments().size(); i++) {
-                var arg = component.arguments().get(i);
+        if (!component.arguments().isEmpty()) {
+            if (component.arguments().size() == 1) {
+                var arg = component.arguments().get(0);
                 var argValue = arg.value();
-                if (argValue instanceof Boolean) writer.writeByteTag("", (Boolean) argValue ? (byte) 1 : (byte) 0);
-                else if (argValue instanceof Byte) writer.writeByteTag("", (Byte) argValue);
-                else if (argValue instanceof Short) writer.writeShortTag("", (Short) argValue);
-                else if (argValue instanceof Integer) writer.writeIntTag("", (Integer) argValue);
-                else if (argValue instanceof Long) writer.writeLongTag("", (Long) argValue);
-                else if (argValue instanceof Float) writer.writeFloatTag("", (Float) argValue);
-                else if (argValue instanceof Double) writer.writeDoubleTag("", (Double) argValue);
-                else if (argValue instanceof String) writer.writeStringTag("", (String) argValue);
-                else if (argValue instanceof byte[]) writer.writeByteArrayTag("", (byte[]) argValue);
-                else if (argValue instanceof int[]) writer.writeIntArrayTag("", (int[]) argValue);
-                else if (argValue instanceof long[]) writer.writeLongArrayTag("", (long[]) argValue);
-                else if (argValue instanceof Component) {
+                if (argValue instanceof Component) {
+                    writer.writeListTag("with", 10, 1);
                     serialize(writer, (Component) argValue);
+                    writer.writeEndTag();
+                } else {
+                    if (argValue instanceof LazilyParsedNumber) {
+                        writer.writeListTag("with", 3, 1);
+                        writer.writeIntTag(((LazilyParsedNumber) argValue).intValue());
+                    } else if (argValue instanceof String) {
+                        writer.writeListTag("with", 8, 1);
+                        writer.writeStringTag((String) argValue);
+                    } else if (argValue instanceof Boolean) {
+                        writer.writeListTag("with", 1, 1);
+                        writer.writeByteTag((Boolean) argValue ? (byte) 1 : (byte) 0);
+                    }
                 }
-                writer.writeEndTag();
+            } else {
+                writer.writeListTag("with", 10, component.arguments().size());
+                for (int i = 0; i < component.arguments().size(); i++) {
+                    var arg = component.arguments().get(i);
+                    var argValue = arg.value();
+                    if (argValue instanceof Component) {
+                        serialize(writer, (Component) argValue);
+                    } else {
+                        if (argValue instanceof Boolean) writer.writeByteTag((Boolean) argValue ? (byte) 1 : (byte) 0);
+                        else if (argValue instanceof String) writer.writeStringTag((String) argValue);
+                        else if (argValue instanceof final LazilyParsedNumber lazy) {
+                            if (lazy.toString().contains(".")) writer.writeFloatTag(lazy.floatValue());
+                            else {
+                                var longVal = lazy.longValue();
+                                if (longVal <= Integer.MAX_VALUE && longVal >= Integer.MIN_VALUE)
+                                    writer.writeIntTag(lazy.intValue());
+                                else
+                                    writer.writeLongTag(longVal);
+                            }
+                        }
+                    }
+                    writer.writeEndTag();
+                }
             }
         }
     }

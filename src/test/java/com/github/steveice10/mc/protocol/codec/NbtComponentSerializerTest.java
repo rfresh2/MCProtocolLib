@@ -5,6 +5,7 @@ import com.github.steveice10.opennbt.tag.io.MNBTIO;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NbtComponentSerializerTest {
 
@@ -30,6 +31,26 @@ public class NbtComponentSerializerTest {
 //    public void styledComponentTest() {
 //        componentEqualityTest(Component.text("hello from component").color(net.kyori.adventure.text.format.NamedTextColor.RED));
 //        binaryTest(Component.text("hello from component").color(net.kyori.adventure.text.format.NamedTextColor.RED));
+//    }
+
+    @Test
+    public void buildHeightTest() {
+        var json = "{\"color\":\"red\",\"translate\":\"build.tooHigh\",\"with\":[319]}";
+        var component = DefaultComponentSerializer.get().deserialize(json);
+        componentEqualityTest(component);
+        binaryTest(component);
+    }
+
+//    @Test
+//    public void translatableArgsTest() {
+//        var component = Component.translatable()
+//            .key("argument.block.property.unknown")
+//            .arguments(Component.text("stone"), Component.text("someProperty"))
+//            .color(NamedTextColor.RED)
+//            .asComponent();
+//        componentEqualityTest(component);
+//        // seems to work in mc client even if this test fails
+//        binaryTest(component);
 //    }
 
     private void componentEqualityTest(Component component) {
