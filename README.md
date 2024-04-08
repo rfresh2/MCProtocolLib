@@ -3,15 +3,24 @@ MCProtocolLib is a simple library for communicating with a Minecraft client/serv
 
 This project is forked from [GeyserMC/MCProtocolLib](https://github.com/GeyserMC/MCProtocolLib)
 
+The primary purpose is to make changes I need for [ZenithProxy](https://github.com/rfresh2/ZenithProxy/)
+and generally improve performance in terms of memory usage and latency.
+
 ## Features
 
-* Supports Minecraft 1.20.4
-* Optimized performance with velocity native compression and encryption 
-* bug fixes and more public interfaces where I find them useful
+* Uses [my custom OpenNBT/ViaNBT fork](https://github.com/rfresh2/OpenNBT) that defers deserialization to bytes instead of objects
+* Includes an optimized Component -> binary NBT writer instead of going through multiple JSON and NBT object conversions
+* Various changes to the netty pipeline and configuration including velocity native compression and encryption 
+* Additional methods for sending packets or lists of packets as a single operation 
+* Public interfaces, constructors, and mutable variables where I need them
 
-### Javadocs
+## Usage
 
-You can find the Javadocs for MCProtocolLib [on opencollab](https://ci.opencollab.dev/job/GeyserMC/job/MCProtocolLib/job/master/javadoc/overview-summary.html).
+I don't maintain this for use by others and I can't make any guarantees about the API stability.
+
+However, I do maintain support for older MC versions longer than upstream when I support those in ZenithProxy.
+
+Precompiled artifacts are only available on [JitPack](https://jitpack.io/#rfresh2/MCProtocolLib/)
 
 ## Building the Source
 MCProtocolLib uses Maven to manage dependencies. Simply run 'mvn clean install' in the source's directory.
