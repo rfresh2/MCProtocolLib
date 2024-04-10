@@ -25,7 +25,6 @@ import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.security.GeneralSecurityException;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +41,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     private int writeTimeout = 0;
 
     private final Map<String, Object> flags = new HashMap<>();
-    private final List<SessionListener> listeners = new CopyOnWriteArrayList<>();
+    private SessionListener[] listeners = new SessionListener[0];
 
     private Channel channel;
     protected boolean disconnected = false;
@@ -124,24 +123,39 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public List<SessionListener> getListeners() {
-        return Collections.unmodifiableList(this.listeners);
+        return Arrays.asList(this.listeners);
     }
 
     @Override
-    public void addListener(SessionListener listener) {
-        this.listeners.add(listener);
+    public synchronized void addListener(SessionListener listener) {
+        final SessionListener[] newListeners = Arrays.copyOf(this.listeners, this.listeners.length + 1);
+        newListeners[newListeners.length - 1] = listener;
+        this.listeners = newListeners;
     }
 
     @Override
     public void removeListener(SessionListener listener) {
-        this.listeners.remove(listener);
+        if (this.listeners.length == 0) return;
+        int i = -1;
+        for (int j = 0; j < this.listeners.length; j++) {
+            if (this.listeners[j] == listener) {
+                i = j;
+                break;
+            }
+        }
+        if (i == -1) return;
+        final SessionListener[] newListeners = new SessionListener[this.listeners.length - 1];
+        System.arraycopy(this.listeners, 0, newListeners, 0, i);
+        System.arraycopy(this.listeners, i + 1, newListeners, i, this.listeners.length - i - 1);
+        this.listeners = newListeners;
     }
 
     @Override
     public Packet callPacketSending(final Packet packet) {
         Packet toSend = packet;
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 toSend = listener.packetSending(this, toSend);
                 // short circuit posting to other listeners if its cancelled
                 if (toSend == null) break;
@@ -155,7 +169,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callConnected() {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.connected(this);
             }
         } catch (Throwable t) {
@@ -166,7 +181,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callDisconnecting(final Component reason, final Throwable cause) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.disconnecting(this, reason, cause);
             }
         } catch (Throwable t) {
@@ -177,7 +193,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callDisconnected(final Component reason, final Throwable cause) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.disconnected(this, reason, cause);
             }
         } catch (Throwable t) {
@@ -189,7 +206,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     public boolean callPacketError(final Throwable throwable) {
         boolean suppress = false;
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 suppress |= listener.packetError(this, throwable);
             }
         } catch (Throwable t) {
@@ -201,7 +219,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callPacketReceived(Packet packet) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.packetReceived(this, packet);
             }
         } catch (Throwable t) {
@@ -212,7 +231,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callPacketSent(Packet packet) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.packetSent(this, packet);
             }
         } catch (Throwable t) {
