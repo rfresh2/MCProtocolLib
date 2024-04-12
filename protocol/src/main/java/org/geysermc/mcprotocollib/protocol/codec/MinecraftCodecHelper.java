@@ -260,7 +260,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
 
         int item = this.readVarInt(buf);
-        return new ItemStack(item, buf.readByte(), this.readTag(buf));
+        return new ItemStack(item, buf.readByte(), this.readMNBT(buf));
     }
 
     public void writeItemStack(ByteBuf buf, @Nullable ItemStack item) {
@@ -268,7 +268,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         if (item != null) {
             this.writeVarInt(buf, item.getId());
             buf.writeByte(item.getAmount());
-            this.writeTag(buf, item.getNbt());
+            this.writeMNBT(buf, item.getNbt());
         }
     }
 

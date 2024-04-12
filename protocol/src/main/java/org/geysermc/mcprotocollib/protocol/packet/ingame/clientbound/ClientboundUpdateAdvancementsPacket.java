@@ -1,17 +1,14 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 
+import io.netty.buffer.ByteBuf;
+import lombok.*;
+import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement.DisplayData;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement.DisplayData.AdvancementType;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ItemStack;
-import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
-import net.kyori.adventure.text.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +18,7 @@ import java.util.Map;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = {"advancements", "removedAdvancements", "progress"})
 public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
     private static final int FLAG_HAS_BACKGROUND_TEXTURE = 0x01;
     private static final int FLAG_SHOW_TOAST = 0x02;

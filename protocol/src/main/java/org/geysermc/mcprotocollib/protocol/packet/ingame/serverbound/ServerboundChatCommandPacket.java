@@ -1,12 +1,12 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.ArgumentSignature;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.ArgumentSignature;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -22,6 +22,10 @@ public class ServerboundChatCommandPacket implements MinecraftPacket {
     private final List<ArgumentSignature> signatures;
     private final int offset;
     private final BitSet acknowledgedMessages;
+
+    public ServerboundChatCommandPacket(String command) {
+        this(command, System.currentTimeMillis(), 0, new ArrayList<>(), 0, new BitSet());
+    }
 
     public ServerboundChatCommandPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.command = helper.readString(in);

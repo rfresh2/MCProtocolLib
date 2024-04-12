@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.BitSet;
 
@@ -15,12 +15,23 @@ import java.util.BitSet;
 @With
 @AllArgsConstructor
 public class ServerboundChatPacket implements MinecraftPacket {
-    private final @NonNull String message;
-    private final long timeStamp;
+    private @NotNull String message;
+    private long timeStamp;
     private final long salt;
     private final byte @Nullable [] signature;
     private final int offset;
     private final BitSet acknowledgedMessages;
+
+
+    // default unsigned chat packet
+    public ServerboundChatPacket(final String message) {
+        this.message = message;
+        this.timeStamp = System.currentTimeMillis();
+        this.salt = 0;
+        this.signature = null;
+        this.offset = 0;
+        this.acknowledgedMessages = BitSet.valueOf(new byte[20]);
+    }
 
     public ServerboundChatPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.message = helper.readString(in);

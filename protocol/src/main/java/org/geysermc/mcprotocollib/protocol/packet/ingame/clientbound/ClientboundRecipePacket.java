@@ -1,20 +1,21 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 
+import io.netty.buffer.ByteBuf;
+import lombok.*;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.UnlockRecipesAction;
-import io.netty.buffer.ByteBuf;
-import lombok.*;
 
 import java.util.Arrays;
 
 @Data
 @With
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString(exclude = {"recipeIdsToChange", "recipeIdsToInit"})
 public class ClientboundRecipePacket implements MinecraftPacket {
     private final @NonNull UnlockRecipesAction action;
 
-    private final @NonNull String[] recipes;
+    private final @NonNull String[] recipeIdsToChange;
     private final boolean openCraftingBook;
     private final boolean activateCraftingFiltering;
     private final boolean openSmeltingBook;
@@ -24,9 +25,9 @@ public class ClientboundRecipePacket implements MinecraftPacket {
     private final boolean openSmokingBook;
     private final boolean activateSmokingFiltering;
 
-    private final String[] alreadyKnownRecipes;
+    private final String[] recipeIdsToInit;
 
-    public ClientboundRecipePacket(@NonNull String[] recipes,
+    public ClientboundRecipePacket(@NonNull String[] recipeIdsToChange,
                                    boolean openCraftingBook, boolean activateCraftingFiltering,
                                    boolean openSmeltingBook, boolean activateSmeltingFiltering,
                                    boolean openBlastingBook, boolean activateBlastingFiltering,
@@ -37,7 +38,7 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         }
 
         this.action = action;
-        this.recipes = Arrays.copyOf(recipes, recipes.length);
+        this.recipeIdsToChange = Arrays.copyOf(recipeIdsToChange, recipeIdsToChange.length);
         this.openCraftingBook = openCraftingBook;
         this.activateCraftingFiltering = activateCraftingFiltering;
         this.openSmeltingBook = openSmeltingBook;
@@ -47,17 +48,17 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         this.openSmokingBook = openSmokingBook;
         this.activateSmokingFiltering = activateSmokingFiltering;
 
-        this.alreadyKnownRecipes = null;
+        this.recipeIdsToInit = null;
     }
 
-    public ClientboundRecipePacket(@NonNull String[] recipes,
+    public ClientboundRecipePacket(@NonNull String[] recipeIdsToChange,
                                    boolean openCraftingBook, boolean activateCraftingFiltering,
                                    boolean openSmeltingBook, boolean activateSmeltingFiltering,
                                    boolean openBlastingBook, boolean activateBlastingFiltering,
                                    boolean openSmokingBook, boolean activateSmokingFiltering,
-                                   @NonNull String[] alreadyKnownRecipes) {
+                                   @NonNull String[] recipeIdsToInit) {
         this.action = UnlockRecipesAction.INIT;
-        this.recipes = Arrays.copyOf(recipes, recipes.length);
+        this.recipeIdsToChange = Arrays.copyOf(recipeIdsToChange, recipeIdsToChange.length);
         this.openCraftingBook = openCraftingBook;
         this.activateCraftingFiltering = activateCraftingFiltering;
         this.openSmeltingBook = openSmeltingBook;
@@ -67,7 +68,7 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         this.openSmokingBook = openSmokingBook;
         this.activateSmokingFiltering = activateSmokingFiltering;
 
-        this.alreadyKnownRecipes = Arrays.copyOf(alreadyKnownRecipes, alreadyKnownRecipes.length);
+        this.recipeIdsToInit = Arrays.copyOf(recipeIdsToInit, recipeIdsToInit.length);
     }
 
     public ClientboundRecipePacket(ByteBuf in, MinecraftCodecHelper helper) {
@@ -82,18 +83,17 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         this.openSmokingBook = in.readBoolean();
         this.activateSmokingFiltering = in.readBoolean();
 
+        this.recipeIdsToChange = new String[helper.readVarInt(in)];
+        for (int i = 0; i < this.recipeIdsToChange.length; i++) {
+            this.recipeIdsToChange[i] = helper.readString(in);
+        }
         if (this.action == UnlockRecipesAction.INIT) {
-            this.alreadyKnownRecipes = new String[helper.readVarInt(in)];
-            for (int i = 0; i < this.alreadyKnownRecipes.length; i++) {
-                this.alreadyKnownRecipes[i] = helper.readString(in);
+            this.recipeIdsToInit = new String[helper.readVarInt(in)];
+            for (int i = 0; i < this.recipeIdsToInit.length; i++) {
+                this.recipeIdsToInit[i] = helper.readString(in);
             }
         } else {
-            this.alreadyKnownRecipes = null;
-        }
-
-        this.recipes = new String[helper.readVarInt(in)];
-        for (int i = 0; i < this.recipes.length; i++) {
-            this.recipes[i] = helper.readString(in);
+            this.recipeIdsToInit = null;
         }
     }
 
@@ -110,15 +110,19 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         out.writeBoolean(this.openSmokingBook);
         out.writeBoolean(this.activateSmokingFiltering);
 
+        helper.writeVarInt(out, this.recipeIdsToChange.length);
+        for (String recipeId : this.recipeIdsToChange) {
+            helper.writeString(out, recipeId);
+        }
         if (this.action == UnlockRecipesAction.INIT) {
-            helper.writeVarInt(out, this.alreadyKnownRecipes.length);
-            for (String recipeId : this.alreadyKnownRecipes) {
+            helper.writeVarInt(out, this.recipeIdsToInit.length);
+            for (String recipeId : this.recipeIdsToInit) {
                 helper.writeString(out, recipeId);
             }
         }
 
-        helper.writeVarInt(out, this.recipes.length);
-        for (String recipeId : this.recipes) {
+        helper.writeVarInt(out, this.recipeIdsToChange.length);
+        for (String recipeId : this.recipeIdsToChange) {
             helper.writeString(out, recipeId);
         }
     }

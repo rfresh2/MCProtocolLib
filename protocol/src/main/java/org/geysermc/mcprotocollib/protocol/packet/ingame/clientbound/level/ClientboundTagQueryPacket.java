@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,16 +14,16 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 @AllArgsConstructor
 public class ClientboundTagQueryPacket implements MinecraftPacket {
     private final int transactionId;
-    private final @Nullable CompoundTag nbt;
+    private final @Nullable MNBT nbt;
 
     public ClientboundTagQueryPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.transactionId = helper.readVarInt(in);
-        this.nbt = helper.readTag(in);
+        this.nbt = helper.readMNBT(in);
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.transactionId);
-        helper.writeTag(out, this.nbt);
+        helper.writeMNBT(out, this.nbt);
     }
 }
