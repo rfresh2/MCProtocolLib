@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
 import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import javax.crypto.SecretKey;
 import java.net.SocketAddress;
@@ -66,7 +66,7 @@ public interface Session {
      *
      * @return The session's packet protocol.
      */
-    PacketProtocol getPacketProtocol();
+    MinecraftProtocol getPacketProtocol();
 
     /**
      * Gets the session's {@link PacketCodecHelper}.

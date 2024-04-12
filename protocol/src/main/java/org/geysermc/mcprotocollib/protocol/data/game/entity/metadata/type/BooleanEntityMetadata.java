@@ -1,13 +1,16 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type;
 
+import io.netty.buffer.ByteBuf;
+import lombok.NonNull;
+import lombok.Setter;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.BooleanMetadataType;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
-import io.netty.buffer.ByteBuf;
-import lombok.NonNull;
 
 public class BooleanEntityMetadata extends EntityMetadata<Boolean, BooleanMetadataType> {
-    private final boolean value;
+
+    @Setter
+    private boolean value;
 
     public BooleanEntityMetadata(int id, @NonNull BooleanMetadataType type, boolean value) {
         super(id, type);

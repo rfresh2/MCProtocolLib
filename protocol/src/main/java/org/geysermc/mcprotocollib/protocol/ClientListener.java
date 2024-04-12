@@ -51,7 +51,7 @@ public class ClientListener extends SessionAdapter {
     @SneakyThrows
     @Override
     public void packetReceived(Session session, Packet packet) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.LOGIN) {
             if (packet instanceof ClientboundHelloPacket helloPacket) {
                 GameProfile profile = session.getFlag(MinecraftConstants.PROFILE_KEY);
@@ -129,7 +129,7 @@ public class ClientListener extends SessionAdapter {
 
     @Override
     public void packetSent(Session session, Packet packet) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (packet instanceof ClientIntentionPacket) {
             // Once the HandshakePacket has been sent, switch to the next protocol mode.
             protocol.setState(this.targetState);
@@ -151,7 +151,7 @@ public class ClientListener extends SessionAdapter {
 
     @Override
     public void connected(Session session) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         session.send(new ClientIntentionPacket(
             protocol.getCodec().getProtocolVersion(),
             session.getHost(),

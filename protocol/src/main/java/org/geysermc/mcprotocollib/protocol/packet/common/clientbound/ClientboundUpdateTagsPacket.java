@@ -1,12 +1,12 @@
 package org.geysermc.mcprotocollib.protocol.packet.common.clientbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +15,10 @@ import java.util.Map;
 @With
 @AllArgsConstructor
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
-    private final @NonNull Map<String, Map<String, int[]>> tags = new HashMap<>();
+    private final @NonNull Map<String, Map<String, int[]>> tags;
 
     public ClientboundUpdateTagsPacket(ByteBuf in, MinecraftCodecHelper helper) {
+        this.tags = new HashMap<>();
         int totalTagCount = helper.readVarInt(in);
         for (int i = 0; i < totalTagCount; i++) {
             Map<String, int[]> tag = new HashMap<>();

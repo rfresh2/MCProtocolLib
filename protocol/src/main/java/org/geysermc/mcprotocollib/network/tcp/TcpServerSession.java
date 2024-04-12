@@ -1,9 +1,9 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import org.geysermc.mcprotocollib.network.Flag;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class TcpServerSession extends TcpSession {
     private final TcpServer server;
     private final PacketCodecHelper codecHelper;
 
-    public TcpServerSession(String host, int port, PacketProtocol protocol, TcpServer server) {
+    public TcpServerSession(String host, int port, MinecraftProtocol protocol, TcpServer server) {
         super(host, port, protocol);
         this.server = server;
         this.codecHelper = protocol.createHelper();

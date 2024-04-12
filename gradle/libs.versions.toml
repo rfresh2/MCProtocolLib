@@ -21,6 +21,8 @@ lombok-plugin = "8.4"
 
 adventure-text-serializer-gson = { module = "net.kyori:adventure-text-serializer-gson", version.ref = "adventure" }
 adventure-text-serializer-json-legacy-impl = { module = "net.kyori:adventure-text-serializer-json-legacy-impl", version.ref = "adventure" }
+adventure-text-serializer-legacy = { module = "net.kyori:adventure-text-serializer-legacy", version.ref = "adventure" }
+adventure-text-serializer-ansi = { module = "net.kyori:adventure-text-serializer-ansi", version.ref = "adventure" }
 
 opennbt = { module = "com.github.rfresh2:OpenNBT", version.ref = "opennbt" }
 mcauthlib = { module = "com.github.rfresh2:MCAuthLib", version.ref = "mcauthlib" }
@@ -48,7 +50,7 @@ lombok = { module = "io.freefair.gradle:lombok-plugin", version.ref = "lombok-pl
 
 [bundles]
 
-adventure = ["adventure-text-serializer-gson", "adventure-text-serializer-json-legacy-impl"]
+adventure = ["adventure-text-serializer-gson", "adventure-text-serializer-json-legacy-impl", "adventure-text-serializer-legacy", "adventure-text-serializer-ansi"]
 math = ["math-api", "math-immutable"]
 fastutil = ["fastutil-object2int-maps", "fastutil-int2object-maps", "fastutil-int2int-maps"]
 netty = ["netty-all", "netty-incubator-transport-native-io_uring"]

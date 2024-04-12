@@ -1,7 +1,7 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.channel.*;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.net.InetSocketAddress;
 
@@ -21,7 +21,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(final Channel channel) throws Exception {
         InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-        PacketProtocol protocol = server.createPacketProtocol();
+        MinecraftProtocol protocol = (MinecraftProtocol) server.createPacketProtocol();
 
         TcpSession session = new TcpServerSession(address.getHostName(),
                                                   address.getPort(),

@@ -11,8 +11,8 @@ import lombok.Setter;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
 import org.geysermc.mcprotocollib.network.ProxyInfo;
 import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,19 +38,19 @@ public class TcpClientSession extends TcpSession {
     private final PacketCodecHelper codecHelper;
     private final TcpConnectionManager tcpManager;
 
-    public TcpClientSession(String host, int port, PacketProtocol protocol, TcpConnectionManager tcpManager) {
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
         this(host, port, protocol, null, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, PacketProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
+    public TcpClientSession(String host, int port, MinecraftProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
         this(host, port, "0.0.0.0", 0, protocol, proxy, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, PacketProtocol protocol, TcpConnectionManager tcpManager) {
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
         this(host, port, bindAddress, bindPort, protocol, null, tcpManager);
     }
 
-    public TcpClientSession(String host, int port, String bindAddress, int bindPort, PacketProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
+    public TcpClientSession(String host, int port, String bindAddress, int bindPort, MinecraftProtocol protocol, ProxyInfo proxy, TcpConnectionManager tcpManager) {
         super(host, port, protocol);
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;

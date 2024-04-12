@@ -3,5 +3,5 @@ plugins {
 }
 
 allprojects {
-    group = "org.geysermc.mcprotocollib"
+    group = "com.github.rfresh2.MCProtocolLib"
 }

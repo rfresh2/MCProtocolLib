@@ -73,7 +73,7 @@ public class MinecraftProtocol extends PacketProtocol {
      */
     @Getter
     @Setter
-    private boolean useDefaultListeners = true;
+    private boolean useDefaultListeners = false;
 
     /**
      * Constructs a new MinecraftProtocol instance for making status queries.

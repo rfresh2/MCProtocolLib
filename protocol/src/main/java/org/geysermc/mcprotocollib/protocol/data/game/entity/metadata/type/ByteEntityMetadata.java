@@ -1,13 +1,15 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type;
 
+import io.netty.buffer.ByteBuf;
+import lombok.NonNull;
+import lombok.Setter;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ByteMetadataType;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
-import io.netty.buffer.ByteBuf;
-import lombok.NonNull;
 
 public class ByteEntityMetadata extends EntityMetadata<Byte, ByteMetadataType> {
-    private final byte value;
+    @Setter
+    private byte value;
 
     public ByteEntityMetadata(int id, @NonNull ByteMetadataType type, byte value) {
         super(id, type);

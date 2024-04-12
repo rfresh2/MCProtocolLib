@@ -120,10 +120,5 @@ public class ClientboundRecipePacket implements MinecraftPacket {
                 helper.writeString(out, recipeId);
             }
         }
-
-        helper.writeVarInt(out, this.recipeIdsToChange.length);
-        for (String recipeId : this.recipeIdsToChange) {
-            helper.writeString(out, recipeId);
-        }
     }
 }

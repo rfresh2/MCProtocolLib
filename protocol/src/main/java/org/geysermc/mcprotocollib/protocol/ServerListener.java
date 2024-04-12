@@ -84,7 +84,7 @@ public class ServerListener extends SessionAdapter {
 
     @Override
     public void packetReceived(Session session, Packet packet) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.HANDSHAKE) {
             if (packet instanceof ClientIntentionPacket intentionPacket) {
                 switch (intentionPacket.getIntent()) {
@@ -122,7 +122,7 @@ public class ServerListener extends SessionAdapter {
                 session.enableEncryption(key);
                 new Thread(new UserAuthTask(session, key)).start();
             } else if (packet instanceof ServerboundLoginAcknowledgedPacket) {
-                ((MinecraftProtocol) session.getPacketProtocol()).setState(ProtocolState.CONFIGURATION);
+                session.getPacketProtocol().setState(ProtocolState.CONFIGURATION);
                 session.send(new ClientboundRegistryDataPacket(networkCodec));
                 session.send(new ClientboundFinishConfigurationPacket());
             }
@@ -180,7 +180,7 @@ public class ServerListener extends SessionAdapter {
 
     @Override
     public void disconnecting(Session session, Component reason, Throwable cause) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (protocol.getState() == ProtocolState.LOGIN) {
             session.send(new ClientboundLoginDisconnectPacket(reason));
         } else if (protocol.getState() == ProtocolState.GAME) {

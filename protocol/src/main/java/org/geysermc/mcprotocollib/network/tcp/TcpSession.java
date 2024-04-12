@@ -7,13 +7,15 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Flag;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
 import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -27,11 +29,13 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+@Getter
+@Setter
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
     protected String host;
     protected int port;
-    private final PacketProtocol protocol;
+    private final MinecraftProtocol protocol;
     private int compressionThreshold = -1;
     private int connectTimeout = 30;
     private int readTimeout = 30;
@@ -43,7 +47,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     private Channel channel;
     protected boolean disconnected = false;
 
-    public TcpSession(String host, int port, PacketProtocol protocol) {
+    public TcpSession(String host, int port, MinecraftProtocol protocol) {
         this.host = host;
         this.port = port;
         this.protocol = protocol;
@@ -79,7 +83,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public PacketProtocol getPacketProtocol() {
+    public MinecraftProtocol getPacketProtocol() {
         return this.protocol;
     }
 
