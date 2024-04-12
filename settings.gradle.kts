@@ -15,6 +15,9 @@ dependencyResolutionManagement {
         maven("https://jitpack.io") {
             name = "jitpack"
         }
+        maven("https://litarvan.github.io/maven") {
+            name = "litarvan"
+        }
         mavenCentral()
     }
 }

@@ -2,12 +2,12 @@ metadata.format.version = "1.1"
 
 [versions]
 
-adventure = "4.15.0"
-opennbt = "1.6"
-mcauthlib = "6621fd0"
+adventure = "4.16.0"
+opennbt = "6f57b4cc30"
+mcauthlib = "281f98ab2d"
 math = "2.0"
-fastutil-maps = "8.5.3"
-netty = "4.1.103.Final"
+fastutil-maps = "8.5.13-SNAPSHOT"
+netty = "4.1.108.Final"
 netty-io_uring = "0.0.24.Final"
 checkerframework = "3.42.0"
 junit = "5.8.2"
@@ -22,15 +22,15 @@ lombok-plugin = "8.4"
 adventure-text-serializer-gson = { module = "net.kyori:adventure-text-serializer-gson", version.ref = "adventure" }
 adventure-text-serializer-json-legacy-impl = { module = "net.kyori:adventure-text-serializer-json-legacy-impl", version.ref = "adventure" }
 
-opennbt = { module = "com.github.steveice10:opennbt", version.ref = "opennbt" }
-mcauthlib = { module = "com.github.GeyserMC:mcauthlib", version.ref = "mcauthlib" }
+opennbt = { module = "com.github.rfresh2:OpenNBT", version.ref = "opennbt" }
+mcauthlib = { module = "com.github.rfresh2:MCAuthLib", version.ref = "mcauthlib" }
 
 math-api = { module = "org.cloudburstmc.math:api", version.ref = "math" }
 math-immutable = { module = "org.cloudburstmc.math:immutable", version.ref = "math" }
 
-fastutil-object2int-maps = { module = "com.nukkitx.fastutil:fastutil-object-int-maps", version.ref = "fastutil-maps" }
-fastutil-int2object-maps = { module = "com.nukkitx.fastutil:fastutil-int-object-maps", version.ref = "fastutil-maps" }
-fastutil-int2int-maps = { module = "com.nukkitx.fastutil:fastutil-int-int-maps", version.ref = "fastutil-maps" }
+fastutil-object2int-maps = { module = "org.cloudburstmc.fastutil.maps:object-int-maps", version.ref = "fastutil-maps" }
+fastutil-int2object-maps = { module = "org.cloudburstmc.fastutil.maps:int-object-maps", version.ref = "fastutil-maps" }
+fastutil-int2int-maps = { module = "org.cloudburstmc.fastutil.maps:int-int-maps", version.ref = "fastutil-maps" }
 
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 netty-incubator-transport-native-io_uring = { module = "io.netty.incubator:netty-incubator-transport-native-io_uring", version.ref = "netty-io_uring" }

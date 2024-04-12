@@ -1,8 +1,5 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
@@ -10,6 +7,9 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 
 @Data
 @With
@@ -38,7 +38,7 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
         this.ambient = (flags & FLAG_AMBIENT) != 0;
         this.showParticles = (flags & FLAG_SHOW_PARTICLES) != 0;
         this.showIcon = (flags & FLAG_SHOW_ICON) != 0;
-        this.factorData = helper.readNullable(in, helper::readAnyTagOrThrow);
+        this.factorData = helper.readNullable(in, helper::readTagOrThrow);
     }
 
     @Override
@@ -60,6 +60,6 @@ public class ClientboundUpdateMobEffectPacket implements MinecraftPacket {
         }
 
         out.writeByte(flags);
-        helper.writeNullable(out, this.factorData, helper::writeAnyTag);
+        helper.writeNullable(out, this.factorData, helper::writeTag);
     }
 }

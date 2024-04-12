@@ -1,6 +1,23 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
+import com.github.steveice10.opennbt.mini.MNBT;
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.github.steveice10.opennbt.tag.io.MNBTIO;
+import com.github.steveice10.opennbt.tag.io.NBTIO;
+import com.github.steveice10.opennbt.tag.limiter.TagLimiter;
+import com.google.gson.JsonElement;
+import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.math.vector.Vector4f;
+import org.geysermc.mcprotocollib.network.codec.BasePacketCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Identifier;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.BlankFormat;
@@ -11,22 +28,11 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.BitStorage;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.NibbleArray3d;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.GlobalPalette;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.ListPalette;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.MapPalette;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.Palette;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPalette;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.*;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.EntityEvent;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.GlobalPos;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ItemStack;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.MetadataType;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.Pose;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.SnifferState;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.VillagerData;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.*;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.BlockBreakStage;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
@@ -37,17 +43,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType
 import org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEvent;
 import org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEventType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.event.UnknownLevelEvent;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustColorTransitionParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.FallingDustParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ItemParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.SculkChargeParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ShriekParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.VibrationParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.*;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.BlockPositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.EntityPositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.PositionSource;
@@ -59,36 +55,10 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.sound.SoundCategory;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.Ingredient;
 import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import com.github.steveice10.opennbt.NBTIO;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.Tag;
-import org.geysermc.mcprotocollib.network.codec.BasePacketCodecHelper;
-import com.google.gson.JsonElement;
-import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.math.vector.Vector3i;
-import org.cloudburstmc.math.vector.Vector4f;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.ObjIntConsumer;
-import java.util.function.ToIntFunction;
+import java.io.*;
+import java.util.*;
+import java.util.function.*;
 
 @RequiredArgsConstructor
 public class MinecraftCodecHelper extends BasePacketCodecHelper {
@@ -97,6 +67,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     private static final int POSITION_Z_SIZE = 38;
     private static final int POSITION_Y_SHIFT = 0xFFF;
     private static final int POSITION_WRITE_SHIFT = 0x3FFFFFF;
+    public static boolean useBinaryNbtComponentSerializer = true;
 
     private final Int2ObjectMap<LevelEventType> levelEvents;
     private final Map<String, BuiltinSound> soundNames;
@@ -188,13 +159,13 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public CompoundTag readAnyTag(ByteBuf buf) {
-        return readAnyTag(buf, CompoundTag.class);
+    public CompoundTag readTag(ByteBuf buf) {
+        return readTag(buf, CompoundTag.class);
     }
 
     @NonNull
-    public CompoundTag readAnyTagOrThrow(ByteBuf buf) {
-        CompoundTag tag = readAnyTag(buf);
+    public CompoundTag readTagOrThrow(ByteBuf buf) {
+        CompoundTag tag = readTag(buf);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read CompoundTag");
         }
@@ -202,41 +173,83 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public <T extends Tag> T readAnyTag(ByteBuf buf, Class<T> expected) {
-        Tag tag;
-        try {
-            tag = NBTIO.readAnyTag(new InputStream() {
-                @Override
-                public int read() {
-                    return buf.readUnsignedByte();
-                }
-            });
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-
-        if (tag == null) {
+    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) {
+        if (buf.readByte() == 0) {
             return null;
         }
-
-        if (!expected.isInstance(tag)) {
-            throw new IllegalArgumentException("Expected tag of type " + expected.getName() + " but got " + tag.getClass().getName());
+        buf.readerIndex(buf.readerIndex() - 1);
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            return NBTIO.readTag(in, TagLimiter.noop(), false, expected);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        return expected.cast(tag);
     }
 
-    public <T extends Tag> void writeAnyTag(ByteBuf buf, @Nullable T tag) {
-        try {
-            NBTIO.writeAnyTag(new OutputStream() {
-                @Override
-                public void write(int b) {
-                    buf.writeByte(b);
-                }
-            }, tag);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+    public <T extends Tag> void writeTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
+        if (tag == null) {
+            buf.writeByte(0);
+            return;
         }
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            NBTIO.writeTag(out, tag, false);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public <T extends Tag> void writeNamedTag(ByteBuf buf, CompoundTag tag, String name) throws UncheckedIOException {
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            NBTIO.writeTag(out, tag, false);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public MNBT readNamedMNBT(ByteBuf buf) throws UncheckedIOException {
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            var mnbt = MNBTIO.read(in, true);
+            if (mnbt.isEmpty()) return null;
+            else return mnbt;
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
+        try (DataInputStream in = byteBufToDataInputStream(buf)) {
+            var mnbt = MNBTIO.read(in, false);
+            if (mnbt.isEmpty()) return null;
+            else return mnbt;
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            MNBTIO.write(out, mnbt);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private DataInputStream byteBufToDataInputStream(ByteBuf buf) {
+        return new DataInputStream(new InputStream() {
+            @Override
+            public int read() {
+                return buf.readUnsignedByte();
+            }
+        });
+    }
+
+
+    private DataOutputStream byteBufToDataOutputStream(ByteBuf buf) {
+        return new DataOutputStream(new OutputStream() {
+            @Override
+            public void write(int b) {
+                buf.writeByte(b);
+            }
+        });
     }
 
     @Nullable
@@ -247,7 +260,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
 
         int item = this.readVarInt(buf);
-        return new ItemStack(item, buf.readByte(), this.readAnyTag(buf));
+        return new ItemStack(item, buf.readByte(), this.readTag(buf));
     }
 
     public void writeItemStack(ByteBuf buf, @Nullable ItemStack item) {
@@ -255,7 +268,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         if (item != null) {
             this.writeVarInt(buf, item.getId());
             buf.writeByte(item.getAmount());
-            this.writeAnyTag(buf, item.getNbt());
+            this.writeTag(buf, item.getNbt());
         }
     }
 
@@ -345,7 +358,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public Component readComponent(ByteBuf buf) {
         // do not use CompoundTag, as mojang serializes a plaintext component as just a single StringTag
-        Tag tag = readAnyTag(buf, Tag.class);
+        Tag tag = readTag(buf, null);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read Component");
         }
@@ -356,7 +369,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     public void writeComponent(ByteBuf buf, Component component) {
         JsonElement json = DefaultComponentSerializer.get().serializeToTree(component);
         Tag tag = NbtComponentSerializer.jsonComponentToTag(json);
-        writeAnyTag(buf, tag);
+        writeTag(buf, tag);
     }
 
     public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) {
@@ -539,7 +552,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         int id = this.readVarInt(buf);
         return switch (id) {
             case 0 -> BlankFormat.INSTANCE;
-            case 1 -> new StyledFormat(this.readAnyTagOrThrow(buf));
+            case 1 -> new StyledFormat(this.readTagOrThrow(buf));
             case 2 -> new FixedFormat(this.readComponent(buf));
             default -> throw new IllegalArgumentException("Unknown number format type: " + id);
         };
@@ -550,7 +563,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             this.writeVarInt(buf, 0);
         } else if (numberFormat instanceof StyledFormat styledFormat) {
             this.writeVarInt(buf, 1);
-            this.writeAnyTag(buf, styledFormat.getStyle());
+            this.writeTag(buf, styledFormat.getStyle());
         } else if (numberFormat instanceof FixedFormat fixedFormat) {
             this.writeVarInt(buf, 2);
             this.writeComponent(buf, fixedFormat.getValue());
