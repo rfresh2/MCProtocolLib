@@ -5,6 +5,8 @@ import com.github.steveice10.mc.auth.service.SessionService;
 import org.geysermc.mcprotocollib.network.Flag;
 import org.geysermc.mcprotocollib.network.packet.DefaultPacketHeader;
 import org.geysermc.mcprotocollib.network.packet.PacketHeader;
+import org.geysermc.mcprotocollib.network.tcp.TcpClientChannelInitializer;
+import org.geysermc.mcprotocollib.network.tcp.TcpServerChannelInitializer;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoBuilder;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerPingTimeHandler;
@@ -72,6 +74,16 @@ public final class MinecraftConstants {
      */
     public static final Flag<Long> PING_KEY = new Flag<>("ping", Long.class);
 
+
+    /**
+     * Custom TcpServerChannelInitializer impl
+     */
+    public static final Flag<TcpServerChannelInitializer.Factory> SERVER_CHANNEL_INITIALIZER = new Flag<>("server-channel-initializer", TcpServerChannelInitializer.Factory.class);
+    /**
+     * Custom TcpClientChannelInitializer impl
+     */
+    public static final Flag<TcpClientChannelInitializer.Factory> CLIENT_CHANNEL_INITIALIZER = new Flag<>("client-channel-initializer", TcpClientChannelInitializer.Factory.class);
+
     /**
      * Session flag for determining the packet compression threshold. Server only.
      */
@@ -86,6 +98,8 @@ public final class MinecraftConstants {
      * The SRV Record prefix used by Minecraft.
      */
     public static final String SRV_RECORD_PREFIX = "_minecraft";
+    public static final String SERVER_CLOSING_MESSAGE = "Server closed.";
+
 
     private MinecraftConstants() {
     }

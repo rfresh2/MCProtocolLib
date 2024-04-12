@@ -37,7 +37,7 @@ public abstract class AbstractServer implements Server {
         return this.protocolSupplier;
     }
 
-    protected PacketProtocol createPacketProtocol() {
+    public PacketProtocol createPacketProtocol() {
         return this.protocolSupplier.get();
     }
 

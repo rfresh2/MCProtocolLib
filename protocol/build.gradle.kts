@@ -2,7 +2,7 @@ plugins {
     id("mcprotocollib.publish-conventions")
 }
 
-version = "1.20.4-2-SNAPSHOT"
+version = "1.20.4-2"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
 
 dependencies {
@@ -21,6 +21,8 @@ dependencies {
 
     // Netty
     api(libs.bundles.netty)
+
+    api(libs.velocity.natives)
 
     // Checker Framework
     api(libs.checkerframework.qual)

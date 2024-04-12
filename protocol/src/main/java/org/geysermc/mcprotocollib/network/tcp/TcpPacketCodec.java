@@ -1,14 +1,13 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
-import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
-import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
-import org.geysermc.mcprotocollib.network.event.session.PacketErrorEvent;
-import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
+import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
+import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 
 import java.util.List;
 
@@ -38,9 +37,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
             // Reset writer index to make sure incomplete data is not written out.
             buf.writerIndex(initial);
 
-            PacketErrorEvent e = new PacketErrorEvent(this.session, t);
-            this.session.callEvent(e);
-            if (!e.shouldSuppress()) {
+            if (!this.session.callPacketError(t))  {
                 throw t;
             }
         }
@@ -69,10 +66,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
         } catch (Throwable t) {
             // Advance buffer to end to make sure remaining data in this packet is skipped.
             buf.readerIndex(buf.readerIndex() + buf.readableBytes());
-
-            PacketErrorEvent e = new PacketErrorEvent(this.session, t);
-            this.session.callEvent(e);
-            if (!e.shouldSuppress()) {
+            if (!this.session.callPacketError(t)) {
                 throw t;
             }
         }

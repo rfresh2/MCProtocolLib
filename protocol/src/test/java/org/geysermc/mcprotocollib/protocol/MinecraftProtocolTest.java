@@ -1,5 +1,13 @@
 package org.geysermc.mcprotocollib.protocol;
 
+import net.kyori.adventure.text.Component;
+import org.geysermc.mcprotocollib.network.Server;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
+import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
+import org.geysermc.mcprotocollib.network.tcp.TcpConnectionManager;
+import org.geysermc.mcprotocollib.network.tcp.TcpServer;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodec;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerSpawnInfo;
@@ -9,14 +17,6 @@ import org.geysermc.mcprotocollib.protocol.data.status.VersionInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoBuilder;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
-import org.geysermc.mcprotocollib.network.Server;
-import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.event.session.DisconnectedEvent;
-import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
-import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
-import org.geysermc.mcprotocollib.network.tcp.TcpServer;
-import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,12 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.SERVER_COMPRESSION_THRESHOLD;
-import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.SERVER_INFO_BUILDER_KEY;
-import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.SERVER_INFO_HANDLER_KEY;
-import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.SERVER_LOGIN_HANDLER_KEY;
-import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.VERIFY_USERS_KEY;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MinecraftProtocolTest {
@@ -46,10 +42,12 @@ public class MinecraftProtocolTest {
     private static final ClientboundLoginPacket JOIN_GAME_PACKET = new ClientboundLoginPacket(0, false, new String[]{"minecraft:world"}, 0, 16, 16, false, false, false, new PlayerSpawnInfo("overworld", "minecraft:world", 100, GameMode.SURVIVAL, GameMode.SURVIVAL, false, false, null, 100));
 
     private static Server server;
+    private static TcpConnectionManager connectionManager;
 
     @BeforeAll
     public static void setupServer() {
-        server = new TcpServer(HOST, PORT, MinecraftProtocol::new);
+        connectionManager = new TcpConnectionManager();
+        server = new TcpServer(HOST, PORT, MinecraftProtocol::new, connectionManager);
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
         server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
@@ -73,11 +71,12 @@ public class MinecraftProtocolTest {
             server.close(true);
             server = null;
         }
+        connectionManager.close();
     }
 
     @Test
     public void testStatus() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol());
+        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol(), connectionManager);
         try {
             ServerInfoHandlerTest handler = new ServerInfoHandlerTest();
             session.setFlag(SERVER_INFO_HANDLER_KEY, handler);
@@ -94,7 +93,7 @@ public class MinecraftProtocolTest {
 
     @Test
     public void testLogin() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol("Username"));
+        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol("Username"), connectionManager);
         try {
             LoginListenerTest listener = new LoginListenerTest();
             session.addListener(listener);
@@ -135,10 +134,10 @@ public class MinecraftProtocolTest {
 
     private static class DisconnectListener extends SessionAdapter {
         @Override
-        public void disconnected(DisconnectedEvent event) {
-            System.err.println("Disconnected: " + event.getReason());
-            if (event.getCause() != null) {
-                event.getCause().printStackTrace();
+        public void disconnected(Session session, Component reason, Throwable cause) {
+            System.err.println("Disconnected: " + reason);
+            if (cause != null) {
+                cause.printStackTrace();
             }
         }
     }

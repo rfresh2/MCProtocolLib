@@ -1,17 +1,20 @@
 package org.geysermc.mcprotocollib.network;
 
+import io.netty.channel.ChannelFutureListener;
+import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
-import org.geysermc.mcprotocollib.network.crypt.PacketEncryption;
-import org.geysermc.mcprotocollib.network.event.session.SessionEvent;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
-import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
+import javax.crypto.SecretKey;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A network session.
@@ -146,18 +149,19 @@ public interface Session {
     void removeListener(SessionListener listener);
 
     /**
-     * Calls an event on the listeners of this session.
-     *
-     * @param event Event to call.
-     */
-    void callEvent(SessionEvent event);
-
-    /**
      * Notifies all listeners that a packet was just received.
      *
      * @param packet Packet to notify.
      */
     void callPacketReceived(Packet packet);
+
+    Packet callPacketSending(Packet packet);
+
+    void callConnected();
+
+    void callDisconnecting(Component reason, Throwable cause);
+
+    void callDisconnected(Component reason, Throwable cause);
 
     /**
      * Notifies all listeners that a packet was just sent.
@@ -165,6 +169,8 @@ public interface Session {
      * @param packet Packet to notify.
      */
     void callPacketSent(Packet packet);
+
+    boolean callPacketError(Throwable throwable);
 
     /**
      * Gets the compression packet length threshold for this session (-1 = disabled).
@@ -176,17 +182,18 @@ public interface Session {
     /**
      * Sets the compression packet length threshold for this session (-1 = disabled).
      *
-     * @param threshold The new compression threshold.
+     * @param threshold             The new compression threshold.
+     * @param level                 Higher level = more compression, but more CPU. -1 = default level
      * @param validateDecompression whether to validate that the decompression fits within size checks.
      */
-    void setCompressionThreshold(int threshold, boolean validateDecompression);
+    void setCompressionThreshold(int threshold, final int level, boolean validateDecompression);
 
     /**
      * Enables encryption for this session.
      *
-     * @param encryption the encryption to encrypt with
+     * @param key the secret key to encrypt with
      */
-    void enableEncryption(PacketEncryption encryption);
+    void enableEncryption(SecretKey key);
 
     /**
      * Gets the connect timeout for this session in seconds.
@@ -242,7 +249,40 @@ public interface Session {
      *
      * @param packet Packet to send.
      */
-    void send(Packet packet);
+    Future<Void> send(@NonNull Packet packet);
+
+    void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
+
+    /**
+     * Sends a packet without calling listeners
+     *
+     * @param packet Packet to send
+     * @return
+     */
+    Future<Void> sendDirect(@NonNull Packet packet);
+
+    /**
+     * Writes a packet without flushing
+     * @param packet Packet to send
+     */
+    void sendDelayedDirect(@NonNull Packet packet);
+
+    /**
+     * Flushes all pending packets.
+     */
+    void flush();
+
+    void sendBundleDirect(@NonNull Packet... packets);
+    void sendBundleDirect(@NonNull List<Packet> packets);
+    void sendBundle(@NonNull List<Packet> packets);
+    void sendBundle(@NonNull Packet... packets);
+
+    /**
+     * Sends a packet on the event loop
+     */
+    void sendAsync(@NonNull Packet packet);
+
+    void sendScheduledAsync(@NonNull Packet packet, long delay, TimeUnit unit);
 
     /**
      * Disconnects the session.

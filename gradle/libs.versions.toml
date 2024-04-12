@@ -35,6 +35,8 @@ fastutil-int2int-maps = { module = "org.cloudburstmc.fastutil.maps:int-int-maps"
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 netty-incubator-transport-native-io_uring = { module = "io.netty.incubator:netty-incubator-transport-native-io_uring", version.ref = "netty-io_uring" }
 
+velocity-natives = { module = "com.velocitypowered:velocity-native", version = "3.3.0-SNAPSHOT" }
+
 checkerframework-qual = { module = "org.checkerframework:checker-qual", version.ref = "checkerframework" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }

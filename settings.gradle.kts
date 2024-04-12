@@ -12,6 +12,9 @@ dependencyResolutionManagement {
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
             name = "sonatype-snapshots"
         }
+        maven("https://papermc.io/repo/repository/maven-public/") {
+            name = "papermc"
+        }
         maven("https://jitpack.io") {
             name = "jitpack"
         }

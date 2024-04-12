@@ -1,55 +1,44 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
-import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.crypt.PacketEncryption;
-import org.geysermc.mcprotocollib.network.event.session.ConnectedEvent;
-import org.geysermc.mcprotocollib.network.event.session.DisconnectedEvent;
-import org.geysermc.mcprotocollib.network.event.session.DisconnectingEvent;
-import org.geysermc.mcprotocollib.network.event.session.PacketSendingEvent;
-import org.geysermc.mcprotocollib.network.event.session.SessionEvent;
-import org.geysermc.mcprotocollib.network.event.session.SessionListener;
-import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import com.google.common.util.concurrent.Futures;
+import com.velocitypowered.natives.util.Natives;
 import io.netty.channel.*;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import io.netty.util.concurrent.DefaultThreadFactory;
+import lombok.NonNull;
 import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.network.Flag;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.event.session.SessionListener;
+import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
 import java.net.ConnectException;
 import java.net.SocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.security.GeneralSecurityException;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
-    /**
-     * Controls whether non-priority packets are handled in a separate event loop
-     */
-    public static boolean USE_EVENT_LOOP_FOR_PACKETS = true;
-    private static EventLoopGroup PACKET_EVENT_LOOP;
-    private static final int SHUTDOWN_QUIET_PERIOD_MS = 100;
-    private static final int SHUTDOWN_TIMEOUT_MS = 500;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
     protected String host;
     protected int port;
     private final PacketProtocol protocol;
-    private final EventLoop eventLoop = createEventLoop();
-
     private int compressionThreshold = -1;
     private int connectTimeout = 30;
     private int readTimeout = 30;
     private int writeTimeout = 0;
 
     private final Map<String, Object> flags = new HashMap<>();
-    private final List<SessionListener> listeners = new CopyOnWriteArrayList<>();
+    private SessionListener[] listeners = new SessionListener[0];
 
     private Channel channel;
     protected boolean disconnected = false;
@@ -130,24 +119,55 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     public List<SessionListener> getListeners() {
-        return Collections.unmodifiableList(this.listeners);
+        return Arrays.asList(this.listeners);
     }
 
     @Override
-    public void addListener(SessionListener listener) {
-        this.listeners.add(listener);
+    public synchronized void addListener(SessionListener listener) {
+        final SessionListener[] newListeners = Arrays.copyOf(this.listeners, this.listeners.length + 1);
+        newListeners[newListeners.length - 1] = listener;
+        this.listeners = newListeners;
     }
 
     @Override
     public void removeListener(SessionListener listener) {
-        this.listeners.remove(listener);
+        if (this.listeners.length == 0) return;
+        int i = -1;
+        for (int j = 0; j < this.listeners.length; j++) {
+            if (this.listeners[j] == listener) {
+                i = j;
+                break;
+            }
+        }
+        if (i == -1) return;
+        final SessionListener[] newListeners = new SessionListener[this.listeners.length - 1];
+        System.arraycopy(this.listeners, 0, newListeners, 0, i);
+        System.arraycopy(this.listeners, i + 1, newListeners, i, this.listeners.length - i - 1);
+        this.listeners = newListeners;
     }
 
     @Override
-    public void callEvent(SessionEvent event) {
+    public Packet callPacketSending(final Packet packet) {
+        Packet toSend = packet;
         try {
-            for (SessionListener listener : this.listeners) {
-                event.call(listener);
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
+                toSend = listener.packetSending(this, toSend);
+                // short circuit posting to other listeners if its cancelled
+                if (toSend == null) break;
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+        return toSend;
+    }
+
+    @Override
+    public void callConnected() {
+        try {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
+                listener.connected(this);
             }
         } catch (Throwable t) {
             exceptionCaught(null, t);
@@ -155,9 +175,48 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
+    public void callDisconnecting(final Component reason, final Throwable cause) {
+        try {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
+                listener.disconnecting(this, reason, cause);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+    }
+
+    @Override
+    public void callDisconnected(final Component reason, final Throwable cause) {
+        try {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
+                listener.disconnected(this, reason, cause);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+    }
+
+    @Override
+    public boolean callPacketError(final Throwable throwable) {
+        boolean suppress = false;
+        try {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
+                suppress |= listener.packetError(this, throwable);
+            }
+        } catch (Throwable t) {
+            exceptionCaught(null, t);
+        }
+        return suppress;
+    }
+
+    @Override
     public void callPacketReceived(Packet packet) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.packetReceived(this, packet);
             }
         } catch (Throwable t) {
@@ -168,7 +227,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     @Override
     public void callPacketSent(Packet packet) {
         try {
-            for (SessionListener listener : this.listeners) {
+            for (int i = 0; i < listeners.length; i++) {
+                var listener = listeners[i];
                 listener.packetSent(this, packet);
             }
         } catch (Throwable t) {
@@ -182,25 +242,47 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void setCompressionThreshold(int threshold, boolean validateDecompression) {
+    public void setCompressionThreshold(int threshold, final int level, boolean validateDecompression) {
         this.compressionThreshold = threshold;
         if (this.channel != null) {
             if (this.compressionThreshold >= 0) {
-                if (this.channel.pipeline().get("compression") == null) {
-                    this.channel.pipeline().addBefore("codec", "compression", new TcpPacketCompression(this, validateDecompression));
+                var existingEncoder = (TcpPacketCompressionAndSizeEncoder) this.channel.pipeline().get("compression-encoder");
+                var existingDecoder = (TcpPacketCompressionDecoder) this.channel.pipeline().get("compression-decoder");
+                if (existingDecoder != null && existingEncoder != null) {
+                    return; // we already updated compression threshold on the session field
                 }
-            } else if (this.channel.pipeline().get("compression") != null) {
-                this.channel.pipeline().remove("compression");
+                var compressor = Natives.compress.get().create(level);
+                var encoder = new TcpPacketCompressionAndSizeEncoder(this, compressor);
+                var decoder = new TcpPacketCompressionDecoder(this, validateDecompression, compressor);
+                this.channel.pipeline().addAfter("size-encoder", "compression-encoder", encoder);
+                this.channel.pipeline().addAfter("size-decoder", "compression-decoder", decoder);
+                this.channel.pipeline().remove("size-encoder");
+            } else {
+                var encoder = this.channel.pipeline().remove("compression-encoder");
+                var decoder = this.channel.pipeline().remove("compression-decoder");
+                if (encoder != null && decoder != null) {
+                    this.channel.pipeline().addAfter("size-decoder", "size-encoder", new TcpPacketSizeEncoder(this));
+                }
             }
         }
     }
 
     @Override
-    public void enableEncryption(PacketEncryption encryption) {
+    public void enableEncryption(SecretKey key) {
         if (channel == null) {
             throw new IllegalStateException("Connect the client before initializing encryption!");
         }
-        channel.pipeline().addBefore("sizer", "encryption", new TcpPacketEncryptor(encryption));
+        try {
+            var factory = Natives.cipher.get();
+            var decrypt = factory.forDecryption(key);
+            var encrypt = factory.forEncryption(key);
+            var encoder = new TcpPacketEncryptionEncoder(this, encrypt);
+            var decoder = new TcpPacketEncryptionDecoder(this, decrypt);
+            this.channel.pipeline().addBefore("size-decoder", "encryption-decoder", decoder);
+            this.channel.pipeline().addBefore("size-encoder", "encryption-encoder", encoder);
+        } catch (final GeneralSecurityException e) {
+            throw new RuntimeException("Failed to initialize encryption.", e);
+        }
     }
 
     @Override
@@ -241,17 +323,13 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void send(Packet packet) {
-        if(this.channel == null) {
-            return;
+    public Future<Void> send(@NotNull Packet packet) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return Futures.immediateVoidFuture();
         }
-
-        PacketSendingEvent sendingEvent = new PacketSendingEvent(this, packet);
-        this.callEvent(sendingEvent);
-
-        if (!sendingEvent.isCancelled()) {
-            final Packet toSend = sendingEvent.getPacket();
-            this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
+            return this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
                 if(future.isSuccess()) {
                     callPacketSent(toSend);
                 } else {
@@ -259,6 +337,162 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 }
             });
         }
+        return this.channel.newSucceededFuture();
+    }
+
+    @Override
+    public void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
+            this.channel.writeAndFlush(toSend).addListener((ChannelFutureListener) future -> {
+                if(future.isSuccess()) {
+                    callPacketSent(toSend);
+                } else {
+                    exceptionCaught(null, future.cause());
+                }
+            }).addListener(listener);
+        }
+    }
+
+    @Override
+    public Future<Void> sendDirect(@NotNull Packet packet) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return Futures.immediateVoidFuture();
+        }
+        return this.channel.writeAndFlush(packet).addListener((ChannelFutureListener) future -> {
+            if(!future.isSuccess()) {
+                exceptionCaught(null, future.cause());
+            }
+        });
+    }
+
+    @Override
+    public void sendDelayedDirect(@NotNull Packet packet) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.write(packet);
+    }
+
+    @Override
+    public void flush() {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.flush();
+    }
+
+    @Override
+    public void sendBundleDirect(@NonNull Packet... packets) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            for (Packet packet : packets) {
+                this.channel.write(packet);
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+        });
+    }
+
+    @Override
+    public void sendBundleDirect(@NonNull List<Packet> packets) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            for (Packet packet : packets) {
+                this.channel.write(packet);
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+        });
+    }
+
+    @Override
+    public void sendBundle(@NonNull Packet... packets) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            final List<Packet> sentPacketList = new ArrayList<>(packets.length);
+            for (Packet packet : packets) {
+                final Packet toSend = this.callPacketSending(packet);
+                if (toSend != null) {
+                    this.channel.write(toSend);
+                    sentPacketList.add(toSend);
+                }
+                if (sentPacketList.size() > 1000) {
+                    this.channel.write(new ClientboundDelimiterPacket());
+                    this.channel.flush();
+                    for (Packet sentPacket : sentPacketList) {
+                        callPacketSent(sentPacket);
+                    }
+                    sentPacketList.clear();
+                    this.channel.write(new ClientboundDelimiterPacket());
+                }
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+            for (Packet packet : sentPacketList) {
+                callPacketSent(packet);
+            }
+        });
+    }
+
+    @Override
+    public void sendBundle(@NonNull List<Packet> packets) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> {
+            this.channel.write(new ClientboundDelimiterPacket());
+            final List<Packet> sentPacketList = new ArrayList<>(packets.size());
+            for (Packet packet : packets) {
+                final Packet toSend = this.callPacketSending(packet);
+                if (toSend != null) {
+                    this.channel.write(toSend);
+                    sentPacketList.add(toSend);
+                }
+                if (sentPacketList.size() > 1000) {
+                    this.channel.write(new ClientboundDelimiterPacket());
+                    this.channel.flush();
+                    for (Packet sentPacket : sentPacketList) {
+                        callPacketSent(sentPacket);
+                    }
+                    sentPacketList.clear();
+                    this.channel.write(new ClientboundDelimiterPacket());
+                }
+            }
+            this.channel.write(new ClientboundDelimiterPacket());
+            this.channel.flush();
+            for (Packet packet : sentPacketList) {
+                callPacketSent(packet);
+            }
+        });
+    }
+
+    @Override
+    public void sendAsync(final @NotNull Packet packet) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().execute(() -> send(packet));
+    }
+
+    @Override
+    public void sendScheduledAsync(@NonNull Packet packet, long delay, TimeUnit unit) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        this.channel.eventLoop().schedule(() -> send(packet), delay, unit);
     }
 
     @Override
@@ -285,32 +519,16 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.disconnected = true;
 
         if (this.channel != null && this.channel.isOpen()) {
-            this.callEvent(new DisconnectingEvent(this, reason, cause));
-            this.channel.flush().close().addListener((ChannelFutureListener) future ->
-                    callEvent(new DisconnectedEvent(TcpSession.this,
-                            reason != null ? reason : Component.text("Connection closed."), cause)));
+            this.callDisconnecting(reason, cause);
+            try {
+                this.channel.flush().close().await(5, TimeUnit.SECONDS);
+            } catch (final Exception e) {
+                this.exceptionCaught(null, e);
+            }
+            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
         } else {
-            this.callEvent(new DisconnectedEvent(this, reason != null ? reason : Component.text("Connection closed."), cause));
+            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
         }
-    }
-
-    private @Nullable EventLoop createEventLoop() {
-        if (!USE_EVENT_LOOP_FOR_PACKETS) {
-            return null;
-        }
-
-        if (PACKET_EVENT_LOOP == null) {
-            // See TcpClientSession.newThreadFactory() for details on
-            // daemon threads and their interaction with the runtime.
-            PACKET_EVENT_LOOP = new DefaultEventLoopGroup(new DefaultThreadFactory(this.getClass(), true));
-            Runtime.getRuntime().addShutdownHook(new Thread(
-                () -> PACKET_EVENT_LOOP.shutdownGracefully(SHUTDOWN_QUIET_PERIOD_MS, SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)));
-        }
-        return PACKET_EVENT_LOOP.next();
-    }
-
-    public Channel getChannel() {
-        return this.channel;
     }
 
     protected void refreshReadTimeoutHandler() {
@@ -359,10 +577,9 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
             ctx.channel().close();
             return;
         }
-
         this.channel = ctx.channel();
-
-        this.callEvent(new ConnectedEvent(this));
+        this.callConnected();
+        super.channelActive(ctx);
     }
 
     @Override
@@ -370,6 +587,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         if (ctx.channel() == this.channel) {
             this.disconnect("Connection closed.");
         }
+        super.channelInactive(ctx);
     }
 
     @Override
@@ -390,10 +608,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
-        if (!packet.isPriority() && eventLoop != null) {
-            eventLoop.execute(() -> this.callPacketReceived(packet));
-        } else {
-            this.callPacketReceived(packet);
-        }
+        this.callPacketReceived(packet);
+        // add below if we want to add more handlers behind this to the netty pipeline
+//        ctx.fireChannelRead(packet);
     }
 }

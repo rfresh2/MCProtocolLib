@@ -1,5 +1,6 @@
 package org.geysermc.mcprotocollib.network.event.session;
 
+import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 
@@ -17,9 +18,11 @@ public interface SessionListener {
     /**
      * Called when a session is sending a packet.
      *
-     * @param event Data relating to the event.
+     * @param session Session sending the packet.
+     * @param packet  Packet being sent.
+     * @return Packet to send, or null to cancel sending.
      */
-    void packetSending(PacketSendingEvent event);
+    Packet packetSending(Session session, Packet packet);
 
     /**
      * Called when a session sends a packet.
@@ -31,28 +34,34 @@ public interface SessionListener {
     /**
      * Called when a session encounters an error while reading or writing packet data.
      *
-     * @param event Data relating to the event.
+     * @param session Current session
+     * @param throwable Cause of the error.
+     * @return Whether the error should be suppressed.
      */
-    void packetError(PacketErrorEvent event);
+    boolean packetError(Session session, Throwable throwable);
 
     /**
      * Called when a session connects.
      *
-     * @param event Data relating to the event.
+     * @param session Session that connected.
      */
-    void connected(ConnectedEvent event);
+    void connected(Session session);
 
     /**
      * Called when a session is about to disconnect.
      *
-     * @param event Data relating to the event.
+     * @param session Session being disconnected.
+     * @param reason  Reason for the session to disconnect.
+     * @param cause   Throwable that caused the disconnect, or null if not caused by a throwable.
      */
-    void disconnecting(DisconnectingEvent event);
+    void disconnecting(Session session, Component reason, Throwable cause);
 
     /**
      * Called when a session is disconnected.
      *
-     * @param event Data relating to the event.
+     * @param session Session that disconnected.
+     * @param reason  Reason for the session to disconnect.
+     * @param cause   Throwable that caused the disconnect, or null if not caused by a throwable.
      */
-    void disconnected(DisconnectedEvent event);
+    void disconnected(Session session, Component reason, Throwable cause);
 }

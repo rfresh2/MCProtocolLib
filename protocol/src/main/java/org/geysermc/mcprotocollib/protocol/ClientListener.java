@@ -5,18 +5,24 @@ import com.github.steveice10.mc.auth.exception.request.InvalidCredentialsExcepti
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.exception.request.ServiceUnavailableException;
 import com.github.steveice10.mc.auth.service.SessionService;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
+import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 import org.geysermc.mcprotocollib.protocol.data.UnexpectedEncryptionException;
 import org.geysermc.mcprotocollib.protocol.data.handshake.HandshakeIntent;
 import org.geysermc.mcprotocollib.protocol.data.status.ServerStatusInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerPingTimeHandler;
-import org.geysermc.mcprotocollib.protocol.packet.configuration.clientbound.ClientboundFinishConfigurationPacket;
-import org.geysermc.mcprotocollib.protocol.packet.configuration.serverbound.ServerboundFinishConfigurationPacket;
-import org.geysermc.mcprotocollib.protocol.packet.handshake.serverbound.ClientIntentionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.common.clientbound.ClientboundDisconnectPacket;
 import org.geysermc.mcprotocollib.protocol.packet.common.clientbound.ClientboundKeepAlivePacket;
 import org.geysermc.mcprotocollib.protocol.packet.common.serverbound.ServerboundKeepAlivePacket;
+import org.geysermc.mcprotocollib.protocol.packet.configuration.clientbound.ClientboundFinishConfigurationPacket;
+import org.geysermc.mcprotocollib.protocol.packet.configuration.serverbound.ServerboundFinishConfigurationPacket;
+import org.geysermc.mcprotocollib.protocol.packet.handshake.serverbound.ClientIntentionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundStartConfigurationPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundConfigurationAcknowledgedPacket;
 import org.geysermc.mcprotocollib.protocol.packet.login.clientbound.ClientboundGameProfilePacket;
@@ -30,13 +36,6 @@ import org.geysermc.mcprotocollib.protocol.packet.status.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.status.clientbound.ClientboundStatusResponsePacket;
 import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.ServerboundPingRequestPacket;
 import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.ServerboundStatusRequestPacket;
-import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.event.session.ConnectedEvent;
-import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
-import org.geysermc.mcprotocollib.network.packet.Packet;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -87,13 +86,13 @@ public class ClientListener extends SessionAdapter {
                 }
 
                 session.send(new ServerboundKeyPacket(helloPacket.getPublicKey(), key, helloPacket.getChallenge()));
-                session.enableEncryption(protocol.enableEncryption(key));
+                session.enableEncryption(key);
             } else if (packet instanceof ClientboundGameProfilePacket) {
                 session.send(new ServerboundLoginAcknowledgedPacket());
             } else if (packet instanceof ClientboundLoginDisconnectPacket loginDisconnectPacket) {
                 session.disconnect(loginDisconnectPacket.getReason());
             } else if (packet instanceof ClientboundLoginCompressionPacket loginCompressionPacket) {
-                session.setCompressionThreshold(loginCompressionPacket.getThreshold(), false);
+                session.setCompressionThreshold(loginCompressionPacket.getThreshold(), 0, false);
             }
         } else if (protocol.getState() == ProtocolState.STATUS) {
             if (packet instanceof ClientboundStatusResponsePacket statusResponsePacket) {
@@ -151,12 +150,12 @@ public class ClientListener extends SessionAdapter {
     }
 
     @Override
-    public void connected(ConnectedEvent event) {
-        MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
-        event.getSession().send(new ClientIntentionPacket(
+    public void connected(Session session) {
+        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        session.send(new ClientIntentionPacket(
             protocol.getCodec().getProtocolVersion(),
-            event.getSession().getHost(),
-            event.getSession().getPort(),
+            session.getHost(),
+            session.getPort(),
             switch (this.targetState) {
                 case LOGIN -> HandshakeIntent.LOGIN;
                 case STATUS -> HandshakeIntent.STATUS;
