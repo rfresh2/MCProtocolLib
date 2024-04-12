@@ -1,3 +1,12 @@
+# Porting TODO
+
+* Velocity compression and encryption handlers
+* ViaNBT
+* Random packets that need changes
+* MinecraftCodecHelper changes
+* TcpSession class hierarchy interface changes
+* Various packets toString verbosity
+
 # MCProtocolLib
 
 MCProtocolLib is a simple library for communicating with Minecraft clients and servers. It allows developers to build custom bots, clients, or servers for Minecraft with ease.
