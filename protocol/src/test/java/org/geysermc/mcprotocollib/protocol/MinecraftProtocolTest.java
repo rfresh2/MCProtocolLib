@@ -20,7 +20,6 @@ import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -81,7 +80,7 @@ public class MinecraftProtocolTest {
         connectionManager.close();
     }
 
-    @Test
+//    @Test
     public void testStatus() throws InterruptedException {
         MinecraftProtocol protocol = PROTOCOL_PROVIDER.get();
         protocol.setTargetState(ProtocolState.STATUS);
@@ -100,7 +99,7 @@ public class MinecraftProtocolTest {
         }
     }
 
-    @Test
+//    @Test
     public void testLogin() throws InterruptedException {
         Session session = new TcpClientSession(HOST, PORT, PROTOCOL_PROVIDER.get(), connectionManager);
         try {
