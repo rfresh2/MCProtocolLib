@@ -54,7 +54,8 @@ public class MinecraftProtocol extends PacketProtocol {
     private ProtocolState state;
     private PacketStateCodec stateCodec;
 
-    private final ProtocolState targetState;
+    @Setter
+    private ProtocolState targetState;
 
     /**
      * The player's identity.

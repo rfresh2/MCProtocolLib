@@ -9,6 +9,7 @@ import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
 import org.geysermc.mcprotocollib.network.tcp.TcpConnectionManager;
 import org.geysermc.mcprotocollib.network.tcp.TcpServer;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodec;
+import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerSpawnInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.PlayerInfo;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.geysermc.mcprotocollib.protocol.MinecraftConstants.*;
@@ -40,6 +42,11 @@ public class MinecraftProtocolTest {
             false
     );
     private static final ClientboundLoginPacket JOIN_GAME_PACKET = new ClientboundLoginPacket(0, false, new String[]{"minecraft:world"}, 0, 16, 16, false, false, false, new PlayerSpawnInfo("overworld", "minecraft:world", 100, GameMode.SURVIVAL, GameMode.SURVIVAL, false, false, null, 100));
+    private static final Supplier<MinecraftProtocol> PROTOCOL_PROVIDER = () -> {
+        var p = new MinecraftProtocol("Username");
+        p.setUseDefaultListeners(true);
+        return p;
+    };
 
     private static Server server;
     private static TcpConnectionManager connectionManager;
@@ -47,7 +54,7 @@ public class MinecraftProtocolTest {
     @BeforeAll
     public static void setupServer() {
         connectionManager = new TcpConnectionManager();
-        server = new TcpServer(HOST, PORT, MinecraftProtocol::new, connectionManager);
+        server = new TcpServer(HOST, PORT, PROTOCOL_PROVIDER, connectionManager);
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
         server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
@@ -76,7 +83,9 @@ public class MinecraftProtocolTest {
 
     @Test
     public void testStatus() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol(), connectionManager);
+        MinecraftProtocol protocol = PROTOCOL_PROVIDER.get();
+        protocol.setTargetState(ProtocolState.STATUS);
+        Session session = new TcpClientSession(HOST, PORT, protocol, connectionManager);
         try {
             ServerInfoHandlerTest handler = new ServerInfoHandlerTest();
             session.setFlag(SERVER_INFO_HANDLER_KEY, handler);
@@ -93,12 +102,12 @@ public class MinecraftProtocolTest {
 
     @Test
     public void testLogin() throws InterruptedException {
-        Session session = new TcpClientSession(HOST, PORT, new MinecraftProtocol("Username"), connectionManager);
+        Session session = new TcpClientSession(HOST, PORT, PROTOCOL_PROVIDER.get(), connectionManager);
         try {
             LoginListenerTest listener = new LoginListenerTest();
             session.addListener(listener);
             session.addListener(new DisconnectListener());
-            session.connect();
+            session.connect(true);
 
             listener.login.await(4, SECONDS);
             assertNotNull(listener.packet, "Failed to log in.");
