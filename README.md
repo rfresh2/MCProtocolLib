@@ -1,105 +1,30 @@
-# Porting TODO
-
-* Velocity compression and encryption handlers
-* ViaNBT
-* Random packets that need changes
-* MinecraftCodecHelper changes
-* TcpSession class hierarchy interface changes
-* Various packets toString verbosity
-
 # MCProtocolLib
+MCProtocolLib is a simple library for communicating with a Minecraft client/server. It aims to allow people to make custom bots, clients, or servers for Minecraft easily.
 
-MCProtocolLib is a simple library for communicating with Minecraft clients and servers. It allows developers to build custom bots, clients, or servers for Minecraft with ease.
+This project is forked from [GeyserMC/MCProtocolLib](https://github.com/GeyserMC/MCProtocolLib)
 
-## Example Code
+The primary purpose is to make changes I need for [ZenithProxy](https://github.com/rfresh2/ZenithProxy/)
+and generally improve performance in terms of memory usage and latency.
 
-See the [example](https://github.com/GeyserMC/MCProtocolLib/tree/master/example/src/main/java/org/geysermc/mcprotocollib) folder for sample usage.
+## Features
 
-## Adding as a Dependency
+* Uses [my custom OpenNBT/ViaNBT fork](https://github.com/rfresh2/OpenNBT) that defers deserialization to bytes instead of objects
+* Includes an optimized Component -> binary NBT writer instead of going through multiple JSON and NBT object conversions
+* Various changes to the netty pipeline and configuration including velocity native compression and encryption
+* Additional methods for sending packets or lists of packets as a single operation
+* Public interfaces, constructors, and mutable variables where I need them
 
-MCProtocolLib builds are published to the [Open Collaboration repository](https://repo.opencollab.dev/ui/packages/gav:%2F%2Forg.geysermc:mcprotocollib).
-Follow the below steps to add MCProtocolLib as a dependency to your project.
+## Usage
 
-### Maven
+I don't maintain this for use by others and I can't make any guarantees about the API stability.
 
-#### Add the Repository
+However, I do maintain support for older MC versions longer than upstream when I support those in ZenithProxy.
 
-```xml
-<repositories>
-    <repository>
-        <id>opencollab</id>
-        <url>https://repo.opencollab.dev/maven-releases/</url>
-    </repository>
-</repositories>
-```
-
-#### Add the Dependency
-
-```xml
-<dependency>
-    <groupId>org.geysermc.mcprotocollib</groupId>
-    <artifactId>protocol</artifactId>
-    <version>(version here)</version>
-</dependency>
-```
-
-### Gradle (Groovy DSL)
-
-#### Add the Repository
-
-```groovy
-repositories {
-    maven { 
-        name 'opencollab'
-        url 'https://repo.opencollab.dev/maven-releases/'
-    }
-}
-```
-
-#### Add the Dependency
-
-```groovy
-dependencies {
-    implementation 'org.geysermc.mcprotocollib:protocol:(version here)'
-}
-```
-
-### Gradle (Kotlin DSL)
-
-#### Add the Repository
-
-```kotlin
-repositories {
-    maven("https://repo.opencollab.dev/maven-releases/") {
-        name = "opencollab"
-    }
-}
-```
-
-#### Add the Dependency
-
-```kotlin
-dependencies {
-    implementation("org.geysermc.mcprotocollib:protocol:(version here)")
-}
-```
-
-### Snapshots
-
-To use snapshot builds, switch the URL to `https://repo.opencollab.dev/maven-snapshots/`.
-
-### Javadocs
-
-You can find the Javadocs for MCProtocolLib [on opencollab](https://ci.opencollab.dev/job/GeyserMC/job/MCProtocolLib/job/master/javadoc/overview-summary.html).
+Precompiled artifacts are only available on [JitPack](https://jitpack.io/#rfresh2/MCProtocolLib/)
 
 ## Building the Source
-
-MCProtocolLib uses Maven to manage dependencies. To build the source code, run `mvn clean install` in the project root directory.
-
-## Support and Development
-
-Please join [the GeyserMC Discord server](https://discord.gg/geysermc) and visit the **#mcprotocollib** channel for discussion and support for this project.
+MCProtocolLib uses Maven to manage dependencies. Simply run 'mvn clean install' in the source's directory.
 
 ## License
+MCProtocolLib is licensed under the **[MIT license](http://www.opensource.org/licenses/mit-license.html)**.
 
-MCProtocolLib is licensed under the **[MIT license](https://opensource.org/license/mit/)**.
