@@ -1,10 +1,7 @@
 package org.geysermc.mcprotocollib.protocol.packet.common.clientbound;
 
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.With;
+import lombok.*;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
@@ -14,6 +11,7 @@ import java.util.Map;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "tags")
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     private final @NonNull Map<String, Map<String, int[]>> tags;
 
