@@ -23,7 +23,7 @@ However, I do maintain support for older MC versions longer than upstream when I
 Precompiled artifacts are only available on [JitPack](https://jitpack.io/#rfresh2/MCProtocolLib/)
 
 ## Building the Source
-MCProtocolLib uses Maven to manage dependencies. Simply run 'mvn clean install' in the source's directory.
+MCProtocolLib uses Gradle to manage dependencies. Simply run '.\gradlew build' in the source's directory.
 
 ## License
 MCProtocolLib is licensed under the **[MIT license](http://www.opensource.org/licenses/mit-license.html)**.
