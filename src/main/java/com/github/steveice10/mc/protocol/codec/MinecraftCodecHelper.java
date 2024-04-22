@@ -100,15 +100,15 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public <T> Holder<T> readHolder(ByteBuf buf, Function<ByteBuf, T> readCustom) {
         int registryId = this.readVarInt(buf);
-        return registryId == 0 ? new Holder<>(readCustom.apply(buf)) : new Holder<>(registryId - 1);
+        return registryId == 0 ? Holder.ofCustom(readCustom.apply(buf)) : Holder.ofId(registryId - 1);
     }
 
     public <T> void writeHolder(ByteBuf buf, Holder<T> holder, BiConsumer<ByteBuf, T> writeCustom) {
         if (holder.isCustom()) {
             this.writeVarInt(buf, 0);
-            writeCustom.accept(buf, holder.getCustomValue());
+            writeCustom.accept(buf, holder.custom());
         } else {
-            this.writeVarInt(buf, holder.getId() + 1);
+            this.writeVarInt(buf, holder.id() + 1);
         }
     }
 
