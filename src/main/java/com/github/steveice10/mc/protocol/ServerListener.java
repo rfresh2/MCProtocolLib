@@ -4,6 +4,7 @@ import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.service.SessionService;
 import com.github.steveice10.mc.protocol.data.ProtocolState;
+import com.github.steveice10.mc.protocol.data.game.RegistryEntry;
 import com.github.steveice10.mc.protocol.data.status.PlayerInfo;
 import com.github.steveice10.mc.protocol.data.status.ServerStatusInfo;
 import com.github.steveice10.mc.protocol.data.status.VersionInfo;
@@ -27,7 +28,7 @@ import com.github.steveice10.mc.protocol.packet.status.clientbound.ClientboundPo
 import com.github.steveice10.mc.protocol.packet.status.clientbound.ClientboundStatusResponsePacket;
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundPingRequestPacket;
 import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundStatusRequestPacket;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.tag.builtin.*;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
@@ -38,10 +39,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Handles initial login and status requests for servers.
@@ -91,6 +89,10 @@ public class ServerListener extends SessionAdapter {
                     case STATUS:
                         protocol.setState(ProtocolState.STATUS);
                         break;
+                    case TRANSFER:
+                        if (!session.getFlag(MinecraftConstants.ACCEPT_TRANSFERS_KEY, false)) {
+                            session.disconnect("Server does not accept transfers.");
+                        }
                     case LOGIN:
                         protocol.setState(ProtocolState.LOGIN);
                         if (intentionPacket.getProtocolVersion() > protocol.getCodec().getProtocolVersion()) {
@@ -109,7 +111,7 @@ public class ServerListener extends SessionAdapter {
                 this.username = ((ServerboundHelloPacket) packet).getUsername();
 
                 if (session.getFlag(MinecraftConstants.VERIFY_USERS_KEY, true)) {
-                    session.send(new ClientboundHelloPacket(SERVER_ID, KEY_PAIR.getPublic(), this.challenge));
+                    session.send(new ClientboundHelloPacket(SERVER_ID, KEY_PAIR.getPublic(), this.challenge, true));
                 } else {
                     new Thread(new UserAuthTask(session, null)).start();
                 }
@@ -126,8 +128,24 @@ public class ServerListener extends SessionAdapter {
                 session.enableEncryption(key);
                 new Thread(new UserAuthTask(session, key)).start();
             } else if (packet instanceof ServerboundLoginAcknowledgedPacket) {
-                ((MinecraftProtocol) session.getPacketProtocol()).setState(ProtocolState.CONFIGURATION);
-                session.send(new ClientboundRegistryDataPacket(networkCodec));
+                session.getPacketProtocol().setState(ProtocolState.CONFIGURATION);
+
+                // Credit ViaVersion: https://github.com/ViaVersion/ViaVersion/blob/dev/common/src/main/java/com/viaversion/viaversion/protocols/protocol1_20_5to1_20_3/rewriter/EntityPacketRewriter1_20_5.java
+                for (Map.Entry<String, Tag> entry : networkCodec.getValue().entrySet()) {
+                    CompoundTag entryTag = (CompoundTag) entry.getValue();
+                    StringTag typeTag = entryTag.get("type");
+                    ListTag valueTag = entryTag.get("value");
+                    List<RegistryEntry> entries = new ArrayList<>();
+                    for (Tag tag : valueTag) {
+                        CompoundTag compoundTag = (CompoundTag) tag;
+                        StringTag nameTag = compoundTag.get("name");
+                        int id = ((IntTag) compoundTag.get("id")).getValue();
+                        entries.add(id, new RegistryEntry(nameTag.getValue(), compoundTag.get("element")));
+                    }
+
+                    session.send(new ClientboundRegistryDataPacket(typeTag.getValue(), entries));
+                }
+
                 session.send(new ClientboundFinishConfigurationPacket());
             }
         } else if (protocol.getState() == ProtocolState.STATUS) {
@@ -179,7 +197,7 @@ public class ServerListener extends SessionAdapter {
     public void packetSent(Session session, Packet packet) {
         if (packet instanceof ClientboundLoginCompressionPacket) {
             session.setCompressionThreshold(((ClientboundLoginCompressionPacket) packet).getThreshold(), -1, true);
-            session.send(new ClientboundGameProfilePacket((GameProfile) session.getFlag(MinecraftConstants.PROFILE_KEY)));
+            session.send(new ClientboundGameProfilePacket((GameProfile) session.getFlag(MinecraftConstants.PROFILE_KEY), false));
         }
     }
 

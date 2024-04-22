@@ -14,20 +14,22 @@ import java.net.InetSocketAddress;
 public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
     public static final Factory DEFAULT_FACTORY = TcpClientChannelInitializer::new;
     private final TcpClientSession client;
+    private final boolean transferring;
 
-    public TcpClientChannelInitializer(TcpClientSession client) {
+    public TcpClientChannelInitializer(TcpClientSession client, boolean transferring) {
         this.client = client;
+        this.transferring = transferring;
     }
 
     @FunctionalInterface
     public interface Factory {
-        TcpClientChannelInitializer create(TcpClientSession client);
+        TcpClientChannelInitializer create(TcpClientSession client, boolean transferring);
     }
 
     @Override
     protected void initChannel(final Channel channel) throws Exception {
         PacketProtocol protocol = client.getPacketProtocol();
-        protocol.newClientSession(client);
+        protocol.newClientSession(client, transferring);
 
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {

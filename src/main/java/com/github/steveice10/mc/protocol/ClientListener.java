@@ -13,9 +13,12 @@ import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerPingTimeHandler;
 import com.github.steveice10.mc.protocol.packet.common.clientbound.ClientboundDisconnectPacket;
 import com.github.steveice10.mc.protocol.packet.common.clientbound.ClientboundKeepAlivePacket;
+import com.github.steveice10.mc.protocol.packet.common.clientbound.ClientboundTransferPacket;
 import com.github.steveice10.mc.protocol.packet.common.serverbound.ServerboundKeepAlivePacket;
 import com.github.steveice10.mc.protocol.packet.configuration.clientbound.ClientboundFinishConfigurationPacket;
+import com.github.steveice10.mc.protocol.packet.configuration.clientbound.ClientboundSelectKnownPacks;
 import com.github.steveice10.mc.protocol.packet.configuration.serverbound.ServerboundFinishConfigurationPacket;
+import com.github.steveice10.mc.protocol.packet.configuration.serverbound.ServerboundSelectKnownPacks;
 import com.github.steveice10.mc.protocol.packet.handshake.serverbound.ClientIntentionPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.clientbound.ClientboundStartConfigurationPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.serverbound.ServerboundConfigurationAcknowledgedPacket;
@@ -33,6 +36,7 @@ import com.github.steveice10.mc.protocol.packet.status.serverbound.ServerboundSt
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.SessionAdapter;
 import com.github.steveice10.packetlib.packet.Packet;
+import com.github.steveice10.packetlib.tcp.TcpClientSession;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -40,6 +44,7 @@ import lombok.SneakyThrows;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 /**
  * Handles making initial login and status requests for clients.
@@ -47,6 +52,7 @@ import java.security.NoSuchAlgorithmException;
 @AllArgsConstructor
 public class ClientListener extends SessionAdapter {
     private final @NonNull ProtocolState targetState;
+    private final boolean transferring;
 
     @SneakyThrows
     @Override
@@ -120,10 +126,22 @@ public class ClientListener extends SessionAdapter {
                 session.disconnect(((ClientboundDisconnectPacket) packet).getReason());
             } else if (packet instanceof ClientboundStartConfigurationPacket) {
                 session.send(new ServerboundConfigurationAcknowledgedPacket());
+            } else if (packet instanceof ClientboundTransferPacket transferPacket) {
+                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                newSession.setFlags(session.getFlags());
+                session.disconnect("Transferring");
+                newSession.connect(true, true);
             }
         } else if (protocol.getState() == ProtocolState.CONFIGURATION) {
             if (packet instanceof ClientboundFinishConfigurationPacket) {
                 session.send(new ServerboundFinishConfigurationPacket());
+            } else if (packet instanceof ClientboundSelectKnownPacks) {
+                session.send(new ServerboundSelectKnownPacks(new ArrayList<>()));
+            } else if (packet instanceof ClientboundTransferPacket transferPacket) {
+                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                newSession.setFlags(session.getFlags());
+                session.disconnect("Transferring");
+                newSession.connect(true, true);
             }
         }
     }
@@ -152,9 +170,13 @@ public class ClientListener extends SessionAdapter {
 
     @Override
     public void connected(Session session) {
-        MinecraftProtocol protocol = (MinecraftProtocol) session.getPacketProtocol();
+        MinecraftProtocol protocol = session.getPacketProtocol();
         if (this.targetState == ProtocolState.LOGIN) {
-            session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.LOGIN));
+            if (this.transferring) {
+                session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.TRANSFER));
+            } else {
+                session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.LOGIN));
+            }
         } else if (this.targetState == ProtocolState.STATUS) {
             session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.STATUS));
         }

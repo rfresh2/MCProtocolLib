@@ -36,7 +36,7 @@ public class TcpClientSession extends TcpSession {
     private final int bindPort;
     private final ProxyInfo proxy;
     private final PacketCodecHelper codecHelper;
-    private final TcpConnectionManager tcpManager;
+    @Getter private final TcpConnectionManager tcpManager;
 
     public TcpClientSession(String host, int port, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
         this(host, port, protocol, null, tcpManager);
@@ -59,9 +59,9 @@ public class TcpClientSession extends TcpSession {
         this.tcpManager = tcpManager;
     }
 
-    public ChannelInitializer<Channel> buildChannelInitializer() {
+    public ChannelInitializer<Channel> buildChannelInitializer(boolean transferring) {
         return getFlag(MinecraftConstants.CLIENT_CHANNEL_INITIALIZER, TcpClientChannelInitializer.DEFAULT_FACTORY)
-            .create(this);
+            .create(this, transferring);
     }
 
     public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
@@ -73,11 +73,11 @@ public class TcpClientSession extends TcpSession {
     }
 
     @Override
-    public void connect(boolean wait) {
-        connect(wait, buildBootstrap(buildChannelInitializer()));
+    public void connect(boolean wait, boolean transferring) {
+        connect(wait, transferring, buildBootstrap(buildChannelInitializer(transferring)));
     }
 
-    public void connect(boolean wait, Bootstrap bootstrap) {
+    public void connect(boolean wait, boolean transferring, Bootstrap bootstrap) {
         if(this.disconnected) {
             throw new IllegalStateException("Session has already been disconnected.");
         }
