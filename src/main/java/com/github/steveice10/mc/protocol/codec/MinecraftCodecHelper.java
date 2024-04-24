@@ -357,6 +357,39 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
+    @NotNull
+    public ItemStack readTradeItemStack(ByteBuf buf) throws UncheckedIOException {
+        int item = this.readVarInt(buf);
+        int count = this.readVarInt(buf);
+        int componentsLength = this.readVarInt(buf);
+
+        Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>();
+        for (int i = 0; i < componentsLength; i++) {
+            DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
+            DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(ItemCodecHelper.INSTANCE, buf);
+            dataComponents.put(dataComponentType, dataComponent);
+        }
+
+        return new ItemStack(item, count, new DataComponents(dataComponents));
+    }
+
+    public void writeTradeItemStack(ByteBuf buf, @NotNull ItemStack item) throws UncheckedIOException {
+        this.writeVarInt(buf, item.getId());
+        this.writeVarInt(buf, item.getAmount());
+
+        DataComponents dataComponents = item.getDataComponents();
+        if (dataComponents == null) {
+            this.writeVarInt(buf, 0);
+            return;
+        }
+
+        this.writeVarInt(buf, dataComponents.getDataComponents().size());
+        for (DataComponent<?, ?> component : dataComponents.getDataComponents().values()) {
+            this.writeVarInt(buf, component.getType().getId());
+            component.write(ItemCodecHelper.INSTANCE, buf);
+        }
+    }
+
     public Vector3i readPosition(ByteBuf buf) {
         long val = buf.readLong();
 

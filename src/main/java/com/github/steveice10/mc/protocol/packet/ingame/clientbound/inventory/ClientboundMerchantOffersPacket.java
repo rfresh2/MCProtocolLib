@@ -2,15 +2,15 @@ package com.github.steveice10.mc.protocol.packet.ingame.clientbound.inventory;
 
 import com.github.steveice10.mc.protocol.codec.MinecraftCodecHelper;
 import com.github.steveice10.mc.protocol.codec.MinecraftPacket;
-import com.github.steveice10.mc.protocol.data.game.item.ItemStack;
 import com.github.steveice10.mc.protocol.data.game.inventory.VillagerTrade;
+import com.github.steveice10.mc.protocol.data.game.item.ItemStack;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 @Data
 @With
@@ -23,15 +23,15 @@ public class ClientboundMerchantOffersPacket implements MinecraftPacket {
     private final boolean regularVillager;
     private final boolean canRestock;
 
-    public ClientboundMerchantOffersPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
+    public ClientboundMerchantOffersPacket(ByteBuf in, MinecraftCodecHelper helper) throws UncheckedIOException {
         this.containerId = helper.readVarInt(in);
 
         int size = helper.readVarInt(in);
         this.trades = new VillagerTrade[size];
         for (int i = 0; i < trades.length; i++) {
-            ItemStack firstInput = helper.readOptionalItemStack(in);
+            ItemStack firstInput = helper.readTradeItemStack(in);
             ItemStack output = helper.readOptionalItemStack(in);
-            ItemStack secondInput = helper.readOptionalItemStack(in);
+            ItemStack secondInput = helper.readNullable(in, helper::readTradeItemStack);
 
             boolean tradeDisabled = in.readBoolean();
             int numUses = in.readInt();
@@ -51,14 +51,14 @@ public class ClientboundMerchantOffersPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws IOException {
+    public void serialize(ByteBuf out, MinecraftCodecHelper helper) throws UncheckedIOException {
         helper.writeVarInt(out, this.containerId);
 
         helper.writeVarInt(out, this.trades.length);
         for (VillagerTrade trade : this.trades) {
-            helper.writeOptionalItemStack(out, trade.getFirstInput());
+            helper.writeTradeItemStack(out, trade.getFirstInput());
             helper.writeOptionalItemStack(out, trade.getOutput());
-            helper.writeOptionalItemStack(out, trade.getSecondInput());
+            helper.writeNullable(out, trade.getSecondInput(), helper::writeTradeItemStack);
 
             out.writeBoolean(trade.isTradeDisabled());
             out.writeInt(trade.getNumUses());
