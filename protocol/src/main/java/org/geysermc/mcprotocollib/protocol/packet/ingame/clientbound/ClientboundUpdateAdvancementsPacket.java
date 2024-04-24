@@ -8,7 +8,7 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement.DisplayData;
 import org.geysermc.mcprotocollib.protocol.data.game.advancement.Advancement.DisplayData.AdvancementType;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ItemStack;
+import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             if (in.readBoolean()) {
                 Component title = helper.readComponent(in);
                 Component description = helper.readComponent(in);
-                ItemStack icon = helper.readItemStack(in);
+                ItemStack icon = helper.readOptionalItemStack(in);
                 AdvancementType advancementType = AdvancementType.from(helper.readVarInt(in));
 
                 int flags = in.readInt();
@@ -126,7 +126,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 out.writeBoolean(true);
                 helper.writeComponent(out, displayData.getTitle());
                 helper.writeComponent(out, displayData.getDescription());
-                helper.writeItemStack(out, displayData.getIcon());
+                helper.writeOptionalItemStack(out, displayData.getIcon());
                 helper.writeVarInt(out, displayData.getAdvancementType().ordinal());
                 String backgroundTexture = displayData.getBackgroundTexture();
 

@@ -2,7 +2,7 @@ metadata.format.version = "1.1"
 
 [versions]
 
-adventure = "4.16.0"
+adventure = "4.17.0-SNAPSHOT"
 opennbt = "6f57b4cc30"
 mcauthlib = "281f98ab2d"
 math = "2.0"

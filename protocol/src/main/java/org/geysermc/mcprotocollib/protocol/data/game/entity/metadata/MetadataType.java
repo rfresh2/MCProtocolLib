@@ -1,5 +1,17 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ByteEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.FloatEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.IntEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.LongEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ObjectEntityMetadata;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.PaintingType;
+import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -7,11 +19,6 @@ import net.kyori.adventure.text.Component;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.*;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.type.PaintingType;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +36,7 @@ public class MetadataType<T> {
     public static final MetadataType<String> STRING = new MetadataType<>(MinecraftCodecHelper::readString, MinecraftCodecHelper::writeString, ObjectEntityMetadata::new);
     public static final MetadataType<Component> CHAT = new MetadataType<>(MinecraftCodecHelper::readComponent, MinecraftCodecHelper::writeComponent, ObjectEntityMetadata::new);
     public static final MetadataType<Optional<Component>> OPTIONAL_CHAT = new MetadataType<>(optionalReader(MinecraftCodecHelper::readComponent), optionalWriter(MinecraftCodecHelper::writeComponent), ObjectEntityMetadata::new);
-    public static final MetadataType<ItemStack> ITEM = new MetadataType<>(MinecraftCodecHelper::readItemStack, MinecraftCodecHelper::writeItemStack, ObjectEntityMetadata::new);
+    public static final MetadataType<ItemStack> ITEM = new MetadataType<>(MinecraftCodecHelper::readOptionalItemStack, MinecraftCodecHelper::writeOptionalItemStack, ObjectEntityMetadata::new);
     public static final BooleanMetadataType BOOLEAN = new BooleanMetadataType(ByteBuf::readBoolean, ByteBuf::writeBoolean, BooleanEntityMetadata::new);
     public static final MetadataType<Vector3f> ROTATION = new MetadataType<>(MinecraftCodecHelper::readRotation, MinecraftCodecHelper::writeRotation, ObjectEntityMetadata::new);
     public static final MetadataType<Vector3i> POSITION = new MetadataType<>(MinecraftCodecHelper::readPosition, MinecraftCodecHelper::writePosition, ObjectEntityMetadata::new);
@@ -40,10 +47,12 @@ public class MetadataType<T> {
     public static final IntMetadataType OPTIONAL_BLOCK_STATE = new IntMetadataType(MinecraftCodecHelper::readVarInt, MinecraftCodecHelper::writeVarInt, IntEntityMetadata::new);
     public static final MetadataType<CompoundTag> NBT_TAG = new MetadataType<>(MinecraftCodecHelper::readTag, MinecraftCodecHelper::writeTag, ObjectEntityMetadata::new);
     public static final MetadataType<Particle> PARTICLE = new MetadataType<>(MinecraftCodecHelper::readParticle, MinecraftCodecHelper::writeParticle, ObjectEntityMetadata::new);
+    public static final MetadataType<List<Particle>> PARTICLES = new MetadataType<>(listReader(MinecraftCodecHelper::readParticle), listWriter(MinecraftCodecHelper::writeParticle), ObjectEntityMetadata::new);
     public static final MetadataType<VillagerData> VILLAGER_DATA = new MetadataType<>(MinecraftCodecHelper::readVillagerData, MinecraftCodecHelper::writeVillagerData, ObjectEntityMetadata::new);
     public static final OptionalIntMetadataType OPTIONAL_VARINT = new OptionalIntMetadataType(ObjectEntityMetadata::new);
     public static final MetadataType<Pose> POSE = new MetadataType<>(MinecraftCodecHelper::readPose, MinecraftCodecHelper::writePose, ObjectEntityMetadata::new);
     public static final IntMetadataType CAT_VARIANT = new IntMetadataType(MinecraftCodecHelper::readVarInt, MinecraftCodecHelper::writeVarInt, IntEntityMetadata::new);
+    public static final IntMetadataType WOLF_VARIANT = new IntMetadataType(MinecraftCodecHelper::readVarInt, MinecraftCodecHelper::writeVarInt, IntEntityMetadata::new);
     public static final IntMetadataType FROG_VARIANT = new IntMetadataType(MinecraftCodecHelper::readVarInt, MinecraftCodecHelper::writeVarInt, IntEntityMetadata::new);
     public static final MetadataType<Optional<GlobalPos>> OPTIONAL_GLOBAL_POS = new MetadataType<>(optionalReader(MinecraftCodecHelper::readGlobalPos), optionalWriter(MinecraftCodecHelper::writeGlobalPos), ObjectEntityMetadata::new);
     public static final MetadataType<PaintingType> PAINTING_VARIANT = new MetadataType<>(MinecraftCodecHelper::readPaintingType, MinecraftCodecHelper::writePaintingType, ObjectEntityMetadata::new);
@@ -137,6 +146,26 @@ public class MetadataType<T> {
         return (helper, output, value) -> {
             output.writeBoolean(value.isPresent());
             value.ifPresent(t -> writer.write(helper, output, t));
+        };
+    }
+
+    private static <T> Reader<List<T>> listReader(Reader<T> reader) {
+        return (helper, input) -> {
+            List<T> ret = new ArrayList<>();
+            for (int i = 0; i < helper.readVarInt(input); i++) {
+                ret.add(reader.read(helper, input));
+            }
+
+            return ret;
+        };
+    }
+
+    private static <T> Writer<List<T>> listWriter(Writer<T> writer) {
+        return (helper, output, value) -> {
+            helper.writeVarInt(output, value.size());
+            for (T object : value) {
+                writer.write(helper, output, object);
+            }
         };
     }
 

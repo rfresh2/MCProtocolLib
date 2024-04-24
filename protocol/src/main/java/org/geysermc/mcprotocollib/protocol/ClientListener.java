@@ -11,6 +11,7 @@ import lombok.SneakyThrows;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
 import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.tcp.TcpClientSession;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 import org.geysermc.mcprotocollib.protocol.data.UnexpectedEncryptionException;
 import org.geysermc.mcprotocollib.protocol.data.handshake.HandshakeIntent;
@@ -19,9 +20,12 @@ import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerPingTimeHandler;
 import org.geysermc.mcprotocollib.protocol.packet.common.clientbound.ClientboundDisconnectPacket;
 import org.geysermc.mcprotocollib.protocol.packet.common.clientbound.ClientboundKeepAlivePacket;
+import org.geysermc.mcprotocollib.protocol.packet.common.clientbound.ClientboundTransferPacket;
 import org.geysermc.mcprotocollib.protocol.packet.common.serverbound.ServerboundKeepAlivePacket;
 import org.geysermc.mcprotocollib.protocol.packet.configuration.clientbound.ClientboundFinishConfigurationPacket;
+import org.geysermc.mcprotocollib.protocol.packet.configuration.clientbound.ClientboundSelectKnownPacks;
 import org.geysermc.mcprotocollib.protocol.packet.configuration.serverbound.ServerboundFinishConfigurationPacket;
+import org.geysermc.mcprotocollib.protocol.packet.configuration.serverbound.ServerboundSelectKnownPacks;
 import org.geysermc.mcprotocollib.protocol.packet.handshake.serverbound.ClientIntentionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundStartConfigurationPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundConfigurationAcknowledgedPacket;
@@ -40,6 +44,7 @@ import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.Serverbound
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 /**
  * Handles making initial login and status requests for clients.
@@ -47,6 +52,7 @@ import java.security.NoSuchAlgorithmException;
 @AllArgsConstructor
 public class ClientListener extends SessionAdapter {
     private final @NonNull ProtocolState targetState;
+    private final boolean transferring;
 
     @SneakyThrows
     @Override
@@ -119,10 +125,22 @@ public class ClientListener extends SessionAdapter {
                 session.disconnect(disconnectPacket.getReason());
             } else if (packet instanceof ClientboundStartConfigurationPacket) {
                 session.send(new ServerboundConfigurationAcknowledgedPacket());
+            } else if (packet instanceof ClientboundTransferPacket transferPacket) {
+                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                newSession.setFlags(session.getFlags());
+                session.disconnect("Transferring");
+                newSession.connect(true, true);
             }
         } else if (protocol.getState() == ProtocolState.CONFIGURATION) {
             if (packet instanceof ClientboundFinishConfigurationPacket) {
                 session.send(new ServerboundFinishConfigurationPacket());
+            } else if (packet instanceof ClientboundSelectKnownPacks) {
+                session.send(new ServerboundSelectKnownPacks(new ArrayList<>()));
+            } else if (packet instanceof ClientboundTransferPacket transferPacket) {
+                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                newSession.setFlags(session.getFlags());
+                session.disconnect("Transferring");
+                newSession.connect(true, true);
             }
         }
     }
@@ -152,15 +170,14 @@ public class ClientListener extends SessionAdapter {
     @Override
     public void connected(Session session) {
         MinecraftProtocol protocol = session.getPacketProtocol();
-        session.send(new ClientIntentionPacket(
-            protocol.getCodec().getProtocolVersion(),
-            session.getHost(),
-            session.getPort(),
-            switch (this.targetState) {
-                case LOGIN -> HandshakeIntent.LOGIN;
-                case STATUS -> HandshakeIntent.STATUS;
-                default -> throw new IllegalArgumentException("Invalid target state: " + this.targetState);
+        if (this.targetState == ProtocolState.LOGIN) {
+            if (this.transferring) {
+                session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.TRANSFER));
+            } else {
+                session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.LOGIN));
             }
-        ));
+        } else if (this.targetState == ProtocolState.STATUS) {
+            session.send(new ClientIntentionPacket(protocol.getCodec().getProtocolVersion(), session.getHost(), session.getPort(), HandshakeIntent.STATUS));
+        }
     }
 }
