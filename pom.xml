@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <netty.version>4.1.108.Final</netty.version>
-        <adventure.version>4.16.0</adventure.version>
+        <adventure.version>4.17.0-SNAPSHOT</adventure.version>
         <fastutil.version>8.5.13-SNAPSHOT</fastutil.version>
         <argLine/>
     </properties>
@@ -57,6 +57,10 @@
         <repository>
             <id>paper</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss-snapshots1</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 
