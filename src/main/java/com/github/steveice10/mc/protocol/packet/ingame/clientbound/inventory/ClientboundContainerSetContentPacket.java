@@ -18,7 +18,7 @@ import java.io.IOException;
 public class ClientboundContainerSetContentPacket implements MinecraftPacket {
     private final int containerId;
     private final int stateId;
-    private final @Nullable ItemStack @NonNull [] items;
+    private final ItemStack @NonNull [] items;
     private final @Nullable ItemStack carriedItem;
 
     public ClientboundContainerSetContentPacket(ByteBuf in, MinecraftCodecHelper helper) throws IOException {
