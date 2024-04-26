@@ -90,7 +90,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public <T> void writeNullable(ByteBuf buf, @org.jetbrains.annotations.Nullable T value, BiConsumer<ByteBuf, T> ifPresent) {
+    public <T> void writeNullable(ByteBuf buf, @Nullable T value, BiConsumer<ByteBuf, T> ifPresent) {
         if (value != null) {
             buf.writeBoolean(true);
             ifPresent.accept(buf, value);
