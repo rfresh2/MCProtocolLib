@@ -193,8 +193,8 @@ public class NbtComponentSerializer {
         } else if (tag instanceof ListTag) {
             final ListTag list = (ListTag) tag;
             final JsonArray array = new JsonArray();
-            for (final Tag listEntry : list) {
-                array.add(convertToJson(null, listEntry));
+            for (final Object listEntry : list) {
+                array.add(convertToJson(null, (Tag) listEntry));
             }
             return array;
         } else if (tag instanceof NumberTag) {

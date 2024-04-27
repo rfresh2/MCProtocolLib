@@ -40,7 +40,7 @@ public class ItemStack {
         if (nbt == null) return enchantments;
         try {
             final CompoundTag tag = (CompoundTag) MNBTIO.read(nbt);
-            final ListTag enchantmentTagList = tag.getListTag("Enchantments");
+            final ListTag<CompoundTag> enchantmentTagList = tag.getListTag("Enchantments", CompoundTag.class);
             if (enchantmentTagList == null) return enchantments;
             for (int i = 0; i < enchantmentTagList.size(); i++) {
                 final CompoundTag enchantmentTag = enchantmentTagList.get(i);
