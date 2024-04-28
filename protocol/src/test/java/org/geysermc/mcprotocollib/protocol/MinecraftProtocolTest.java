@@ -15,7 +15,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerSpawnIn
 import org.geysermc.mcprotocollib.protocol.data.status.PlayerInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.ServerStatusInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.VersionInfo;
-import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoBuilder;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
 import org.junit.jupiter.api.AfterAll;
@@ -56,8 +55,8 @@ public class MinecraftProtocolTest {
         server = new TcpServer(HOST, PORT, PROTOCOL_PROVIDER, connectionManager);
         server.setGlobalFlag(VERIFY_USERS_KEY, false);
         server.setGlobalFlag(SERVER_COMPRESSION_THRESHOLD, 100);
-        server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, (ServerInfoBuilder) session -> SERVER_INFO);
-        server.setGlobalFlag(SERVER_LOGIN_HANDLER_KEY, (ServerLoginHandler) session -> {
+        server.setGlobalFlag(SERVER_INFO_BUILDER_KEY, session -> SERVER_INFO);
+        server.setGlobalFlag(SERVER_LOGIN_HANDLER_KEY, session -> {
             // Seems like in this setup the server can reply too quickly to ServerboundFinishConfigurationPacket
             // before the client can transition CONFIGURATION -> GAME. There is probably something wrong here and this is just a band-aid.
             try {

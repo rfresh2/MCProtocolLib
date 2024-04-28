@@ -1,17 +1,5 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ByteEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.FloatEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.IntEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.LongEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ObjectEntityMetadata;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.type.PaintingType;
-import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -19,6 +7,12 @@ import net.kyori.adventure.text.Component;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.*;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.PaintingType;
+import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 
 import java.util.ArrayList;
 import java.util.List;

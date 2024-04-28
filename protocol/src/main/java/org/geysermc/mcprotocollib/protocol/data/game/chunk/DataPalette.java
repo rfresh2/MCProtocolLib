@@ -1,7 +1,7 @@
 package org.geysermc.mcprotocollib.protocol.data.game.chunk;
 
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.*;
 import lombok.*;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.*;
 
 @Getter
 @Setter

@@ -190,15 +190,13 @@ public class NbtComponentSerializer {
                 convertCompoundTagEntry(entry.getKey(), entry.getValue(), object);
             }
             return object;
-        } else if (tag instanceof ListTag) {
-            final ListTag list = (ListTag) tag;
+        } else if (tag instanceof final ListTag list) {
             final JsonArray array = new JsonArray();
             for (final Object listEntry : list) {
                 array.add(convertToJson(null, (Tag) listEntry));
             }
             return array;
-        } else if (tag instanceof NumberTag) {
-            final NumberTag numberTag = (NumberTag) tag;
+        } else if (tag instanceof final NumberTag numberTag) {
             if (key != null && BOOLEAN_TYPES.contains(key)) {
                 // Booleans don't have a direct representation in nbt
                 return new JsonPrimitive(numberTag.asBoolean());
@@ -206,22 +204,19 @@ public class NbtComponentSerializer {
             return new JsonPrimitive(numberTag.getValue());
         } else if (tag instanceof StringTag) {
             return new JsonPrimitive(((StringTag) tag).getValue());
-        } else if (tag instanceof ByteArrayTag) {
-            final ByteArrayTag arrayTag = (ByteArrayTag) tag;
+        } else if (tag instanceof final ByteArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final byte num : arrayTag.getValue()) {
                 array.add(num);
             }
             return array;
-        } else if (tag instanceof IntArrayTag) {
-            final IntArrayTag arrayTag = (IntArrayTag) tag;
+        } else if (tag instanceof final IntArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final int num : arrayTag.getValue()) {
                 array.add(num);
             }
             return array;
-        } else if (tag instanceof LongArrayTag) {
-            final LongArrayTag arrayTag = (LongArrayTag) tag;
+        } else if (tag instanceof final LongArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final long num : arrayTag.getValue()) {
                 array.add(num);
@@ -232,9 +227,8 @@ public class NbtComponentSerializer {
     }
 
     private static void convertCompoundTagEntry(final String key, final Tag tag, final JsonObject object) {
-        if ((key.equals("contents")) && tag instanceof CompoundTag) {
+        if ((key.equals("contents")) && tag instanceof final CompoundTag showEntity) {
             // Back to a UUID string
-            final CompoundTag showEntity = (CompoundTag) tag;
             final Tag idTag = showEntity.get("id");
             if (idTag instanceof IntArrayTag) {
                 showEntity.remove("id");

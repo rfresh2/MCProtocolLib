@@ -16,7 +16,7 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 @ToString(exclude = "iconBytes")
 public class ClientboundServerDataPacket implements MinecraftPacket {
     private final Component motd;
-    private final byte @Nullable[] iconBytes;
+    private final byte @Nullable [] iconBytes;
 
     public ClientboundServerDataPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.motd = helper.readComponent(in);

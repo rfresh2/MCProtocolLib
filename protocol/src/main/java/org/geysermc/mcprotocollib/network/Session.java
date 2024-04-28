@@ -39,7 +39,7 @@ public interface Session {
      * @param wait Whether to wait for the connection to be established before returning.
      * @param transferring Whether the session is a client being transferred.
      */
-    public void connect(boolean wait, boolean transferring);
+    void connect(boolean wait, boolean transferring);
 
     /**
      * Gets the host the session is connected to.
@@ -140,7 +140,7 @@ public interface Session {
      *
      * @param flags Collection of flags
      */
-    public void setFlags(Map<String, Object> flags);
+    void setFlags(Map<String, Object> flags);
 
     /**
      * Gets the listeners listening on this session.
