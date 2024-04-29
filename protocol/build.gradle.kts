@@ -2,7 +2,7 @@ plugins {
     id("mcprotocollib.publish-conventions")
 }
 
-version = "1.20.5"
+version = "1.20.6"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
 
 dependencies {
