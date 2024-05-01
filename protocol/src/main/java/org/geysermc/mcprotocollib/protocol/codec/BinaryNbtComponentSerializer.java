@@ -99,18 +99,18 @@ public class BinaryNbtComponentSerializer {
                             else {
                                 var longVal = lazy.longValue();
                                 if (longVal <= Integer.MAX_VALUE && longVal >= Integer.MIN_VALUE)
-                                    writer.writeIntTag(lazy.intValue());
+                                    writer.writeIntTag("", lazy.intValue());
                                 else
-                                    writer.writeLongTag(longVal);
+                                    writer.writeLongTag("", longVal);
                             }
                         }
-                        if (argValue instanceof Boolean) writer.writeByteTag((Boolean) argValue ? (byte) 1 : (byte) 0);
-                        else if (argValue instanceof String) writer.writeStringTag((String) argValue);
-                        else if (argValue instanceof Integer) writer.writeIntTag((Integer) argValue);
-                        else if (argValue instanceof Short) writer.writeShortTag((Short) argValue);
-                        else if (argValue instanceof Long) writer.writeLongTag((Long) argValue);
-                        else if (argValue instanceof Float) writer.writeFloatTag((Float) argValue);
-                        else if (argValue instanceof Double) writer.writeDoubleTag((Double) argValue);
+                        if (argValue instanceof Boolean) writer.writeByteTag("", (Boolean) argValue ? (byte) 1 : (byte) 0);
+                        else if (argValue instanceof String) writer.writeStringTag("", (String) argValue);
+                        else if (argValue instanceof Integer) writer.writeIntTag("", (Integer) argValue);
+                        else if (argValue instanceof Short) writer.writeShortTag("", (Short) argValue);
+                        else if (argValue instanceof Long) writer.writeLongTag("", (Long) argValue);
+                        else if (argValue instanceof Float) writer.writeFloatTag("", (Float) argValue);
+                        else if (argValue instanceof Double) writer.writeDoubleTag("", (Double) argValue);
                     }
                     writer.writeEndTag();
                 }
