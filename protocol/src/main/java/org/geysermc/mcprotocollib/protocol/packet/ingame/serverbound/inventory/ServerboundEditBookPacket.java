@@ -21,8 +21,8 @@ public class ServerboundEditBookPacket implements MinecraftPacket {
 
     public ServerboundEditBookPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.slot = helper.readVarInt(in);
-        this.pages = new ArrayList<>();
         int pagesSize = helper.readVarInt(in);
+        this.pages = new ArrayList<>(pagesSize);
         for (int i = 0; i < pagesSize; i++) {
             this.pages.add(helper.readString(in));
         }
@@ -37,8 +37,8 @@ public class ServerboundEditBookPacket implements MinecraftPacket {
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, slot);
         helper.writeVarInt(out, this.pages.size());
-        for (String page : this.pages) {
-            helper.writeString(out, page);
+        for (int i = 0; i < this.pages.size(); i++) {
+            helper.writeString(out, this.pages.get(i));
         }
         out.writeBoolean(this.title != null);
         if (this.title != null) {

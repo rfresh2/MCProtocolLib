@@ -23,13 +23,13 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
 
     public ClientboundUpdateAttributesPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.entityId = helper.readVarInt(in);
-        this.attributes = new ArrayList<>();
         int length = helper.readVarInt(in);
+        this.attributes = new ArrayList<>(length);
         for (int index = 0; index < length; index++) {
             int attributeId = helper.readVarInt(in);
             double value = in.readDouble();
-            List<AttributeModifier> modifiers = new ArrayList<>();
             int len = helper.readVarInt(in);
+            List<AttributeModifier> modifiers = new ArrayList<>(len);
             for (int ind = 0; ind < len; ind++) {
                 modifiers.add(new AttributeModifier(helper.readUUID(in), in.readDouble(), helper.readModifierOperation(in)));
             }
@@ -43,11 +43,13 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.entityId);
         helper.writeVarInt(out, this.attributes.size());
-        for (Attribute attribute : this.attributes) {
+        for (int i = 0; i < this.attributes.size(); i++) {
+            Attribute attribute = this.attributes.get(i);
             helper.writeVarInt(out, attribute.getType().getId());
             out.writeDouble(attribute.getValue());
             helper.writeVarInt(out, attribute.getModifiers().size());
-            for (AttributeModifier modifier : attribute.getModifiers()) {
+            for (int j = 0; j < attribute.getModifiers().size(); j++) {
+                AttributeModifier modifier = attribute.getModifiers().get(i);
                 helper.writeUUID(out, modifier.getUuid());
                 out.writeDouble(modifier.getAmount());
                 helper.writeModifierOperation(out, modifier.getOperation());

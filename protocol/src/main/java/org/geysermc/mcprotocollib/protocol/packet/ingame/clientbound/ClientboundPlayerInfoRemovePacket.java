@@ -18,8 +18,8 @@ public class ClientboundPlayerInfoRemovePacket implements MinecraftPacket {
     private final List<UUID> profileIds;
 
     public ClientboundPlayerInfoRemovePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.profileIds = new ArrayList<>();
         int numIds = helper.readVarInt(in);
+        this.profileIds = new ArrayList<>(numIds);
         for (int i = 0; i < numIds; i++) {
             this.profileIds.add(helper.readUUID(in));
         }

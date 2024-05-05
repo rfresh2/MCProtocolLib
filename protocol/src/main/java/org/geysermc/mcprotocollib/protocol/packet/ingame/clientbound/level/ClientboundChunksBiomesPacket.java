@@ -16,9 +16,8 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
     private final List<ChunkBiomeData> chunkBiomeData;
 
     public ClientboundChunksBiomesPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.chunkBiomeData = new ArrayList<>();
-
         int length = helper.readVarInt(in);
+        this.chunkBiomeData = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             long raw = in.readLong();
             this.chunkBiomeData.add(new ChunkBiomeData((int) raw, (int) (raw >> 32), helper.readByteArray(in)));
@@ -28,8 +27,9 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.chunkBiomeData.size());
-        for (ChunkBiomeData entry : this.chunkBiomeData) {
-            long raw = (long) entry.getX() & 0xFFFFFFFFL | ((long) entry.getZ() & 0xFFFFFFFFL) << 32;
+        for (int i = 0; i < this.chunkBiomeData.size(); i++) {
+            ChunkBiomeData entry = this.chunkBiomeData.get(i);
+            long raw = (long)entry.getX() & 0xFFFFFFFFL | ((long)entry.getZ() & 0xFFFFFFFFL) << 32;
             out.writeLong(raw);
             helper.writeByteArray(out, entry.getBuffer());
         }

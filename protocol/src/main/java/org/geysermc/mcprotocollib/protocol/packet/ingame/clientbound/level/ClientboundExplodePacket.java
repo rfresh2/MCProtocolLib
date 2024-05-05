@@ -39,8 +39,8 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         this.y = in.readDouble();
         this.z = in.readDouble();
         this.radius = in.readFloat();
-        this.exploded = new ArrayList<>();
         int length = helper.readVarInt(in);
+        this.exploded = new ArrayList<>(length);
         for (int count = 0; count < length; count++) {
             this.exploded.add(Vector3i.from(in.readByte(), in.readByte(), in.readByte()));
         }
@@ -61,7 +61,8 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         out.writeDouble(this.z);
         out.writeFloat(this.radius);
         helper.writeVarInt(out, this.exploded.size());
-        for (Vector3i record : this.exploded) {
+        for (int i = 0; i < this.exploded.size(); i++) {
+            Vector3i record = this.exploded.get(i);
             out.writeByte(record.getX());
             out.writeByte(record.getY());
             out.writeByte(record.getZ());

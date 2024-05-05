@@ -50,8 +50,8 @@ public class ClientboundPlayerChatPacket implements MinecraftPacket {
         this.timeStamp = in.readLong();
         this.salt = in.readLong();
 
-        this.lastSeenMessages = new ArrayList<>();
         int seenMessageCount = Math.min(helper.readVarInt(in), 20);
+        this.lastSeenMessages = new ArrayList<>(seenMessageCount);
         for (int i = 0; i < seenMessageCount; i++) {
             this.lastSeenMessages.add(MessageSignature.read(in, helper));
         }
@@ -77,7 +77,8 @@ public class ClientboundPlayerChatPacket implements MinecraftPacket {
         out.writeLong(this.salt);
 
         helper.writeVarInt(out, this.lastSeenMessages.size());
-        for (MessageSignature messageSignature : this.lastSeenMessages) {
+        for (int i = 0; i < this.lastSeenMessages.size(); i++) {
+            MessageSignature messageSignature = this.lastSeenMessages.get(i);
             helper.writeVarInt(out, messageSignature.getId() + 1);
             if (messageSignature.getMessageSignature() != null) {
                 out.writeBytes(messageSignature.getMessageSignature());

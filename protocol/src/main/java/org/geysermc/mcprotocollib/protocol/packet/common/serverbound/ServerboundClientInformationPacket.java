@@ -35,7 +35,7 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
         this.renderDistance = in.readByte();
         this.chatVisibility = ChatVisibility.from(helper.readVarInt(in));
         this.useChatColors = in.readBoolean();
-        this.visibleParts = new ArrayList<>();
+        this.visibleParts = new ArrayList<>(SkinPart.VALUES.length);
 
         int flags = in.readUnsignedByte();
         for (SkinPart part : SkinPart.VALUES) {

@@ -22,7 +22,7 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
     public ClientboundGameProfilePacket(ByteBuf in, MinecraftCodecHelper helper) {
         GameProfile profile = new GameProfile(helper.readUUID(in), helper.readString(in));
         int properties = helper.readVarInt(in);
-        List<GameProfile.Property> propertyList = new ArrayList<>();
+        List<GameProfile.Property> propertyList = new ArrayList<>(properties);
         for (int index = 0; index < properties; index++) {
             String propertyName = helper.readString(in);
             String value = helper.readString(in);

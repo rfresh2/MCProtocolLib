@@ -19,12 +19,12 @@ import java.util.List;
 @AllArgsConstructor
 public class ClientboundSetEquipmentPacket implements MinecraftPacket {
     private final int entityId;
-    private final @NonNull Equipment[] equipment;
+    private final @NonNull List<Equipment> equipment;
 
     public ClientboundSetEquipmentPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.entityId = helper.readVarInt(in);
         boolean hasNextEntry = true;
-        List<Equipment> list = new ArrayList<>();
+        List<Equipment> list = new ArrayList<>(EquipmentSlot.values().length);
         while (hasNextEntry) {
             int rawSlot = in.readByte();
             EquipmentSlot slot = EquipmentSlot.from(((byte) rawSlot) & 127);
@@ -32,19 +32,19 @@ public class ClientboundSetEquipmentPacket implements MinecraftPacket {
             list.add(new Equipment(slot, item));
             hasNextEntry = (rawSlot & 128) == 128;
         }
-        this.equipment = list.toArray(new Equipment[0]);
+        this.equipment = list;
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.entityId);
-        for (int i = 0; i < this.equipment.length; i++) {
-            int rawSlot = this.equipment[i].getSlot().ordinal();
-            if (i != equipment.length - 1) {
+        for (int i = 0; i < this.equipment.size(); i++) {
+            int rawSlot = this.equipment.get(i).getSlot().ordinal();
+            if (i != equipment.size() - 1) {
                 rawSlot = rawSlot | 128;
             }
             out.writeByte(rawSlot);
-            helper.writeOptionalItemStack(out, this.equipment[i].getItem());
+            helper.writeOptionalItemStack(out, this.equipment.get(i).getItem());
         }
     }
 }
