@@ -22,11 +22,11 @@ public class ClientboundRegistryDataPacket implements MinecraftPacket {
 
     public ClientboundRegistryDataPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.registry = helper.readResourceLocation(in);
-        this.entries = new ArrayList<>();
-
         int entryCount = helper.readVarInt(in);
+        this.entries = new ArrayList<>(entryCount);
+
         for (int i = 0; i < entryCount; i++) {
-            this.entries.add(new RegistryEntry(helper.readResourceLocation(in), helper.readNullable(in, helper::readTag)));
+            this.entries.add(new RegistryEntry(helper.readResourceLocation(in), helper.readNullable(in, helper::readMNBT)));
         }
     }
 
@@ -35,9 +35,10 @@ public class ClientboundRegistryDataPacket implements MinecraftPacket {
         helper.writeResourceLocation(out, this.registry);
 
         helper.writeVarInt(out, this.entries.size());
-        for (RegistryEntry entry : this.entries) {
+        for (int i = 0; i < this.entries.size(); i++) {
+            RegistryEntry entry = this.entries.get(i);
             helper.writeResourceLocation(out, entry.getId());
-            helper.writeNullable(out, entry.getData(), helper::writeTag);
+            helper.writeNullable(out, entry.getData(), helper::writeMNBT);
         }
     }
 }

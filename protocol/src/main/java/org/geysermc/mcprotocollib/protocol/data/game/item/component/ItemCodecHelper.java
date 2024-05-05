@@ -115,7 +115,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
             }
         }
 
-        return new AdventureModePredicate.BlockPredicate(location, holders, propertyMatchers, this.readNullable(buf, this::readTag));
+        return new AdventureModePredicate.BlockPredicate(location, holders, propertyMatchers, this.readNullable(buf, this::readMNBT));
     }
 
     public void writeBlockPredicate(ByteBuf buf, AdventureModePredicate.BlockPredicate blockPredicate) {
@@ -151,7 +151,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
             }
         }
 
-        this.writeNullable(buf, blockPredicate.getNbt(), this::writeTag);
+        this.writeNullable(buf, blockPredicate.getNbt(), this::writeMNBT);
     }
 
     public ToolData readToolData(ByteBuf buf) {
@@ -596,11 +596,11 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public BeehiveOccupant readBeehiveOccupant(ByteBuf buf) {
-        return new BeehiveOccupant(this.readTag(buf), this.readVarInt(buf), this.readVarInt(buf));
+        return new BeehiveOccupant(this.readMNBT(buf), this.readVarInt(buf), this.readVarInt(buf));
     }
 
     public void writeBeehiveOccupant(ByteBuf buf, BeehiveOccupant occupant) {
-        this.writeTag(buf, occupant.getEntityData());
+        this.writeMNBT(buf, occupant.getEntityData());
         this.writeVarInt(buf, occupant.getTicksInHive());
         this.writeVarInt(buf, occupant.getMinTicksInHive());
     }

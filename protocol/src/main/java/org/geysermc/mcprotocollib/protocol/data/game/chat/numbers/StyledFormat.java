@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data.game.chat.numbers;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -13,5 +13,5 @@ public class StyledFormat implements NumberFormat {
     /**
      * Serialized {@link Style}
      */
-    private final @NonNull CompoundTag style;
+    private final @NonNull MNBT style;
 }

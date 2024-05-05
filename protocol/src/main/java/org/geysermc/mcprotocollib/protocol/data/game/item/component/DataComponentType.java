@@ -1,7 +1,7 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.opennbt.mini.MNBT;
 import com.github.steveice10.opennbt.tag.builtin.ListTag;
 import com.github.steveice10.opennbt.tag.builtin.StringTag;
 import io.netty.buffer.ByteBuf;
@@ -21,7 +21,7 @@ import java.util.List;
 public class DataComponentType<T> {
     private static final List<DataComponentType<?>> VALUES = new ArrayList<>();
 
-    public static final DataComponentType<CompoundTag> CUSTOM_DATA = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> CUSTOM_DATA = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final IntComponentType MAX_STACK_SIZE = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final IntComponentType MAX_DAMAGE = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final IntComponentType DAMAGE = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
@@ -40,7 +40,7 @@ public class DataComponentType<T> {
     public static final IntComponentType REPAIR_COST = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<Unit> CREATIVE_SLOT_LOCK = new DataComponentType<>(unitReader(), unitWriter(), ObjectDataComponent::new);
     public static final BooleanComponentType ENCHANTMENT_GLINT_OVERRIDE = new BooleanComponentType(ByteBuf::readBoolean, ByteBuf::writeBoolean, BooleanDataComponent::new);
-    public static final DataComponentType<CompoundTag> INTANGIBLE_PROJECTILE = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> INTANGIBLE_PROJECTILE = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final DataComponentType<FoodProperties> FOOD = new DataComponentType<>(ItemCodecHelper::readFoodProperties, ItemCodecHelper::writeFoodProperties, ObjectDataComponent::new);
     public static final DataComponentType<Unit> FIRE_RESISTANT = new DataComponentType<>(unitReader(), unitWriter(), ObjectDataComponent::new);
     public static final DataComponentType<ToolData> TOOL = new DataComponentType<>(ItemCodecHelper::readToolData, ItemCodecHelper::writeToolData, ObjectDataComponent::new);
@@ -48,7 +48,7 @@ public class DataComponentType<T> {
     public static final DataComponentType<DyedItemColor> DYED_COLOR = new DataComponentType<>(ItemCodecHelper::readDyedItemColor, ItemCodecHelper::writeDyedItemColor, ObjectDataComponent::new);
     public static final IntComponentType MAP_COLOR = new IntComponentType((helper, input) -> input.readInt(), (helper, output, value) -> output.writeInt(value), IntDataComponent::new);
     public static final IntComponentType MAP_ID = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
-    public static final DataComponentType<CompoundTag> MAP_DECORATIONS = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> MAP_DECORATIONS = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final IntComponentType MAP_POST_PROCESSING = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<List<ItemStack>> CHARGED_PROJECTILES = new DataComponentType<>(listReader(ItemCodecHelper::readItemStack), listWriter(ItemCodecHelper::writeItemStack), ObjectDataComponent::new);
     public static final DataComponentType<List<ItemStack>> BUNDLE_CONTENTS = new DataComponentType<>(listReader(ItemCodecHelper::readItemStack), listWriter(ItemCodecHelper::writeItemStack), ObjectDataComponent::new);
@@ -57,10 +57,10 @@ public class DataComponentType<T> {
     public static final DataComponentType<WritableBookContent> WRITABLE_BOOK_CONTENT = new DataComponentType<>(ItemCodecHelper::readWritableBookContent, ItemCodecHelper::writeWritableBookContent, ObjectDataComponent::new);
     public static final DataComponentType<WrittenBookContent> WRITTEN_BOOK_CONTENT = new DataComponentType<>(ItemCodecHelper::readWrittenBookContent, ItemCodecHelper::writeWrittenBookContent, ObjectDataComponent::new);
     public static final DataComponentType<ArmorTrim> TRIM = new DataComponentType<>(ItemCodecHelper::readArmorTrim, ItemCodecHelper::writeArmorTrim, ObjectDataComponent::new);
-    public static final DataComponentType<CompoundTag> DEBUG_STICK_STATE = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
-    public static final DataComponentType<CompoundTag> ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
-    public static final DataComponentType<CompoundTag> BUCKET_ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
-    public static final DataComponentType<CompoundTag> BLOCK_ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> DEBUG_STICK_STATE = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> BUCKET_ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> BLOCK_ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final DataComponentType<Holder<Instrument>> INSTRUMENT = new DataComponentType<>(ItemCodecHelper::readInstrument, ItemCodecHelper::writeInstrument, ObjectDataComponent::new);
     public static final IntComponentType OMINOUS_BOTTLE_AMPLIFIER = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<ListTag> RECIPES = new DataComponentType<>(ItemCodecHelper::readRecipes, ItemCodecHelper::writeRecipes, ObjectDataComponent::new);
@@ -76,7 +76,7 @@ public class DataComponentType<T> {
     public static final DataComponentType<BlockStateProperties> BLOCK_STATE = new DataComponentType<>(ItemCodecHelper::readBlockStateProperties, ItemCodecHelper::writeBlockStateProperties, ObjectDataComponent::new);
     public static final DataComponentType<List<BeehiveOccupant>> BEES = new DataComponentType<>(listReader(ItemCodecHelper::readBeehiveOccupant), listWriter(ItemCodecHelper::writeBeehiveOccupant), ObjectDataComponent::new);
     public static final DataComponentType<StringTag> LOCK = new DataComponentType<>(ItemCodecHelper::readLock, ItemCodecHelper::writeLock, ObjectDataComponent::new);
-    public static final DataComponentType<CompoundTag> CONTAINER_LOOT = new DataComponentType<>(ItemCodecHelper::readTag, ItemCodecHelper::writeTag, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> CONTAINER_LOOT = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
 
     protected final int id;
     protected final Reader<T> reader;

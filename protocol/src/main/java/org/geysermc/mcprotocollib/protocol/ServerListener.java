@@ -7,6 +7,7 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.ListTag;
 import com.github.steveice10.opennbt.tag.builtin.StringTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.github.steveice10.opennbt.tag.io.MNBTIO;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Session;
@@ -139,7 +140,7 @@ public class ServerListener extends SessionAdapter {
                         CompoundTag compoundTag = (CompoundTag) tag;
                         StringTag nameTag = compoundTag.get("name");
                         int id = compoundTag.getInt("id");
-                        entries.add(id, new RegistryEntry(nameTag.getValue(), compoundTag.get("element")));
+                        entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
                     }
 
                     session.send(new ClientboundRegistryDataPacket(typeTag.getValue(), entries));

@@ -680,7 +680,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         int id = this.readVarInt(buf);
         return switch (id) {
             case 0 -> BlankFormat.INSTANCE;
-            case 1 -> new StyledFormat(this.readTagOrThrow(buf));
+            case 1 -> new StyledFormat(this.readMNBT(buf));
             case 2 -> new FixedFormat(this.readComponent(buf));
             default -> throw new IllegalArgumentException("Unknown number format type: " + id);
         };
@@ -691,7 +691,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             this.writeVarInt(buf, 0);
         } else if (numberFormat instanceof StyledFormat styledFormat) {
             this.writeVarInt(buf, 1);
-            this.writeTag(buf, styledFormat.getStyle());
+            this.writeMNBT(buf, styledFormat.getStyle());
         } else if (numberFormat instanceof FixedFormat fixedFormat) {
             this.writeVarInt(buf, 2);
             this.writeComponent(buf, fixedFormat.getValue());
