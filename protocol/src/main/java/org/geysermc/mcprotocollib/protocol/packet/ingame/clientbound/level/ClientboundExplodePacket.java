@@ -1,16 +1,16 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.level.block.ExplosionInteraction;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
-import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 import org.cloudburstmc.math.vector.Vector3i;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.level.block.ExplosionInteraction;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
+import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +37,8 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         this.y = in.readDouble();
         this.z = in.readDouble();
         this.radius = in.readFloat();
-        this.exploded = new ArrayList<>();
         int length = helper.readVarInt(in);
+        this.exploded = new ArrayList<>(length);
         for (int count = 0; count < length; count++) {
             this.exploded.add(Vector3i.from(in.readByte(), in.readByte(), in.readByte()));
         }
@@ -59,7 +59,8 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         out.writeDouble(this.z);
         out.writeFloat(this.radius);
         helper.writeVarInt(out, this.exploded.size());
-        for (Vector3i record : this.exploded) {
+        for (int i = 0; i < this.exploded.size(); i++) {
+            Vector3i record = this.exploded.get(i);
             out.writeByte(record.getX());
             out.writeByte(record.getY());
             out.writeByte(record.getZ());

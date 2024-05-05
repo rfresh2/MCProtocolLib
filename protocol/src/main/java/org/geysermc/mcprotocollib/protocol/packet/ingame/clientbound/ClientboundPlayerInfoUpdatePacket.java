@@ -28,7 +28,7 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
     private final PlayerListEntry[] entries;
 
     public ClientboundPlayerInfoUpdatePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.actions = helper.readEnumSet(in, PlayerListEntryAction.VALUES);
+        this.actions = helper.readEnumSet(in, PlayerListEntryAction.VALUES, PlayerListEntryAction.class);
         this.entries = new PlayerListEntry[helper.readVarInt(in)];
         for (int count = 0; count < this.entries.length; count++) {
             PlayerListEntry entry = new PlayerListEntry(helper.readUUID(in));
@@ -37,7 +37,7 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                     case ADD_PLAYER -> {
                         GameProfile profile = new GameProfile(entry.getProfileId(), helper.readString(in, 16));
                         int propertyCount = helper.readVarInt(in);
-                        List<GameProfile.Property> propertyList = new ArrayList<>();
+                        List<GameProfile.Property> propertyList = new ArrayList<>(propertyCount);
                         for (int index = 0; index < propertyCount; index++) {
                             propertyList.add(helper.readProperty(in));
                         }

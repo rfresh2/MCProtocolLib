@@ -1,15 +1,15 @@
 package org.geysermc.mcprotocollib.protocol.packet.common.serverbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference;
-import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility;
-import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference;
+import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility;
+import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
         this.renderDistance = in.readByte();
         this.chatVisibility = ChatVisibility.from(helper.readVarInt(in));
         this.useChatColors = in.readBoolean();
-        this.visibleParts = new ArrayList<>();
+        this.visibleParts = new ArrayList<>(SkinPart.VALUES.length);
 
         int flags = in.readUnsignedByte();
         for (SkinPart part : SkinPart.VALUES) {

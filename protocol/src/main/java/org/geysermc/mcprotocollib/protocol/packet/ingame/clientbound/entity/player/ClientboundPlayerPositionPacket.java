@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PositionElement;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PositionElement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +36,7 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
         this.yaw = in.readFloat();
         this.pitch = in.readFloat();
 
-        this.relative = new ArrayList<>();
+        this.relative = new ArrayList<>(PositionElement.values().length);
         int flags = in.readUnsignedByte();
         for (PositionElement element : PositionElement.values()) {
             int bit = 1 << element.ordinal();
@@ -57,8 +57,8 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
         out.writeFloat(this.pitch);
 
         int flags = 0;
-        for (PositionElement element : this.relative) {
-            flags |= 1 << element.ordinal();
+        for (int i = 0; i < this.relative.size(); i++) {
+            flags |= 1 << this.relative.get(i).ordinal();
         }
 
         out.writeByte(flags);

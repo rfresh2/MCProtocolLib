@@ -377,19 +377,19 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public EntityMetadata<?, ?>[] readEntityMetadata(ByteBuf buf) {
+    public List<EntityMetadata<?, ?>> readEntityMetadata(ByteBuf buf) {
         List<EntityMetadata<?, ?>> ret = new ArrayList<>();
         int id;
         while ((id = buf.readUnsignedByte()) != 255) {
             ret.add(this.readMetadata(buf, id));
         }
 
-        return ret.toArray(new EntityMetadata<?, ?>[0]);
+        return ret;
     }
 
-    public void writeEntityMetadata(ByteBuf buf, EntityMetadata<?, ?>[] metadata) {
-        for (EntityMetadata<?, ?> meta : metadata) {
-            this.writeMetadata(buf, meta);
+    public void writeEntityMetadata(ByteBuf buf, List<EntityMetadata<?, ?>> metadata) {
+        for (int i = 0; i < metadata.size(); i++) {
+            this.writeMetadata(buf, metadata.get(i));
         }
 
         buf.writeByte(255);
@@ -833,17 +833,17 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeDataPalette(buf, section.getBiomeData());
     }
 
-    public <E extends Enum<E>> EnumSet<E> readEnumSet(ByteBuf buf, E[] values) {
+    public <E extends Enum<E>> EnumSet<E> readEnumSet(ByteBuf buf, E[] values, Class<E> enumType) {
         BitSet bitSet = this.readFixedBitSet(buf, values.length);
-        List<E> readValues = new ArrayList<>();
+        EnumSet<E> set = EnumSet.noneOf(enumType);
 
         for (int i = 0; i < values.length; i++) {
             if (bitSet.get(i)) {
-                readValues.add(values[i]);
+                set.add(values[i]);
             }
         }
 
-        return EnumSet.copyOf(readValues);
+        return set;
     }
 
     public <E extends Enum<E>> void writeEnumSet(ByteBuf buf, EnumSet<E> enumSet, E[] values) {

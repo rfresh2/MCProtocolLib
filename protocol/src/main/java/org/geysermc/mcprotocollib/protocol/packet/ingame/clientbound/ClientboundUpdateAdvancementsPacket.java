@@ -68,11 +68,11 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 displayData = new DisplayData(title, description, icon, advancementType, showToast, hidden, posX, posY, backgroundTexture);
             }
 
-            List<List<String>> requirements = new ArrayList<>();
             int requirementCount = helper.readVarInt(in);
+            List<List<String>> requirements = new ArrayList<>(requirementCount);
             for (int j = 0; j < requirementCount; j++) {
-                List<String> requirement = new ArrayList<>();
                 int componentCount = helper.readVarInt(in);
+                List<String> requirement = new ArrayList<>(componentCount);
                 for (int k = 0; k < componentCount; k++) {
                     requirement.add(helper.readString(in));
                 }
@@ -112,7 +112,8 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
         out.writeBoolean(this.reset);
 
         helper.writeVarInt(out, this.advancements.length);
-        for (Advancement advancement : this.advancements) {
+        for (int i = 0; i < this.advancements.length; i++) {
+            Advancement advancement = this.advancements[i];
             helper.writeString(out, advancement.getId());
             if (advancement.getParentId() != null) {
                 out.writeBoolean(true);
@@ -156,10 +157,11 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             }
 
             helper.writeVarInt(out, advancement.getRequirements().size());
-            for (List<String> requirement : advancement.getRequirements()) {
+            for (int j = 0; j < advancement.getRequirements().size(); j++) {
+                List<String> requirement = advancement.getRequirements().get(i);
                 helper.writeVarInt(out, requirement.size());
-                for (String criterion : requirement) {
-                    helper.writeString(out, criterion);
+                for (int k = 0; k < requirement.size(); k++) {
+                    helper.writeString(out, requirement.get(k));
                 }
             }
 
@@ -167,8 +169,8 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
         }
 
         helper.writeVarInt(out, this.removedAdvancements.length);
-        for (String id : this.removedAdvancements) {
-            helper.writeString(out, id);
+        for (int i = 0; i < this.removedAdvancements.length; i++) {
+            helper.writeString(out, this.removedAdvancements[i]);
         }
 
         helper.writeVarInt(out, this.progress.size());

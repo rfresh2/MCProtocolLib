@@ -1,16 +1,16 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.chat.BuiltinChatType;
-import org.geysermc.mcprotocollib.protocol.data.game.chat.ChatFilterType;
-import org.geysermc.mcprotocollib.protocol.data.game.chat.MessageSignature;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.chat.BuiltinChatType;
+import org.geysermc.mcprotocollib.protocol.data.game.chat.ChatFilterType;
+import org.geysermc.mcprotocollib.protocol.data.game.chat.MessageSignature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +50,8 @@ public class ClientboundPlayerChatPacket implements MinecraftPacket {
         this.timeStamp = in.readLong();
         this.salt = in.readLong();
 
-        this.lastSeenMessages = new ArrayList<>();
         int seenMessageCount = Math.min(helper.readVarInt(in), 20);
+        this.lastSeenMessages = new ArrayList<>(seenMessageCount);
         for (int i = 0; i < seenMessageCount; i++) {
             this.lastSeenMessages.add(MessageSignature.read(in, helper));
         }
@@ -77,7 +77,8 @@ public class ClientboundPlayerChatPacket implements MinecraftPacket {
         out.writeLong(this.salt);
 
         helper.writeVarInt(out, this.lastSeenMessages.size());
-        for (MessageSignature messageSignature : this.lastSeenMessages) {
+        for (int i = 0; i < this.lastSeenMessages.size(); i++) {
+            MessageSignature messageSignature = this.lastSeenMessages.get(i);
             helper.writeVarInt(out, messageSignature.getId() + 1);
             if (messageSignature.getMessageSignature() != null) {
                 out.writeBytes(messageSignature.getMessageSignature());
