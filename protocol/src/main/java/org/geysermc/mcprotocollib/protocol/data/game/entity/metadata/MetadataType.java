@@ -145,8 +145,9 @@ public class MetadataType<T> {
 
     private static <T> Reader<List<T>> listReader(Reader<T> reader) {
         return (helper, input) -> {
-            List<T> ret = new ArrayList<>();
-            for (int i = 0; i < helper.readVarInt(input); i++) {
+            int size = helper.readVarInt(input);
+            List<T> ret = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
                 ret.add(reader.read(helper, input));
             }
 
@@ -157,8 +158,8 @@ public class MetadataType<T> {
     private static <T> Writer<List<T>> listWriter(Writer<T> writer) {
         return (helper, output, value) -> {
             helper.writeVarInt(output, value.size());
-            for (T object : value) {
-                writer.write(helper, output, object);
+            for (int i = 0; i < value.size(); i++) {
+                writer.write(helper, output, value.get(i));
             }
         };
     }

@@ -18,9 +18,8 @@ public class ServerboundSelectKnownPacks implements MinecraftPacket {
     private final List<KnownPack> knownPacks;
 
     public ServerboundSelectKnownPacks(ByteBuf in, MinecraftCodecHelper helper) {
-        this.knownPacks = new ArrayList<>();
-
         int entryCount = Math.min(helper.readVarInt(in), 64);
+        this.knownPacks = new ArrayList<>(entryCount);
         for (int i = 0; i < entryCount; i++) {
             this.knownPacks.add(new KnownPack(helper.readString(in), helper.readString(in), helper.readString(in)));
         }
@@ -33,7 +32,8 @@ public class ServerboundSelectKnownPacks implements MinecraftPacket {
         }
 
         helper.writeVarInt(out, this.knownPacks.size());
-        for (KnownPack entry : this.knownPacks) {
+        for (int i = 0; i < this.knownPacks.size(); i++) {
+            KnownPack entry = this.knownPacks.get(i);
             helper.writeString(out, entry.getNamespace());
             helper.writeString(out, entry.getId());
             helper.writeString(out, entry.getVersion());

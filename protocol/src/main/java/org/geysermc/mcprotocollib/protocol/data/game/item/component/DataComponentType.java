@@ -139,8 +139,8 @@ public class DataComponentType<T> {
 
     private static <T> Reader<List<T>> listReader(Reader<T> reader) {
         return (helper, input) -> {
-            List<T> ret = new ArrayList<>();
             int size = helper.readVarInt(input);
+            List<T> ret = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
                 ret.add(reader.read(helper, input));
             }

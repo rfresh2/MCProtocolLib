@@ -27,8 +27,8 @@ public class ServerboundChatCommandSignedPacket implements MinecraftPacket {
         this.command = helper.readString(in);
         this.timeStamp = in.readLong();
         this.salt = in.readLong();
-        this.signatures = new ArrayList<>();
         int signatureCount = Math.min(helper.readVarInt(in), 8);
+        this.signatures = new ArrayList<>(signatureCount);
         for (int i = 0; i < signatureCount; i++) {
             byte[] signature = new byte[256];
             signatures.add(new ArgumentSignature(helper.readString(in, 16), signature));
@@ -45,7 +45,8 @@ public class ServerboundChatCommandSignedPacket implements MinecraftPacket {
         out.writeLong(this.timeStamp);
         out.writeLong(this.salt);
         helper.writeVarInt(out, this.signatures.size());
-        for (ArgumentSignature signature : this.signatures) {
+        for (int i = 0; i < this.signatures.size(); i++) {
+            ArgumentSignature signature = this.signatures.get(i);
             helper.writeString(out, signature.getName());
             out.writeBytes(signature.getSignature());
         }

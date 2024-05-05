@@ -67,8 +67,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public AdventureModePredicate readAdventureModePredicate(ByteBuf buf) {
-        List<AdventureModePredicate.BlockPredicate> predicates = new ArrayList<>();
         int predicateCount = this.readVarInt(buf);
+        List<AdventureModePredicate.BlockPredicate> predicates = new ArrayList<>(predicateCount);
         for (int i = 0; i < predicateCount; i++) {
             predicates.add(this.readBlockPredicate(buf));
         }
@@ -78,8 +78,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public void writeAdventureModePredicate(ByteBuf buf, AdventureModePredicate adventureModePredicate) {
         this.writeVarInt(buf, adventureModePredicate.getPredicates().size());
-        for (AdventureModePredicate.BlockPredicate predicate : adventureModePredicate.getPredicates()) {
-            this.writeBlockPredicate(buf, predicate);
+        for (int i = 0; i < adventureModePredicate.getPredicates().size(); i++) {
+            this.writeBlockPredicate(buf, adventureModePredicate.getPredicates().get(i));
         }
 
         buf.writeBoolean(adventureModePredicate.isShowInTooltip());
@@ -103,8 +103,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         }
 
         if (buf.readBoolean()) {
-            propertyMatchers = new ArrayList<>();
             int matcherCount = this.readVarInt(buf);
+            propertyMatchers = new ArrayList<>(matcherCount);
             for (int i = 0; i < matcherCount; i++) {
                 String name = this.readString(buf);
                 if (buf.readBoolean()) {
@@ -155,8 +155,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public ToolData readToolData(ByteBuf buf) {
-        List<ToolData.Rule> rules = new ArrayList<>();
         int ruleCount = this.readVarInt(buf);
+        List<ToolData.Rule> rules = new ArrayList<>(ruleCount);
         for (int i = 0; i < ruleCount; i++) {
             String location = null;
             int[] holders = null;
@@ -183,7 +183,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public void writeToolData(ByteBuf buf, ToolData data) {
         this.writeVarInt(buf, data.getRules().size());
-        for (ToolData.Rule rule : data.getRules()) {
+        for (int i = 0; i < data.getRules().size(); i++) {
+            ToolData.Rule rule = data.getRules().get(i);
             if (rule.getLocation() != null) {
                 this.writeVarInt(buf, 0);
                 this.writeResourceLocation(buf, rule.getLocation());
@@ -203,8 +204,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public ItemAttributeModifiers readItemAttributeModifiers(ByteBuf buf) {
-        List<ItemAttributeModifiers.Entry> modifiers = new ArrayList<>();
         int modifierCount = this.readVarInt(buf);
+        List<ItemAttributeModifiers.Entry> modifiers = new ArrayList<>(modifierCount);
         for (int i = 0; i < modifierCount; i++) {
             int attribute = this.readVarInt(buf);
 
@@ -223,7 +224,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public void writeItemAttributeModifiers(ByteBuf buf, ItemAttributeModifiers modifiers) {
         this.writeVarInt(buf, modifiers.getModifiers().size());
-        for (ItemAttributeModifiers.Entry modifier : modifiers.getModifiers()) {
+        for (int i = 0; i < modifiers.getModifiers().size(); i++) {
+            ItemAttributeModifiers.Entry modifier = modifiers.getModifiers().get(i);
             this.writeVarInt(buf, modifier.getAttribute());
 
             this.writeUUID(buf, modifier.getModifier().getId());
@@ -285,9 +287,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         float saturationModifier = buf.readFloat();
         boolean canAlwaysEat = buf.readBoolean();
         float eatSeconds = buf.readFloat();
-
-        List<FoodProperties.PossibleEffect> effects = new ArrayList<>();
         int effectCount = this.readVarInt(buf);
+        List<FoodProperties.PossibleEffect> effects = new ArrayList<>(effectCount);
         for (int i = 0; i < effectCount; i++) {
             effects.add(new FoodProperties.PossibleEffect(this.readEffectDetails(buf), buf.readFloat()));
         }
@@ -302,7 +303,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         buf.writeFloat(properties.getEatSeconds());
 
         this.writeVarInt(buf, properties.getEffects().size());
-        for (FoodProperties.PossibleEffect effect : properties.getEffects()) {
+        for (int i = 0; i < properties.getEffects().size(); i++) {
+            FoodProperties.PossibleEffect effect = properties.getEffects().get(i);
             this.writeEffectDetails(buf, effect.getEffect());
             buf.writeFloat(effect.getProbability());
         }
@@ -337,8 +339,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public WritableBookContent readWritableBookContent(ByteBuf buf) {
-        List<Filterable<String>> pages = new ArrayList<>();
         int pageCount = this.readVarInt(buf);
+        List<Filterable<String>> pages = new ArrayList<>(pageCount);
         for (int i = 0; i < pageCount; i++) {
             pages.add(this.readFilterable(buf, this::readString));
         }
@@ -348,8 +350,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public void writeWritableBookContent(ByteBuf buf, WritableBookContent content) {
         this.writeVarInt(buf, content.getPages().size());
-        for (Filterable<String> page : content.getPages()) {
-            this.writeFilterable(buf, page, this::writeString);
+        for (int i = 0; i < content.getPages().size(); i++) {
+            this.writeFilterable(buf, content.getPages().get(i), this::writeString);
         }
     }
 
@@ -357,9 +359,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         Filterable<String> title = this.readFilterable(buf, this::readString);
         String author = this.readString(buf);
         int generation = this.readVarInt(buf);
-
-        List<Filterable<Component>> pages = new ArrayList<>();
         int pageCount = this.readVarInt(buf);
+        List<Filterable<Component>> pages = new ArrayList<>(pageCount);
         for (int i = 0; i < pageCount; i++) {
             pages.add(this.readFilterable(buf, this::readComponent));
         }
@@ -374,8 +375,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         this.writeVarInt(buf, content.getGeneration());
 
         this.writeVarInt(buf, content.getPages().size());
-        for (Filterable<Component> page : content.getPages()) {
-            this.writeFilterable(buf, page, this::writeComponent);
+        for (int i = 0; i < content.getPages().size(); i++) {
+            this.writeFilterable(buf, content.getPages().get(i), this::writeComponent);
         }
 
         buf.writeBoolean(content.isResolved());
@@ -480,9 +481,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public Fireworks readFireworks(ByteBuf buf) {
         int flightDuration = this.readVarInt(buf);
-
-        List<Fireworks.FireworkExplosion> explosions = new ArrayList<>();
         int explosionCount = this.readVarInt(buf);
+        List<Fireworks.FireworkExplosion> explosions = new ArrayList<>(explosionCount);
         for (int i = 0; i < explosionCount; i++) {
             explosions.add(this.readFireworkExplosion(buf));
         }
@@ -494,8 +494,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         this.writeVarInt(buf, fireworks.getFlightDuration());
 
         this.writeVarInt(buf, fireworks.getExplosions().size());
-        for (Fireworks.FireworkExplosion explosion : fireworks.getExplosions()) {
-            this.writeFireworkExplosion(buf, explosion);
+        for (int i = 0; i < fireworks.getExplosions().size(); i++) {
+            this.writeFireworkExplosion(buf, fireworks.getExplosions().get(i));
         }
     }
 
@@ -538,9 +538,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         String name = this.readNullable(buf, this::readString);
         UUID id = this.readNullable(buf, this::readUUID);
         GameProfile profile = new GameProfile(id, name);
-
-        List<GameProfile.Property> properties = new ArrayList<>();
         int propertyCount = this.readVarInt(buf);
+        List<GameProfile.Property> properties = new ArrayList<>(propertyCount);
         for (int i = 0; i < propertyCount; i++) {
             properties.add(this.readProperty(buf));
         }
@@ -554,8 +553,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         this.writeNullable(buf, profile.getId(), this::writeUUID);
 
         this.writeVarInt(buf, profile.getProperties().size());
-        for (GameProfile.Property property : profile.getProperties()) {
-            this.writeProperty(buf, property);
+        for (int i = 0; i < profile.getProperties().size(); i++) {
+            this.writeProperty(buf, profile.getProperties().get(i));
         }
     }
 
