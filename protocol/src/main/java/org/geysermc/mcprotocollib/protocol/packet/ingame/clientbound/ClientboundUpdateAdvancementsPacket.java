@@ -90,13 +90,12 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             this.removedAdvancements[i] = helper.readString(in);
         }
 
-        this.progress = new HashMap<>();
         int progressCount = helper.readVarInt(in);
+        this.progress = new HashMap<>(progressCount);
         for (int i = 0; i < progressCount; i++) {
             String advancementId = helper.readString(in);
-
-            Map<String, Long> advancementProgress = new HashMap<>();
             int criterionCount = helper.readVarInt(in);
+            Map<String, Long> advancementProgress = new HashMap<>(criterionCount);
             for (int j = 0; j < criterionCount; j++) {
                 String criterionId = helper.readString(in);
                 long achievedDate = in.readBoolean() ? in.readLong() : -1;
