@@ -309,7 +309,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             return null;
         }
 
-        Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>();
+        Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(nonNullComponents + nullComponents);
         for (int k = 0; k < nonNullComponents; k++) {
             DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(ItemCodecHelper.INSTANCE, buf);
@@ -364,7 +364,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         int count = this.readVarInt(buf);
         int componentsLength = this.readVarInt(buf);
 
-        Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>();
+        Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(componentsLength);
         for (int i = 0; i < componentsLength; i++) {
             DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(ItemCodecHelper.INSTANCE, buf);

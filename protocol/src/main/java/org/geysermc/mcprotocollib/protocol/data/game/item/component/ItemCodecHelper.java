@@ -4,9 +4,7 @@ import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.opennbt.tag.builtin.ListTag;
 import com.github.steveice10.opennbt.tag.builtin.StringTag;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.*;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
@@ -47,8 +45,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public ItemEnchantments readItemEnchantments(ByteBuf buf) {
-        Map<Integer, Integer> enchantments = new HashMap<>();
         int enchantmentCount = this.readVarInt(buf);
+        Int2IntMap enchantments = new Int2IntArrayMap(enchantmentCount);
         for (int i = 0; i < enchantmentCount; i++) {
             enchantments.put(this.readVarInt(buf), this.readVarInt(buf));
         }
@@ -577,8 +575,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public BlockStateProperties readBlockStateProperties(ByteBuf buf) {
-        Map<String, String> properties = new HashMap<>();
         int propertyCount = this.readVarInt(buf);
+        Map<String, String> properties = new HashMap<>(propertyCount);
         for (int i = 0; i < propertyCount; i++) {
             properties.put(this.readString(buf), this.readString(buf));
         }

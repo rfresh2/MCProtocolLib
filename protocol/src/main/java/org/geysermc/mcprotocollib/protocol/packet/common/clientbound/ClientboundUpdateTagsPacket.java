@@ -16,12 +16,12 @@ public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     private final @NonNull Map<String, Map<String, int[]>> tags;
 
     public ClientboundUpdateTagsPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.tags = new HashMap<>();
         int totalTagCount = helper.readVarInt(in);
+        this.tags = new HashMap<>(totalTagCount);
         for (int i = 0; i < totalTagCount; i++) {
-            Map<String, int[]> tag = new HashMap<>();
             String tagName = helper.readResourceLocation(in);
             int tagsCount = helper.readVarInt(in);
+            Map<String, int[]> tag = new HashMap<>(tagsCount);
             for (int j = 0; j < tagsCount; j++) {
                 String name = helper.readResourceLocation(in);
                 int entriesCount = helper.readVarInt(in);
