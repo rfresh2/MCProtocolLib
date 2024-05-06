@@ -156,7 +156,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
 
             helper.writeVarInt(out, advancement.getRequirements().size());
             for (int j = 0; j < advancement.getRequirements().size(); j++) {
-                List<String> requirement = advancement.getRequirements().get(i);
+                List<String> requirement = advancement.getRequirements().get(j);
                 helper.writeVarInt(out, requirement.size());
                 for (int k = 0; k < requirement.size(); k++) {
                     helper.writeString(out, requirement.get(k));
