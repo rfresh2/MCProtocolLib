@@ -50,7 +50,7 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
             out.writeDouble(attribute.getValue());
             helper.writeVarInt(out, attribute.getModifiers().size());
             for (int j = 0; j < attribute.getModifiers().size(); j++) {
-                AttributeModifier modifier = attribute.getModifiers().get(i);
+                AttributeModifier modifier = attribute.getModifiers().get(j);
                 helper.writeUUID(out, modifier.getUuid());
                 out.writeDouble(modifier.getAmount());
                 helper.writeModifierOperation(out, modifier.getOperation());
