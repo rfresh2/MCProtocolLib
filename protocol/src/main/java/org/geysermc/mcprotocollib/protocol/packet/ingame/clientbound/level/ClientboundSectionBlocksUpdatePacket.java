@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockChangeEntry;
@@ -43,7 +42,7 @@ public class ClientboundSectionBlocksUpdatePacket implements MinecraftPacket {
             int x = (this.chunkX << 4) + (position >>> 8 & 0xF);
             int y = (this.chunkY << 4) + (position & 0xF);
             int z = (this.chunkZ << 4) + (position >>> 4 & 0xF);
-            this.entries[index] = new BlockChangeEntry(Vector3i.from(x, y, z), (int) (blockData >>> 12));
+            this.entries[index] = new BlockChangeEntry(x, y, z, (int) (blockData >>> 12));
         }
     }
 
@@ -55,7 +54,7 @@ public class ClientboundSectionBlocksUpdatePacket implements MinecraftPacket {
         out.writeLong(chunkPosition | (this.chunkY & 0xFFFFFL));
         helper.writeVarInt(out, this.entries.length);
         for (BlockChangeEntry entry : this.entries) {
-            short position = (short) ((entry.getPosition().getX() - (this.chunkX << 4)) << 8 | (entry.getPosition().getZ() - (this.chunkZ << 4)) << 4 | (entry.getPosition().getY() - (this.chunkY << 4)));
+            short position = (short) ((entry.getX() - (this.chunkX << 4)) << 8 | (entry.getZ() - (this.chunkZ << 4)) << 4 | (entry.getY() - (this.chunkY << 4)));
             helper.writeVarLong(out, (long) entry.getBlock() << 12 | (long) position);
         }
     }

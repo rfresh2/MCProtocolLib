@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
@@ -30,13 +29,18 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     private static final int BELL = 783;
     private static final int DECORATED_POT = 1055;
 
-    private final @NonNull Vector3i position;
+    private final int x;
+    private final int y;
+    private final int z;
     private final @NonNull BlockValueType type;
     private final @NonNull BlockValue value;
     private final int blockId;
 
     public ClientboundBlockEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.position = helper.readPosition(in);
+        var position = in.readLong();
+        this.x = helper.decodePositionX(position);
+        this.y = helper.decodePositionY(position);
+        this.z = helper.decodePositionZ(position);
         int type = in.readUnsignedByte();
         int value = in.readUnsignedByte();
         this.blockId = helper.readVarInt(in);
@@ -93,7 +97,7 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
             type = ((GenericBlockValueType) this.type).ordinal();
         }
 
-        helper.writePosition(out, this.position);
+        helper.writePosition(out, this.x, this.y, this.z);
         out.writeByte(type);
         out.writeByte(val);
         helper.writeVarInt(out, this.blockId);

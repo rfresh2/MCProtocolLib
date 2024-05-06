@@ -16,12 +16,16 @@ public class ClientboundBlockUpdatePacket implements MinecraftPacket {
     private final @NonNull BlockChangeEntry entry;
 
     public ClientboundBlockUpdatePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.entry = new BlockChangeEntry(helper.readPosition(in), helper.readVarInt(in));
+        var position = in.readLong();
+        int x = helper.decodePositionX(position);
+        int y = helper.decodePositionY(position);
+        int z = helper.decodePositionZ(position);
+        this.entry = new BlockChangeEntry(x, y, z, helper.readVarInt(in));
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writePosition(out, this.entry.getPosition());
+        helper.writePosition(out, this.entry.getX(), this.entry.getY(), this.entry.getZ());
         helper.writeVarInt(out, this.entry.getBlock());
     }
 }

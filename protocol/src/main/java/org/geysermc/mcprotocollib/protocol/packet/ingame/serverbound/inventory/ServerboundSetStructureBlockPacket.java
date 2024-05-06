@@ -21,7 +21,9 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
     private static final int FLAG_SHOW_AIR = 0x02;
     private static final int FLAG_SHOW_BOUNDING_BOX = 0x04;
 
-    private final @NonNull Vector3i position;
+    private final int x;
+    private final int y;
+    private final int z;
     private final @NonNull UpdateStructureBlockAction action;
     private final @NonNull UpdateStructureBlockMode mode;
     private final @NonNull String name;
@@ -37,7 +39,10 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
     private final boolean showBoundingBox;
 
     public ServerboundSetStructureBlockPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.position = helper.readPosition(in);
+        var position = in.readLong();
+        this.x = helper.decodePositionX(position);
+        this.y = helper.decodePositionY(position);
+        this.z = helper.decodePositionZ(position);
         this.action = UpdateStructureBlockAction.from(helper.readVarInt(in));
         this.mode = UpdateStructureBlockMode.from(helper.readVarInt(in));
         this.name = helper.readString(in);
@@ -57,7 +62,7 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writePosition(out, this.position);
+        helper.writePosition(out, this.x, this.y, this.z);
         helper.writeVarInt(out, this.action.ordinal());
         helper.writeVarInt(out, this.mode.ordinal());
         helper.writeString(out, this.name);

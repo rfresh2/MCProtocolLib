@@ -10,7 +10,7 @@ public class ClientboundSectionBlocksUpdatePacketTest extends PacketTest {
     @BeforeEach
     public void setup() {
         this.setPackets(
-                new ClientboundSectionBlocksUpdatePacket(3, 4, 12, new BlockChangeEntry(Vector3i.from(50, 65, 200), 3))
+                new ClientboundSectionBlocksUpdatePacket(3, 4, 12, new BlockChangeEntry(50, 65, 200, 3))
         );
     }
 

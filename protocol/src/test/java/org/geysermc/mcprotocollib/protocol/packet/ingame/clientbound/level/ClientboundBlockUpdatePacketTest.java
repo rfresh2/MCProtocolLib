@@ -10,7 +10,7 @@ public class ClientboundBlockUpdatePacketTest extends PacketTest {
     public void setup() {
         this.setPackets(
                 new ClientboundBlockUpdatePacket(new BlockChangeEntry(
-                        Vector3i.from(1, 61, -1), 3
+                        1, 61, -1, 3
                 ))
         );
     }
