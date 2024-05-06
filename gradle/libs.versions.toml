@@ -4,7 +4,7 @@ metadata.format.version = "1.1"
 
 adventure = "4.17.0-SNAPSHOT"
 opennbt = "c62816538c"
-mcauthlib = "0f6319f621"
+mcauthlib = "627c9f603d"
 math = "2.0"
 fastutil-maps = "8.5.13-SNAPSHOT"
 netty = "4.1.108.Final"
