@@ -282,10 +282,30 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return Vector3i.from(x, y, z);
     }
 
+    public int decodePositionX(long position) {
+        return (int) (position >> POSITION_X_SIZE);
+    }
+
+    public int decodePositionY(long position) {
+        return (int) (position << 52 >> 52);
+    }
+
+    public int decodePositionZ(long position) {
+        return (int) (position << 26 >> POSITION_Z_SIZE);
+    }
+
     public void writePosition(ByteBuf buf, Vector3i pos) {
         long x = pos.getX() & POSITION_WRITE_SHIFT;
         long y = pos.getY() & POSITION_Y_SHIFT;
         long z = pos.getZ() & POSITION_WRITE_SHIFT;
+
+        buf.writeLong(x << POSITION_X_SIZE | z << POSITION_Y_SIZE | y);
+    }
+
+    public void writePosition(ByteBuf buf, int posX, int posY, int posZ) {
+        long x = posX & POSITION_WRITE_SHIFT;
+        long y = posY & POSITION_Y_SHIFT;
+        long z = posZ & POSITION_WRITE_SHIFT;
 
         buf.writeLong(x << POSITION_X_SIZE | z << POSITION_Y_SIZE | y);
     }
@@ -421,13 +441,16 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public GlobalPos readGlobalPos(ByteBuf buf) {
         String dimension = Identifier.formalize(this.readString(buf));
-        Vector3i pos = this.readPosition(buf);
-        return new GlobalPos(dimension, pos);
+        var position = buf.readLong();
+        int x = decodePositionX(position);
+        int y = decodePositionY(position);
+        int z = decodePositionZ(position);
+        return new GlobalPos(dimension, x, y, z);
     }
 
     public void writeGlobalPos(ByteBuf buf, GlobalPos pos) {
         this.writeString(buf, pos.getDimension());
-        this.writePosition(buf, pos.getPosition());
+        this.writePosition(buf, pos.getX(), pos.getY(), pos.getZ());
     }
 
     public PlayerSpawnInfo readPlayerSpawnInfo(ByteBuf buf) {

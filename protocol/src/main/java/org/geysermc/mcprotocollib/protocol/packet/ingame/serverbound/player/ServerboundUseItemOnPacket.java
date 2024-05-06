@@ -1,21 +1,22 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3i;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 
 @Data
 @With
 @AllArgsConstructor
 public class ServerboundUseItemOnPacket implements MinecraftPacket {
-    private final @NonNull Vector3i position;
+    private final int x;
+    private final int y;
+    private final int z;
     private final @NonNull Direction face;
     private final @NonNull Hand hand;
     private final float cursorX;
@@ -26,7 +27,10 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
 
     public ServerboundUseItemOnPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.hand = Hand.from(helper.readVarInt(in));
-        this.position = helper.readPosition(in);
+        var position = in.readLong();
+        this.x = helper.decodePositionX(position);
+        this.y = helper.decodePositionY(position);
+        this.z = helper.decodePositionZ(position);
         this.face = helper.readDirection(in);
         this.cursorX = in.readFloat();
         this.cursorY = in.readFloat();
@@ -38,7 +42,7 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.hand.ordinal());
-        helper.writePosition(out, this.position);
+        helper.writePosition(out, this.x, this.y, this.z);
         helper.writeDirection(out, this.face);
         out.writeFloat(this.cursorX);
         out.writeFloat(this.cursorY);

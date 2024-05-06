@@ -1,32 +1,36 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
-import org.geysermc.mcprotocollib.protocol.data.game.level.event.*;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3i;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
+import org.geysermc.mcprotocollib.protocol.data.game.level.event.*;
 
 @Data
 @With
 @AllArgsConstructor
 public class ClientboundLevelEventPacket implements MinecraftPacket {
     private final @NonNull LevelEvent event;
-    private final @NonNull Vector3i position;
+    private final int x;
+    private final int y;
+    private final int z;
     private final @NonNull LevelEventData data;
     private final boolean broadcast;
 
-    public ClientboundLevelEventPacket(@NonNull LevelEvent event, @NonNull Vector3i position, @NonNull LevelEventData data) {
-        this(event, position, data, false);
+    public ClientboundLevelEventPacket(@NonNull LevelEvent event, int x, int y, int z, @NonNull LevelEventData data) {
+        this(event, x, y, z, data, false);
     }
 
     public ClientboundLevelEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.event = helper.readLevelEvent(in);
-        this.position = helper.readPosition(in);
+        var position = in.readLong();
+        this.x = helper.decodePositionX(position);
+        this.y = helper.decodePositionY(position);
+        this.z = helper.decodePositionZ(position);
         int value = in.readInt();
         if (this.event instanceof LevelEventType levelEventType) {
             switch (levelEventType) {
@@ -55,7 +59,7 @@ public class ClientboundLevelEventPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeLevelEvent(out, this.event);
-        helper.writePosition(out, this.position);
+        helper.writePosition(out, this.x, this.y, this.z);
         int value;
         if (this.data instanceof FireExtinguishData) {
             value = ((FireExtinguishData) this.data).ordinal();
