@@ -249,9 +249,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     public PotionContents readPotionContents(ByteBuf buf) {
         int potionId = buf.readBoolean() ? this.readVarInt(buf) : -1;
         int customColor = buf.readBoolean() ? buf.readInt() : -1;
-
-        List<MobEffectDetails> customEffects = new ArrayList<>();
         int effectCount = this.readVarInt(buf);
+        List<MobEffectDetails> customEffects = new ArrayList<>(effectCount);
         for (int i = 0; i < effectCount; i++) {
             customEffects.add(this.readEffectDetails(buf));
         }
