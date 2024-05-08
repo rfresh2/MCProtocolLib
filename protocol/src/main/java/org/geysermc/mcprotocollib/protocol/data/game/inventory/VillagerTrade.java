@@ -1,9 +1,9 @@
 package org.geysermc.mcprotocollib.protocol.data.game.inventory;
 
-import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ItemStack;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ItemStack;
 
 @Data
 @AllArgsConstructor

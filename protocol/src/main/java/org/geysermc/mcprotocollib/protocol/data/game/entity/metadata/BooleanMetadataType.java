@@ -1,8 +1,8 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
+import io.netty.buffer.ByteBuf;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
-import io.netty.buffer.ByteBuf;
 
 public class BooleanMetadataType extends MetadataType<Boolean> {
     private final BooleanReader primitiveReader;

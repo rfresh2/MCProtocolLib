@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.network.packet;
 
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
-import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
-import org.geysermc.mcprotocollib.network.codec.PacketSerializer;
-import org.geysermc.mcprotocollib.network.Server;
-import org.geysermc.mcprotocollib.network.Session;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.geysermc.mcprotocollib.network.Server;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
+import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
+import org.geysermc.mcprotocollib.network.codec.PacketSerializer;
 
 import java.util.IdentityHashMap;
 import java.util.Map;

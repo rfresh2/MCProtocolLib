@@ -1,7 +1,7 @@
 package org.geysermc.mcprotocollib.network.packet;
 
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import io.netty.buffer.ByteBuf;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 
 /**
  * The default packet header, using a varint packet length and id.
