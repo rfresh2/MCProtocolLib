@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
-import com.github.steveice10.opennbt.mini.MNBT;
+import com.viaversion.nbt.mini.MNBT;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

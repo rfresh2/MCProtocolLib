@@ -22,6 +22,7 @@ dependencyResolutionManagement {
             name = "litarvan"
         }
         mavenCentral()
+        mavenLocal()
     }
 }
 

@@ -3,11 +3,11 @@ package org.geysermc.mcprotocollib.protocol;
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.service.SessionService;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.ListTag;
-import com.github.steveice10.opennbt.tag.builtin.StringTag;
-import com.github.steveice10.opennbt.tag.builtin.Tag;
-import com.github.steveice10.opennbt.tag.io.MNBTIO;
+import com.viaversion.nbt.io.MNBTIO;
+import com.viaversion.nbt.tag.CompoundTag;
+import com.viaversion.nbt.tag.ListTag;
+import com.viaversion.nbt.tag.StringTag;
+import com.viaversion.nbt.tag.Tag;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Session;
@@ -44,7 +44,12 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Handles initial login and status requests for servers.
@@ -133,12 +138,11 @@ public class ServerListener extends SessionAdapter {
                 // Credit ViaVersion: https://github.com/ViaVersion/ViaVersion/blob/dev/common/src/main/java/com/viaversion/viaversion/protocols/protocol1_20_5to1_20_3/rewriter/EntityPacketRewriter1_20_5.java
                 for (Map.Entry<String, Tag> entry : networkCodec.getValue().entrySet()) {
                     CompoundTag entryTag = (CompoundTag) entry.getValue();
-                    StringTag typeTag = entryTag.get("type");
-                    ListTag valueTag = entryTag.get("value");
+                    StringTag typeTag = entryTag.getStringTag("type");
+                    ListTag<CompoundTag> valueTag = entryTag.getListTag("value", CompoundTag.class);
                     List<RegistryEntry> entries = new ArrayList<>();
-                    for (Object tag : valueTag) {
-                        CompoundTag compoundTag = (CompoundTag) tag;
-                        StringTag nameTag = compoundTag.get("name");
+                    for (CompoundTag compoundTag : valueTag) {
+                        StringTag nameTag = compoundTag.getStringTag("name");
                         int id = compoundTag.getInt("id");
                         entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
                     }

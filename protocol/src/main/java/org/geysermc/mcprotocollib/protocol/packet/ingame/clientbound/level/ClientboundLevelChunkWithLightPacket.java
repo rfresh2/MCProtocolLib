@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 
-import com.github.steveice10.opennbt.mini.MNBT;
+import com.viaversion.nbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;

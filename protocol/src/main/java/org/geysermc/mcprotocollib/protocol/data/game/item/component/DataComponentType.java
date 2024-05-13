@@ -1,9 +1,9 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
-import com.github.steveice10.opennbt.mini.MNBT;
-import com.github.steveice10.opennbt.tag.builtin.ListTag;
-import com.github.steveice10.opennbt.tag.builtin.StringTag;
+import com.viaversion.nbt.mini.MNBT;
+import com.viaversion.nbt.tag.ListTag;
+import com.viaversion.nbt.tag.StringTag;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;

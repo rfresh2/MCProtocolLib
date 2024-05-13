@@ -3,7 +3,7 @@ metadata.format.version = "1.1"
 [versions]
 
 adventure = "4.17.0"
-opennbt = "c62816538c"
+opennbt = "d5eae8fe4e"
 mcauthlib = "627c9f603d"
 math = "2.0"
 fastutil = "b3ff25af48"
