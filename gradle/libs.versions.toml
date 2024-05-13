@@ -6,7 +6,7 @@ adventure = "4.17.0"
 opennbt = "c62816538c"
 mcauthlib = "627c9f603d"
 math = "2.0"
-fastutil-maps = "8.5.13-SNAPSHOT"
+fastutil = "b3ff25af48"
 netty = "4.1.108.Final"
 netty-io_uring = "0.0.24.Final"
 checkerframework = "3.42.0"
@@ -30,9 +30,9 @@ mcauthlib = { module = "com.github.rfresh2:MCAuthLib", version.ref = "mcauthlib"
 math-api = { module = "org.cloudburstmc.math:api", version.ref = "math" }
 math-immutable = { module = "org.cloudburstmc.math:immutable", version.ref = "math" }
 
-fastutil-object2int-maps = { module = "org.cloudburstmc.fastutil.maps:object-int-maps", version.ref = "fastutil-maps" }
-fastutil-int2object-maps = { module = "org.cloudburstmc.fastutil.maps:int-object-maps", version.ref = "fastutil-maps" }
-fastutil-int2int-maps = { module = "org.cloudburstmc.fastutil.maps:int-int-maps", version.ref = "fastutil-maps" }
+fastutil-object2int-maps = { module = "com.github.rfresh2.fastutil:object-int-maps", version.ref = "fastutil" }
+fastutil-int2object-maps = { module = "com.github.rfresh2.fastutil:int-object-maps", version.ref = "fastutil" }
+fastutil-int2int-maps = { module = "com.github.rfresh2.fastutil:int-int-maps", version.ref = "fastutil" }
 
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 netty-incubator-transport-native-io_uring = { module = "io.netty.incubator:netty-incubator-transport-native-io_uring", version.ref = "netty-io_uring" }
