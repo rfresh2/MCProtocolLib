@@ -1,11 +1,11 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
-import com.github.steveice10.opennbt.mini.MNBT;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.ListTag;
-import com.github.steveice10.opennbt.tag.builtin.NumberTag;
-import com.github.steveice10.opennbt.tag.builtin.StringTag;
-import com.github.steveice10.opennbt.tag.io.MNBTIO;
+import com.viaversion.nbt.io.MNBTIO;
+import com.viaversion.nbt.mini.MNBT;
+import com.viaversion.nbt.tag.CompoundTag;
+import com.viaversion.nbt.tag.ListTag;
+import com.viaversion.nbt.tag.NumberTag;
+import com.viaversion.nbt.tag.StringTag;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.Data;

@@ -3,7 +3,7 @@ package org.geysermc.mcprotocollib.protocol;
 import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.auth.service.SessionService;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.viaversion.nbt.tag.CompoundTag;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Session;

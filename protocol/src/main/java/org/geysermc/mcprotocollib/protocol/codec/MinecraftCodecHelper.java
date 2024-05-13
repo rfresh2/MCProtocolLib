@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
-import com.github.steveice10.opennbt.mini.MNBT;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.Tag;
-import com.github.steveice10.opennbt.tag.io.MNBTIO;
-import com.github.steveice10.opennbt.tag.io.NBTIO;
-import com.github.steveice10.opennbt.tag.limiter.TagLimiter;
 import com.google.gson.JsonElement;
+import com.viaversion.nbt.io.MNBTIO;
+import com.viaversion.nbt.io.NBTIO;
+import com.viaversion.nbt.limiter.TagLimiter;
+import com.viaversion.nbt.mini.MNBT;
+import com.viaversion.nbt.tag.CompoundTag;
+import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;

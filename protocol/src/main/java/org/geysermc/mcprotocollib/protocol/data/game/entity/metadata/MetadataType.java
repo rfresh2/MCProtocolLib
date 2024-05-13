@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.viaversion.nbt.tag.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;

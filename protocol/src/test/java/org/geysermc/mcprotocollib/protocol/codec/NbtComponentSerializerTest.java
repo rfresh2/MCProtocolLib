@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
-import com.github.steveice10.opennbt.tag.io.MNBTIO;
+import com.viaversion.nbt.io.MNBTIO;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;

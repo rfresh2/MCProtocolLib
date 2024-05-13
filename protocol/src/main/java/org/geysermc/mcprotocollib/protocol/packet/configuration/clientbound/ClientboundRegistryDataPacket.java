@@ -1,6 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.packet.configuration.clientbound;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.viaversion.nbt.tag.CompoundTag;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;

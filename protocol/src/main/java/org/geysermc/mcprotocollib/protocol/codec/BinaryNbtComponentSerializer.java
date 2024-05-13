@@ -1,8 +1,8 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
-import com.github.steveice10.opennbt.mini.MNBT;
-import com.github.steveice10.opennbt.mini.MNBTWriter;
 import com.google.gson.internal.LazilyParsedNumber;
+import com.viaversion.nbt.mini.MNBT;
+import com.viaversion.nbt.mini.MNBTWriter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
