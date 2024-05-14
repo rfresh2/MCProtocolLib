@@ -31,25 +31,29 @@ public class TcpConnectionManager implements Closeable {
     private final TransportHelper.TransportMethod transportMethod;
 
     public TcpConnectionManager() {
+        this(0);
+    }
+
+    public TcpConnectionManager(int threads) {
         this.transportMethod = TransportHelper.determineTransportMethod();
         switch (this.transportMethod) {
             case IO_URING:
-                this.bossGroup = new IOUringEventLoopGroup();
-                this.workerGroup = new IOUringEventLoopGroup();
+                this.bossGroup = new IOUringEventLoopGroup(threads);
+                this.workerGroup = new IOUringEventLoopGroup(threads);
                 this.channelClass = IOUringSocketChannel.class;
                 this.datagramChannelClass = IOUringDatagramChannel.class;
                 this.serverSocketChannelClass = IOUringServerSocketChannel.class;
                 break;
             case EPOLL:
-                this.bossGroup = new EpollEventLoopGroup();
-                this.workerGroup = new EpollEventLoopGroup();
+                this.bossGroup = new EpollEventLoopGroup(threads);
+                this.workerGroup = new EpollEventLoopGroup(threads);
                 this.channelClass = EpollSocketChannel.class;
                 this.datagramChannelClass = EpollDatagramChannel.class;
                 this.serverSocketChannelClass = EpollServerSocketChannel.class;
                 break;
             case NIO:
-                this.bossGroup = new NioEventLoopGroup();
-                this.workerGroup = new NioEventLoopGroup();
+                this.bossGroup = new NioEventLoopGroup(threads);
+                this.workerGroup = new NioEventLoopGroup(threads);
                 this.channelClass = NioSocketChannel.class;
                 this.datagramChannelClass = NioDatagramChannel.class;
                 this.serverSocketChannelClass = NioServerSocketChannel.class;
