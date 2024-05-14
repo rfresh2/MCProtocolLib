@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
@@ -17,6 +18,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = {"chunkData", "sections", "heightMaps", "lightData"})
 public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     private final int x;
     private final int z;
