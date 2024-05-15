@@ -85,6 +85,11 @@ public final class MinecraftConstants {
     public static final Flag<TcpClientChannelInitializer.Factory> CLIENT_CHANNEL_INITIALIZER = new Flag<>("client-channel-initializer", TcpClientChannelInitializer.Factory.class);
 
     /**
+     * Mandatory provider that must be set to deserialize ClientboundLevelChunkWithLight packets
+     */
+    public static ChunkSectionCountProvider CHUNK_SECTION_COUNT_PROVIDER = null;
+
+    /**
      * Session flag for determining the packet compression threshold. Server only.
      */
     public static final Flag<Integer> SERVER_COMPRESSION_THRESHOLD = new Flag<>("compression-threshold", Integer.class);
