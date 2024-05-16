@@ -20,20 +20,25 @@ public class MapPalette implements Palette {
     private final int capacity;
 
     private final int[] idToState;
-    private final Int2IntMap stateToId = new Int2IntOpenHashMap();
+    private final Int2IntMap stateToId;
     private int nextId = 0;
 
     public MapPalette(int bitsPerEntry) {
         this.capacity = 1 << bitsPerEntry;
 
         this.idToState = new int[this.capacity];
+        this.stateToId = new Int2IntOpenHashMap();
         this.stateToId.defaultReturnValue(MISSING_ID);
     }
 
     public MapPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) {
-        this(bitsPerEntry);
+        this.capacity = 1 << bitsPerEntry;
 
+        this.idToState = new int[this.capacity];
         int paletteLength = helper.readVarInt(in);
+        this.stateToId = new Int2IntOpenHashMap(paletteLength);
+        this.stateToId.defaultReturnValue(MISSING_ID);
+
         for (int i = 0; i < paletteLength; i++) {
             int state = helper.readVarInt(in);
             this.idToState[i] = state;
@@ -70,7 +75,7 @@ public class MapPalette implements Palette {
 
     @Override
     public MapPalette copy() {
-        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), this.nextId);
+        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), new Int2IntOpenHashMap(this.stateToId.size()), this.nextId);
         mapPalette.stateToId.putAll(this.stateToId);
         return mapPalette;
     }
