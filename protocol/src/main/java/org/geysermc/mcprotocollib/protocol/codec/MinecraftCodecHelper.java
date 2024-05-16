@@ -796,40 +796,39 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public LightUpdateData readLightUpdateData(ByteBuf buf) {
-        BitSet skyYMask = BitSet.valueOf(this.readLongArray(buf));
-        BitSet blockYMask = BitSet.valueOf(this.readLongArray(buf));
-        BitSet emptySkyYMask = BitSet.valueOf(this.readLongArray(buf));
-        BitSet emptyBlockYMask = BitSet.valueOf(this.readLongArray(buf));
+        var skyYMask = readLongArray(buf);
+        var blockYMask = readLongArray(buf);
+        var emptySkyYMask = readLongArray(buf);
+        var emptyBlockYMask = readLongArray(buf);
 
-        int skyUpdateSize = this.readVarInt(buf);
-        List<byte[]> skyUpdates = new ArrayList<>(skyUpdateSize);
+        int skyUpdateSize = readVarInt(buf);
+        var skyUpdates = new ArrayList<byte[]>(skyUpdateSize);
         for (int i = 0; i < skyUpdateSize; i++) {
-            skyUpdates.add(this.readByteArray(buf));
+            skyUpdates.add(readByteArray(buf));
         }
 
-        int blockUpdateSize = this.readVarInt(buf);
-        List<byte[]> blockUpdates = new ArrayList<>(blockUpdateSize);
+        int blockUpdateSize = readVarInt(buf);
+        var blockUpdates = new ArrayList<byte[]>(blockUpdateSize);
         for (int i = 0; i < blockUpdateSize; i++) {
-            blockUpdates.add(this.readByteArray(buf));
+            blockUpdates.add(readByteArray(buf));
         }
-
         return new LightUpdateData(skyYMask, blockYMask, emptySkyYMask, emptyBlockYMask, skyUpdates, blockUpdates);
     }
 
     public void writeLightUpdateData(ByteBuf buf, LightUpdateData data) {
-        writeBitSet(buf, data.getSkyYMask());
-        writeBitSet(buf, data.getBlockYMask());
-        writeBitSet(buf, data.getEmptySkyYMask());
-        writeBitSet(buf, data.getEmptyBlockYMask());
+        writeLongArray(buf, data.getSkyYMask());
+        writeLongArray(buf, data.getBlockYMask());
+        writeLongArray(buf, data.getEmptySkyYMask());
+        writeLongArray(buf, data.getEmptyBlockYMask());
 
-        this.writeVarInt(buf, data.getSkyUpdates().size());
+        writeVarInt(buf, data.getSkyUpdates().size());
         for (byte[] array : data.getSkyUpdates()) {
-            this.writeByteArray(buf, array);
+            writeByteArray(buf, array);
         }
 
-        this.writeVarInt(buf, data.getBlockUpdates().size());
+        writeVarInt(buf, data.getBlockUpdates().size());
         for (byte[] array : data.getBlockUpdates()) {
-            this.writeByteArray(buf, array);
+            writeByteArray(buf, array);
         }
     }
 

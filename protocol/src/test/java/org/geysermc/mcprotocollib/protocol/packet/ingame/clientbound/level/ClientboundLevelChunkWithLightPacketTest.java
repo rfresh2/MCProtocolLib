@@ -11,7 +11,6 @@ import org.geysermc.mcprotocollib.protocol.packet.PacketTest;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Map;
 
@@ -23,12 +22,12 @@ public class ClientboundLevelChunkWithLightPacketTest extends PacketTest {
         this.setPackets(
                 new ClientboundLevelChunkWithLightPacket(0, 0,
                                                          new ChunkSection[0], MNBTIO.write(nbt, false), new BlockEntityInfo[0],
-                                                         new LightUpdateData(new BitSet(), new BitSet(), new BitSet(), new BitSet(), Collections.emptyList(), Collections.emptyList())
+                                                         new LightUpdateData(new long[0], new long[0], new long[0], new long[0], Collections.emptyList(), Collections.emptyList())
                 ),
                 new ClientboundLevelChunkWithLightPacket(1, 1,
                                                          new ChunkSection[0], MNBTIO.write(nbt, false), new BlockEntityInfo[] {
                         new BlockEntityInfo(1, 0, 1, BlockEntityType.CHEST, null)
-                }, new LightUpdateData(new BitSet(), new BitSet(), new BitSet(), new BitSet(), Collections.emptyList(), Collections.emptyList())
+                }, new LightUpdateData(new long[0], new long[0], new long[0], new long[0], Collections.emptyList(), Collections.emptyList())
                 )
         );
     }

@@ -9,7 +9,6 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 
-import java.util.BitSet;
 import java.util.List;
 
 @Data
@@ -20,8 +19,8 @@ public class ClientboundLightUpdatePacket implements MinecraftPacket {
     private final int z;
     private final @NonNull LightUpdateData lightData;
 
-    public ClientboundLightUpdatePacket(int x, int z, @NonNull BitSet skyYMask, @NonNull BitSet blockYMask,
-                                        @NonNull BitSet emptySkyYMask, @NonNull BitSet emptyBlockYMask,
+    public ClientboundLightUpdatePacket(int x, int z, long @NonNull [] skyYMask, long @NonNull [] blockYMask,
+                                        long @NonNull [] emptySkyYMask, long @NonNull [] emptyBlockYMask,
                                         @NonNull List<byte[]> skyUpdates, @NonNull List<byte[]> blockUpdates) {
         for (byte[] content : skyUpdates) {
             if (content.length != 2048) {

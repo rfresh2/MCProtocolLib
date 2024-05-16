@@ -8,5 +8,5 @@ import lombok.Data;
 public class ChunkBiomeData {
     private final int x;
     private final int z;
-    private final byte[] buffer;
+    private final DataPalette[] palettes;
 }
