@@ -44,7 +44,7 @@ import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.Serverbound
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Handles making initial login and status requests for clients.
@@ -135,7 +135,9 @@ public class ClientListener extends SessionAdapter {
             if (packet instanceof ClientboundFinishConfigurationPacket) {
                 session.send(new ServerboundFinishConfigurationPacket());
             } else if (packet instanceof ClientboundSelectKnownPacks) {
-                session.send(new ServerboundSelectKnownPacks(new ArrayList<>()));
+                if (session.getFlag(MinecraftConstants.SEND_BLANK_KNOWN_PACKS_RESPONSE, true)) {
+                    session.send(new ServerboundSelectKnownPacks(Collections.emptyList()));
+                }
             } else if (packet instanceof ClientboundTransferPacket transferPacket) {
                 TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
                 newSession.setFlags(session.getFlags());
