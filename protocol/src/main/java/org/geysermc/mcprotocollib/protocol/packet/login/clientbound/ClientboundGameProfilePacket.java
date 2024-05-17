@@ -24,16 +24,8 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
         int properties = helper.readVarInt(in);
         List<GameProfile.Property> propertyList = new ArrayList<>(properties);
         for (int index = 0; index < properties; index++) {
-            String propertyName = helper.readString(in);
-            String value = helper.readString(in);
-            String signature = null;
-            if (in.readBoolean()) {
-                signature = helper.readString(in);
-            }
-
-            propertyList.add(new GameProfile.Property(propertyName, value, signature));
+            propertyList.add(helper.readProperty(in));
         }
-
         profile.setProperties(propertyList);
         this.profile = profile;
         this.strictErrorHandling = in.readBoolean();
@@ -45,12 +37,7 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
         helper.writeString(out, this.profile.getName());
         helper.writeVarInt(out, this.profile.getProperties().size());
         for (GameProfile.Property property : this.profile.getProperties()) {
-            helper.writeString(out, property.getName());
-            helper.writeString(out, property.getValue());
-            out.writeBoolean(property.hasSignature());
-            if (property.hasSignature()) {
-                helper.writeString(out, property.getSignature());
-            }
+            helper.writeProperty(out, property);
         }
         out.writeBoolean(this.strictErrorHandling);
     }
