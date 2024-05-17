@@ -70,7 +70,7 @@ public class MapPalette implements Palette {
 
     @Override
     public MapPalette copy() {
-        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), new Int2IntOpenHashMap(this.stateToId.size()), this.nextId);
+        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), this.nextId);
         mapPalette.stateToId.putAll(this.stateToId);
         return mapPalette;
     }
