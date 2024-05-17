@@ -20,11 +20,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPale
 @ToString
 public class DataPalette {
 
-    /*
-     * @deprecated globalPaletteBits is no longer in use.
-     */
-    @Deprecated(forRemoval = true)
-    public static final int GLOBAL_PALETTE_BITS_PER_ENTRY = 14;
+    public static int GLOBAL_PALETTE_BITS_PER_ENTRY = 15;
 
     private @NonNull Palette palette;
     private BitStorage storage;
