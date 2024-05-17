@@ -20,25 +20,20 @@ public class MapPalette implements Palette {
     private final int capacity;
 
     private final int[] idToState;
-    private final Int2IntMap stateToId;
+    private final Int2IntMap stateToId = new Int2IntOpenHashMap();
     private int nextId = 0;
 
     public MapPalette(int bitsPerEntry) {
         this.capacity = 1 << bitsPerEntry;
 
         this.idToState = new int[this.capacity];
-        this.stateToId = new Int2IntOpenHashMap();
         this.stateToId.defaultReturnValue(MISSING_ID);
     }
 
     public MapPalette(int bitsPerEntry, ByteBuf in, MinecraftCodecHelper helper) {
-        this.capacity = 1 << bitsPerEntry;
+        this(bitsPerEntry);
 
-        this.idToState = new int[this.capacity];
         int paletteLength = helper.readVarInt(in);
-        this.stateToId = new Int2IntOpenHashMap(paletteLength);
-        this.stateToId.defaultReturnValue(MISSING_ID);
-
         for (int i = 0; i < paletteLength; i++) {
             int state = helper.readVarInt(in);
             this.idToState[i] = state;
