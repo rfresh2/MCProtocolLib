@@ -131,11 +131,11 @@ public class NbtComponentSerializer {
 
         // Generally, modern vanilla-esque serializers should not produce this format, so it should be rare
         // Lists are only used for lists of components ("extra" and "with")
-        final ListTag processedListTag = new ListTag();
+        final ListTag<CompoundTag> processedListTag = new ListTag(CompoundTag.class);
         for (final JsonElement entry : array) {
             final Tag convertedTag = convertToTag(entry);
-            if (convertedTag instanceof CompoundTag) {
-                processedListTag.add(convertedTag);
+            if (convertedTag instanceof CompoundTag compoundTag) {
+                processedListTag.add(compoundTag);
                 continue;
             }
 
@@ -198,48 +198,43 @@ public class NbtComponentSerializer {
     private static @Nullable JsonElement convertToJson(final @Nullable String key, final @Nullable Tag tag) {
         if (tag == null) {
             return null;
-        } else if (tag instanceof CompoundTag) {
+        } else if (tag instanceof CompoundTag compoundTag) {
             final JsonObject object = new JsonObject();
             if (!"value".equals(key)) {
                 removeComponentType(object);
             }
 
-            for (final Map.Entry<String, Tag> entry : ((CompoundTag) tag).entrySet()) {
+            for (final Map.Entry<String, Tag> entry : compoundTag.entrySet()) {
                 convertCompoundTagEntry(entry.getKey(), entry.getValue(), object);
             }
             return object;
-        } else if (tag instanceof ListTag) {
-            final ListTag list = (ListTag) tag;
+        } else if (tag instanceof ListTag list) {
             final JsonArray array = new JsonArray();
             for (final Object listEntry : list) {
                 array.add(convertToJson(null, (Tag) listEntry));
             }
             return array;
-        } else if (tag instanceof NumberTag) {
-            final NumberTag numberTag = (NumberTag) tag;
+        } else if (tag instanceof NumberTag numberTag) {
             if (key != null && BOOLEAN_TYPES.contains(key)) {
                 // Booleans don't have a direct representation in nbt
                 return new JsonPrimitive(numberTag.asBoolean());
             }
             return new JsonPrimitive(numberTag.getValue());
-        } else if (tag instanceof StringTag) {
-            return new JsonPrimitive(((StringTag) tag).getValue());
-        } else if (tag instanceof ByteArrayTag) {
-            final ByteArrayTag arrayTag = (ByteArrayTag) tag;
+        } else if (tag instanceof StringTag stringTag) {
+            return new JsonPrimitive(stringTag.asRawString());
+        } else if (tag instanceof ByteArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final byte num : arrayTag.getValue()) {
                 array.add(num);
             }
             return array;
-        } else if (tag instanceof IntArrayTag) {
-            final IntArrayTag arrayTag = (IntArrayTag) tag;
+        } else if (tag instanceof IntArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final int num : arrayTag.getValue()) {
                 array.add(num);
             }
             return array;
-        } else if (tag instanceof LongArrayTag) {
-            final LongArrayTag arrayTag = (LongArrayTag) tag;
+        } else if (tag instanceof LongArrayTag arrayTag) {
             final JsonArray array = new JsonArray();
             for (final long num : arrayTag.getValue()) {
                 array.add(num);
@@ -250,15 +245,14 @@ public class NbtComponentSerializer {
     }
 
     private static void convertCompoundTagEntry(final String key, final Tag tag, final JsonObject object) {
-        if ((key.equals("contents")) && tag instanceof CompoundTag) {
+        if ((key.equals("contents")) && tag instanceof CompoundTag showEntity) {
             // Back to a UUID string
-            final CompoundTag showEntity = (CompoundTag) tag;
             final Tag idTag = showEntity.get("id");
-            if (idTag instanceof IntArrayTag) {
+            if (idTag instanceof IntArrayTag intArrayTag) {
                 showEntity.remove("id");
 
                 final JsonObject convertedElement = (JsonObject) convertToJson(key, tag);
-                final UUID uuid = fromIntArray(((IntArrayTag) idTag).getValue());
+                final UUID uuid = fromIntArray(intArrayTag.getValue());
                 convertedElement.addProperty("id", uuid.toString());
                 object.add(key, convertedElement);
                 return;

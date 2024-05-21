@@ -1,32 +1,96 @@
 plugins {
-    id("mcprotocollib.publish-conventions")
+    id("io.freefair.lombok") version "8.6"
+    `maven-publish`
+    `java-library`
 }
 
 version = "1.20.4"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
 
+repositories {
+    maven("https://repo.opencollab.dev/maven-releases/") {
+        name = "opencollab-releases"
+        content { includeGroupByRegex("org.cloudburstmc.*") }
+    }
+    maven("https://papermc.io/repo/repository/maven-public/") {
+        name = "papermc"
+        content { includeGroup("com.velocitypowered") }
+    }
+    maven("https://jitpack.io") {
+        name = "jitpack"
+        content { includeGroupByRegex("com.github.rfresh2.*") }
+    }
+    mavenCentral()
+    mavenLocal()
+}
+
+val adventureVersion = "4.17.0"
+val fastutilVersion = "b3ff25af48"
+
 dependencies {
-    // Minecraft related libraries
-    api(libs.opennbt)
-    api(libs.mcauthlib)
+    api("org.slf4j:slf4j-api:2.0.13")
 
-    // Kyori adventure
-    api(libs.bundles.adventure)
+    api("com.github.rfresh2:OpenNBT:d5eae8fe4e")
+    api("com.github.rfresh2:MCAuthLib:627c9f603d") {
+        exclude(group = "com.microsoft.azure")
+        exclude(group = "fr.litarvan")
+    }
 
-    // Math utilities
-    api(libs.bundles.math)
+    api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
+    api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
+    api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
+    api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
 
-    // Stripped down fastutil
-    api(libs.bundles.fastutil)
+    api("org.cloudburstmc.math:api:2.0")
+    api("org.cloudburstmc.math:immutable:2.0")
 
-    // Netty
-    api(libs.bundles.netty)
+    api("com.github.rfresh2.fastutil:object-int-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil:int-object-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil:int-int-maps:$fastutilVersion")
 
-    api(libs.velocity.natives)
+    api("io.netty:netty-all:4.1.109.Final")
+    api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
-    // Checker Framework
-    api(libs.checkerframework.qual)
+    api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
 
-    // Test dependencies
-    testImplementation(libs.junit.jupiter)
+    api("org.checkerframework:checker-qual:3.43.0")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+}
+
+lombok {
+    version = "1.18.32"
+}
+
+tasks {
+    withType(JavaCompile::class.java) {
+        options.encoding = "UTF-8"
+        options.isDeprecation = true
+        options.compilerArgs.add("-Xlint:all,-processing")
+    }
+    withType<Javadoc> {
+        title = "MCProtocolLib Javadocs"
+        val options = options as StandardJavadocDocletOptions
+        options.encoding = "UTF-8"
+        options.addStringOption("Xdoclint:all,-missing", "-quiet")
+    }
+    test {
+        useJUnitPlatform()
+    }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.github.rfresh2"
+            artifactId = "MCProtocolLib"
+            version = project.version.toString()
+            from(components["java"])
+        }
+    }
 }
