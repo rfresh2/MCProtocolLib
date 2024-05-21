@@ -126,10 +126,12 @@ public class ClientListener extends SessionAdapter {
             } else if (packet instanceof ClientboundStartConfigurationPacket) {
                 session.send(new ServerboundConfigurationAcknowledgedPacket());
             } else if (packet instanceof ClientboundTransferPacket transferPacket) {
-                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
-                newSession.setFlags(session.getFlags());
-                session.disconnect("Transferring");
-                newSession.connect(true, true);
+                if (session.getFlag(MinecraftConstants.FOLLOW_TRANSFERS, true)) {
+                    TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                    newSession.setFlags(session.getFlags());
+                    session.disconnect("Transferring");
+                    newSession.connect(true, true);
+                }
             }
         } else if (protocol.getState() == ProtocolState.CONFIGURATION) {
             if (packet instanceof ClientboundFinishConfigurationPacket) {
@@ -139,10 +141,12 @@ public class ClientListener extends SessionAdapter {
                     session.send(new ServerboundSelectKnownPacks(Collections.emptyList()));
                 }
             } else if (packet instanceof ClientboundTransferPacket transferPacket) {
-                TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
-                newSession.setFlags(session.getFlags());
-                session.disconnect("Transferring");
-                newSession.connect(true, true);
+                if (session.getFlag(MinecraftConstants.FOLLOW_TRANSFERS, true)) {
+                    TcpClientSession newSession = new TcpClientSession(transferPacket.getHost(), transferPacket.getPort(), session.getPacketProtocol(), ((TcpClientSession) session).getTcpManager());
+                    newSession.setFlags(session.getFlags());
+                    session.disconnect("Transferring");
+                    newSession.connect(true, true);
+                }
             }
         }
     }
