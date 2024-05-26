@@ -1,25 +1,38 @@
 package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
-import org.geysermc.mcprotocollib.protocol.data.game.statistic.*;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.With;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.BreakBlockStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.BreakItemStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.CraftItemStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.CustomStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.DropItemStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.KillEntityStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.KilledByEntityStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.PickupItemStatistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.Statistic;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
+import org.geysermc.mcprotocollib.protocol.data.game.statistic.UseItemStatistic;
 
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "statistics")
 public class ClientboundAwardStatsPacket implements MinecraftPacket {
-    private final @NonNull Object2IntMap<Statistic> statistics = new Object2IntOpenHashMap<>();
+    private final @NonNull Object2IntMap<Statistic> statistics;
 
     public ClientboundAwardStatsPacket(ByteBuf in, MinecraftCodecHelper helper) {
         int length = helper.readVarInt(in);
+        this.statistics = new Object2IntOpenHashMap<>(length);
         for (int index = 0; index < length; index++) {
             StatisticCategory category = helper.readStatisticCategory(in);
             int statisticId = helper.readVarInt(in);
