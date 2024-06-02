@@ -31,10 +31,10 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
             int len = helper.readVarInt(in);
             List<AttributeModifier> modifiers = new ArrayList<>(len);
             for (int ind = 0; ind < len; ind++) {
-                modifiers.add(new AttributeModifier(helper.readUUID(in), in.readDouble(), helper.readModifierOperation(in)));
+                modifiers.add(new AttributeModifier(helper.readResourceLocation(in), in.readDouble(), helper.readModifierOperation(in)));
             }
 
-            AttributeType type = AttributeType.Builtin.BUILTIN.get(attributeId); //.computeIfAbsent(attributeId, AttributeType.Custom::new); TODO
+            AttributeType type = AttributeType.Builtin.BUILTIN.get(attributeId);
             this.attributes.add(new Attribute(type, value, modifiers));
         }
     }
@@ -50,7 +50,7 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
             helper.writeVarInt(out, attribute.getModifiers().size());
             for (int j = 0; j < attribute.getModifiers().size(); j++) {
                 AttributeModifier modifier = attribute.getModifiers().get(j);
-                helper.writeUUID(out, modifier.getUuid());
+                helper.writeResourceLocation(out, modifier.getId());
                 out.writeDouble(modifier.getAmount());
                 helper.writeModifierOperation(out, modifier.getOperation());
             }

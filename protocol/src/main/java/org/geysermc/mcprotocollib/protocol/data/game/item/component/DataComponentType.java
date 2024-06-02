@@ -63,6 +63,7 @@ public class DataComponentType<T> {
     public static final DataComponentType<MNBT> BLOCK_ENTITY_DATA = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final DataComponentType<Holder<Instrument>> INSTRUMENT = new DataComponentType<>(ItemCodecHelper::readInstrument, ItemCodecHelper::writeInstrument, ObjectDataComponent::new);
     public static final IntComponentType OMINOUS_BOTTLE_AMPLIFIER = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
+    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = new DataComponentType<>(ItemCodecHelper::readJukeboxPlayable, ItemCodecHelper::writeJukeboxPlayable, ObjectDataComponent::new);
     public static final DataComponentType<ListTag> RECIPES = new DataComponentType<>(ItemCodecHelper::readRecipes, ItemCodecHelper::writeRecipes, ObjectDataComponent::new);
     public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = new DataComponentType<>(ItemCodecHelper::readLodestoneTarget, ItemCodecHelper::writeLodestoneTarget, ObjectDataComponent::new);
     public static final DataComponentType<Fireworks.FireworkExplosion> FIREWORK_EXPLOSION = new DataComponentType<>(ItemCodecHelper::readFireworkExplosion, ItemCodecHelper::writeFireworkExplosion, ObjectDataComponent::new);
