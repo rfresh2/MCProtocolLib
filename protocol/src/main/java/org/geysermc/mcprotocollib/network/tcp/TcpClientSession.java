@@ -118,12 +118,8 @@ public class TcpClientSession extends TcpSession {
     }
 
     private InetSocketAddress resolveAddress() {
-        boolean debug = getFlag(BuiltinFlags.PRINT_DEBUG, false);
-
         String name = this.getPacketProtocol().getSRVRecordPrefix() + "._tcp." + this.getHost();
-        if (debug) {
-            LOGGER.debug("Attempting SRV lookup for \"" + name + "\".");
-        }
+        LOGGER.debug("Attempting SRV lookup for \"" + name + "\".");
 
         if(getFlag(BuiltinFlags.ATTEMPT_SRV_RESOLVE, true) && (!this.host.matches(IP_REGEX) && !this.host.equalsIgnoreCase("localhost"))) {
             DnsNameResolver resolver = null;
@@ -147,22 +143,18 @@ public class TcpClientSession extends TcpSession {
                             host = host.substring(0, host.length() - 1);
                         }
 
-                        if(debug) {
-                            LOGGER.debug("Found SRV record containing \"" + host + ":" + port + "\".");
-                        }
+                        LOGGER.debug("Found SRV record containing \"" + host + ":" + port + "\".");
 
                         this.host = host;
                         this.port = port;
-                    } else if (debug) {
+                    } else {
                         LOGGER.debug("Received non-SRV record in response.");
                     }
-                } else if (debug) {
+                } else {
                     LOGGER.debug("No SRV record found.");
                 }
             } catch(Exception e) {
-                if (debug) {
-                    LOGGER.debug("Failed to resolve SRV record.", e);
-                }
+                LOGGER.debug("Failed to resolve SRV record.", e);
             } finally {
                 if (envelope != null) {
                     envelope.release();
@@ -172,21 +164,17 @@ public class TcpClientSession extends TcpSession {
                     resolver.close();
                 }
             }
-        } else if(debug) {
+        } else {
             LOGGER.debug("Not resolving SRV record for " + this.host);
         }
 
         // Resolve host here
         try {
             InetAddress resolved = InetAddress.getByName(getHost());
-            if (debug) {
-                LOGGER.debug("Resolved {} -> {}", getHost(), resolved.getHostAddress());
-            }
+            LOGGER.debug("Resolved {} -> {}", getHost(), resolved.getHostAddress());
             return new InetSocketAddress(resolved, getPort());
         } catch (UnknownHostException e) {
-            if (debug) {
-                LOGGER.debug("Failed to resolve host, letting Netty do it instead.", e);
-            }
+            LOGGER.debug("Failed to resolve host, letting Netty do it instead.", e);
             return InetSocketAddress.createUnresolved(getHost(), getPort());
         }
     }
