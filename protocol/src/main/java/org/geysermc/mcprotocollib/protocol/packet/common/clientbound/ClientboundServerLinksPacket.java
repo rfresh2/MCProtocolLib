@@ -12,7 +12,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.ServerLinkType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 
 @Data
 @With
@@ -21,9 +20,8 @@ public class ClientboundServerLinksPacket implements MinecraftPacket {
     private final List<ServerLink> links;
 
     public ClientboundServerLinksPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.links = new ArrayList<>();
-
         int length = helper.readVarInt(in);
+        this.links = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             ServerLinkType knownType = null;
             Component unknownType = null;
@@ -41,7 +39,9 @@ public class ClientboundServerLinksPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.links.size());
-        for (ServerLink link : this.links) {
+        List<ServerLink> serverLinks = this.links;
+        for (int i = 0; i < serverLinks.size(); i++) {
+            final ServerLink link = serverLinks.get(i);
             out.writeBoolean(link.knownType() != null);
             if (link.knownType() != null) {
                 helper.writeVarInt(out, link.knownType().ordinal());

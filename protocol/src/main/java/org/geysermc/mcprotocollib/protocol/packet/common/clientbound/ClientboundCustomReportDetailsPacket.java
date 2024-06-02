@@ -17,9 +17,8 @@ public class ClientboundCustomReportDetailsPacket implements MinecraftPacket {
     private final Map<String, String> details;
 
     public ClientboundCustomReportDetailsPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.details = new HashMap<>();
-
         int count = helper.readVarInt(in);
+        this.details = new HashMap<>(count);
         for (int i = 0; i < count; i++) {
             this.details.put(helper.readString(in, 128), helper.readString(in, 4096));
         }

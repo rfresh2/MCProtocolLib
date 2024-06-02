@@ -848,7 +848,9 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeString(buf, decoration.translationKey());
 
         this.writeVarInt(buf, decoration.parameters().length);
-        for (int parameter : decoration.parameters()) {
+        int[] parameters = decoration.parameters();
+        for (int i = 0; i < parameters.length; i++) {
+            final int parameter = parameters[i];
             this.writeVarInt(buf, parameter);
         }
 
