@@ -19,6 +19,8 @@ import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -45,6 +47,7 @@ public class MinecraftProtocolTest {
         p.setUseDefaultListeners(true);
         return p;
     };
+    private static final Logger log = LoggerFactory.getLogger(MinecraftProtocolTest.class);
 
     private static Server server;
     private static TcpConnectionManager connectionManager;
@@ -62,7 +65,7 @@ public class MinecraftProtocolTest {
             try {
                 Thread.sleep(100);
             } catch (Exception e) {
-                System.err.println("Failed to wait to send ClientboundLoginPacket: " + e.getMessage());
+                log.error("Failed to wait to send ClientboundLoginPacket: {}", e.getMessage());
             }
             session.send(JOIN_GAME_PACKET);
         });
@@ -142,10 +145,7 @@ public class MinecraftProtocolTest {
     private static class DisconnectListener extends SessionAdapter {
         @Override
         public void disconnected(Session session, Component reason, Throwable cause) {
-            System.err.println("Disconnected: " + reason);
-            if (cause != null) {
-                cause.printStackTrace();
-            }
+            log.error("Disconnected: {}", reason, cause);
         }
     }
 }
