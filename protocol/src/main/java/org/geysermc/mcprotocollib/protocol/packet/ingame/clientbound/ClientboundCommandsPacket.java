@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
+import net.kyori.adventure.key.Key;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.command.CommandNode;
@@ -69,7 +70,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
 
             CommandParser parser = null;
             CommandProperties properties = null;
-            String suggestionType = null;
+            Key suggestionType = null;
             if (type == CommandType.ARGUMENT) {
                 parser = CommandParser.from(helper.readVarInt(in));
                 switch (parser) {
@@ -137,8 +138,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                     }
                     case SCORE_HOLDER -> properties = new ScoreHolderProperties(in.readBoolean());
                     case TIME -> properties = new TimeProperties(in.readInt());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY ->
-                            properties = new ResourceProperties(helper.readString(in));
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> properties = new ResourceProperties(helper.readResourceLocation(in));
                     default -> {
                     }
                 }
@@ -287,11 +287,9 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
 
                         out.writeByte(entityFlags);
                     }
-                    case SCORE_HOLDER ->
-                            out.writeBoolean(((ScoreHolderProperties) node.getProperties()).isAllowMultiple());
+                    case SCORE_HOLDER -> out.writeBoolean(((ScoreHolderProperties) node.getProperties()).isAllowMultiple());
                     case TIME -> out.writeInt(((TimeProperties) node.getProperties()).getMin());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY ->
-                            helper.writeString(out, ((ResourceProperties) node.getProperties()).getRegistryKey());
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> helper.writeResourceLocation(out, ((ResourceProperties) node.getProperties()).getRegistryKey());
                     default -> {
                     }
                 }

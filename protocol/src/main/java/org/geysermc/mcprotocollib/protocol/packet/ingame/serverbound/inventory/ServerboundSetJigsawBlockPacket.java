@@ -15,9 +15,9 @@ public class ServerboundSetJigsawBlockPacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull String name;
-    private final @NonNull String target;
-    private final @NonNull String pool;
+    private final @NonNull Key name;
+    private final @NonNull Key target;
+    private final @NonNull Key pool;
     private final @NonNull String finalState;
     private final @NonNull String jointType;
     private final int selectionPriority;
@@ -28,9 +28,9 @@ public class ServerboundSetJigsawBlockPacket implements MinecraftPacket {
         this.x = helper.decodePositionX(position);
         this.y = helper.decodePositionY(position);
         this.z = helper.decodePositionZ(position);
-        this.name = helper.readString(in);
-        this.target = helper.readString(in);
-        this.pool = helper.readString(in);
+        this.name = helper.readResourceLocation(in);
+        this.target = helper.readResourceLocation(in);
+        this.pool = helper.readResourceLocation(in);
         this.finalState = helper.readString(in);
         this.jointType = helper.readString(in);
         this.selectionPriority = helper.readVarInt(in);
@@ -40,9 +40,9 @@ public class ServerboundSetJigsawBlockPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writePosition(out, this.x, this.y, this.z);
-        helper.writeString(out, this.name);
-        helper.writeString(out, this.target);
-        helper.writeString(out, this.pool);
+        helper.writeResourceLocation(out, this.name);
+        helper.writeResourceLocation(out, this.target);
+        helper.writeResourceLocation(out, this.pool);
         helper.writeString(out, this.finalState);
         helper.writeString(out, this.jointType);
         helper.writeVarInt(out, this.selectionPriority);

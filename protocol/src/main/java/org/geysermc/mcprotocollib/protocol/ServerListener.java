@@ -138,16 +138,16 @@ public class ServerListener extends SessionAdapter {
                 // Credit ViaVersion: https://github.com/ViaVersion/ViaVersion/blob/dev/common/src/main/java/com/viaversion/viaversion/protocols/protocol1_20_5to1_20_3/rewriter/EntityPacketRewriter1_20_5.java
                 for (Map.Entry<String, Tag> entry : networkCodec.getValue().entrySet()) {
                     CompoundTag entryTag = (CompoundTag) entry.getValue();
-                    StringTag typeTag = entryTag.getStringTag("type");
+                    Key typeTag = Key.key(entryTag.getStringTag("type").getValue());
                     ListTag<CompoundTag> valueTag = entryTag.getListTag("value", CompoundTag.class);
                     List<RegistryEntry> entries = new ArrayList<>();
                     for (CompoundTag compoundTag : valueTag) {
-                        StringTag nameTag = compoundTag.getStringTag("name");
+                        Key nameTag = Key.key(compoundTag.getStringTag("name").getValue());
                         int id = compoundTag.getInt("id");
-                        entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
+                        entries.add(id, new RegistryEntry(nameTag, MNBTIO.write(compoundTag.get("element"), false)));
                     }
 
-                    session.send(new ClientboundRegistryDataPacket(typeTag.getValue(), entries));
+                    session.send(new ClientboundRegistryDataPacket(typeTag, entries));
                 }
 
                 session.send(new ClientboundFinishConfigurationPacket());
