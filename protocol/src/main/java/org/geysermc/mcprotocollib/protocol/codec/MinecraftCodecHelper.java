@@ -20,6 +20,7 @@ import org.cloudburstmc.math.vector.Vector4f;
 import org.geysermc.mcprotocollib.network.codec.BasePacketCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
+import org.geysermc.mcprotocollib.protocol.data.game.Identifier;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.BlankFormat;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.FixedFormat;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.NumberFormat;
@@ -172,8 +173,16 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return Key.key(this.readString(buf));
     }
 
+    public String readResourceLocationString(ByteBuf buf) {
+        return Identifier.formalize(this.readString(buf));
+    }
+
     public void writeResourceLocation(ByteBuf buf, Key location) {
         this.writeString(buf, location.asString());
+    }
+
+    public void writeResourceLocation(ByteBuf buf, String location) {
+        this.writeString(buf, location);
     }
 
     public UUID readUUID(ByteBuf buf) {

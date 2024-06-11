@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.protocol.data.game.command.properties;
 
 import lombok.Data;
-import net.kyori.adventure.key.Key;
+import org.geysermc.mcprotocollib.protocol.data.game.Identifier;
 
 @Data
 public class ResourceProperties implements CommandProperties {
-    private final Key registryKey;
+    private final String registryKey;
 
-    public ResourceProperties(Key registryKey) {
-        this.registryKey = registryKey;
+    public ResourceProperties(String registryKey) {
+        this.registryKey = Identifier.formalize(registryKey);
     }
 }

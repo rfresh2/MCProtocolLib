@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
-import net.kyori.adventure.key.Key;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.command.CommandNode;
@@ -70,7 +69,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
 
             CommandParser parser = null;
             CommandProperties properties = null;
-            Key suggestionType = null;
+            String suggestionType = null;
             if (type == CommandType.ARGUMENT) {
                 parser = CommandParser.from(helper.readVarInt(in));
                 switch (parser) {
@@ -138,13 +137,13 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                     }
                     case SCORE_HOLDER -> properties = new ScoreHolderProperties(in.readBoolean());
                     case TIME -> properties = new TimeProperties(in.readInt());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> properties = new ResourceProperties(helper.readResourceLocation(in));
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> properties = new ResourceProperties(helper.readResourceLocationString(in));
                     default -> {
                     }
                 }
 
                 if ((flags & FLAG_SUGGESTION_TYPE) != 0) {
-                    suggestionType = helper.readResourceLocation(in);
+                    suggestionType = helper.readResourceLocationString(in);
                 }
             }
 
