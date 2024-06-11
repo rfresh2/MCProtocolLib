@@ -6,9 +6,9 @@ import com.github.steveice10.mc.auth.service.SessionService;
 import com.viaversion.nbt.io.MNBTIO;
 import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.ListTag;
+import com.viaversion.nbt.tag.StringTag;
 import com.viaversion.nbt.tag.Tag;
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
@@ -138,16 +138,16 @@ public class ServerListener extends SessionAdapter {
                 // Credit ViaVersion: https://github.com/ViaVersion/ViaVersion/blob/dev/common/src/main/java/com/viaversion/viaversion/protocols/protocol1_20_5to1_20_3/rewriter/EntityPacketRewriter1_20_5.java
                 for (Map.Entry<String, Tag> entry : networkCodec.getValue().entrySet()) {
                     CompoundTag entryTag = (CompoundTag) entry.getValue();
-                    Key typeTag = Key.key(entryTag.getStringTag("type").getValue());
+                    StringTag typeTag = entryTag.getStringTag("type");
                     ListTag<CompoundTag> valueTag = entryTag.getListTag("value", CompoundTag.class);
                     List<RegistryEntry> entries = new ArrayList<>();
                     for (CompoundTag compoundTag : valueTag) {
-                        Key nameTag = Key.key(compoundTag.getStringTag("name").getValue());
+                        StringTag nameTag = compoundTag.getStringTag("name");
                         int id = compoundTag.getInt("id");
-                        entries.add(id, new RegistryEntry(nameTag, MNBTIO.write(compoundTag.get("element"), false)));
+                        entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
                     }
 
-                    session.send(new ClientboundRegistryDataPacket(typeTag, entries));
+                    session.send(new ClientboundRegistryDataPacket(typeTag.getValue(), entries));
                 }
 
                 session.send(new ClientboundFinishConfigurationPacket());

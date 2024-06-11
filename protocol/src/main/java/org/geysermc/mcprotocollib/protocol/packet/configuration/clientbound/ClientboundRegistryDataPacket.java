@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 import lombok.With;
-import net.kyori.adventure.key.Key;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.RegistryEntry;
@@ -18,16 +17,16 @@ import java.util.List;
 @AllArgsConstructor
 @ToString(exclude = "entries")
 public class ClientboundRegistryDataPacket implements MinecraftPacket {
-    private final Key registry;
+    private final String registry;
     private final List<RegistryEntry> entries;
 
     public ClientboundRegistryDataPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.registry = helper.readResourceLocation(in);
+        this.registry = helper.readResourceLocationString(in);
         int entryCount = helper.readVarInt(in);
         this.entries = new ArrayList<>(entryCount);
 
         for (int i = 0; i < entryCount; i++) {
-            this.entries.add(new RegistryEntry(helper.readResourceLocation(in), helper.readNullable(in, helper::readMNBT)));
+            this.entries.add(new RegistryEntry(helper.readResourceLocationString(in), helper.readNullable(in, helper::readMNBT)));
         }
     }
 

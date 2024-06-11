@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
-import net.kyori.adventure.key.Key;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
@@ -18,17 +17,17 @@ import java.util.Map;
 @AllArgsConstructor
 @ToString(exclude = "tags")
 public class ClientboundUpdateTagsPacket implements MinecraftPacket {
-    private final @NonNull Map<Key, Map<Key, int[]>> tags;
+    private final @NonNull Map<String, Map<String, int[]>> tags;
 
     public ClientboundUpdateTagsPacket(ByteBuf in, MinecraftCodecHelper helper) {
         int totalTagCount = helper.readVarInt(in);
         this.tags = new HashMap<>(totalTagCount);
         for (int i = 0; i < totalTagCount; i++) {
-            Key tagName = helper.readResourceLocation(in);
+            String tagName = helper.readResourceLocationString(in);
             int tagsCount = helper.readVarInt(in);
-            Map<Key, int[]> tag = new HashMap<>(tagsCount);
+            Map<String, int[]> tag = new HashMap<>(tagsCount);
             for (int j = 0; j < tagsCount; j++) {
-                Key name = helper.readResourceLocation(in);
+                String name = helper.readResourceLocationString(in);
                 int entriesCount = helper.readVarInt(in);
                 int[] entries = new int[entriesCount];
                 for (int index = 0; index < entriesCount; index++) {
@@ -44,10 +43,10 @@ public class ClientboundUpdateTagsPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, tags.size());
-        for (Map.Entry<Key, Map<Key, int[]>> tagSet : tags.entrySet()) {
+        for (Map.Entry<String, Map<String, int[]>> tagSet : tags.entrySet()) {
             helper.writeResourceLocation(out, tagSet.getKey());
             helper.writeVarInt(out, tagSet.getValue().size());
-            for (Map.Entry<Key, int[]> tag : tagSet.getValue().entrySet()) {
+            for (Map.Entry<String, int[]> tag : tagSet.getValue().entrySet()) {
                 helper.writeResourceLocation(out, tag.getKey());
                 helper.writeVarInt(out, tag.getValue().length);
                 for (int id : tag.getValue()) {
