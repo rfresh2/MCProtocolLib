@@ -31,7 +31,7 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
             int len = helper.readVarInt(in);
             List<AttributeModifier> modifiers = new ArrayList<>(len);
             for (int ind = 0; ind < len; ind++) {
-                modifiers.add(new AttributeModifier(helper.readResourceLocation(in), in.readDouble(), helper.readModifierOperation(in)));
+                modifiers.add(new AttributeModifier(helper.readResourceLocationString(in), in.readDouble(), helper.readModifierOperation(in)));
             }
 
             AttributeType type = AttributeType.Builtin.BUILTIN.get(attributeId);

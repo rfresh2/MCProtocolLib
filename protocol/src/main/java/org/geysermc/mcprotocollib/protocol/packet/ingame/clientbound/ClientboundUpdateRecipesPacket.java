@@ -32,7 +32,7 @@ public class ClientboundUpdateRecipesPacket implements MinecraftPacket {
     public ClientboundUpdateRecipesPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.recipes = new Recipe[helper.readVarInt(in)];
         for (int i = 0; i < this.recipes.length; i++) {
-            String identifier = helper.readResourceLocation(in);
+            String identifier = helper.readResourceLocationString(in);
             RecipeType type = RecipeType.from(helper.readVarInt(in));
             RecipeData data;
             switch (type) {

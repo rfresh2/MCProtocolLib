@@ -28,7 +28,7 @@ public class ClientboundStopSoundPacket implements MinecraftPacket {
         }
 
         if ((flags & FLAG_SOUND) != 0) {
-            this.sound = helper.readResourceLocation(in);
+            this.sound = helper.readResourceLocationString(in);
         } else {
             this.sound = null;
         }

@@ -11,6 +11,7 @@ import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.math.vector.Vector3f;
@@ -170,8 +171,17 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public String readResourceLocation(ByteBuf buf) {
+    @SuppressWarnings("PatternValidation")
+    public Key readResourceLocation(ByteBuf buf) {
+        return Key.key(this.readString(buf));
+    }
+
+    public String readResourceLocationString(ByteBuf buf) {
         return Identifier.formalize(this.readString(buf));
+    }
+
+    public void writeResourceLocation(ByteBuf buf, Key location) {
+        this.writeString(buf, location.asString());
     }
 
     public void writeResourceLocation(ByteBuf buf, String location) {
@@ -534,15 +544,15 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public Holder<WolfVariant> readWolfVariant(ByteBuf buf) {
         return this.readHolder(buf, input -> {
-            String wildTexture = this.readResourceLocation(input);
-            String tameTexture = this.readResourceLocation(input);
-            String angryTexture = this.readResourceLocation(input);
+            String wildTexture = this.readResourceLocationString(input);
+            String tameTexture = this.readResourceLocationString(input);
+            String angryTexture = this.readResourceLocationString(input);
             String biomeLocation = null;
             int[] biomeHolders = null;
 
             int length = this.readVarInt(input) - 1;
             if (length == -1) {
-                biomeLocation = this.readResourceLocation(input);
+                biomeLocation = this.readResourceLocationString(input);
             } else {
                 biomeHolders = new int[length];
                 for (int j = 0; j < length; j++) {
@@ -572,7 +582,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public Holder<PaintingVariant> readPaintingVariant(ByteBuf buf) {
         return this.readHolder(buf, input -> {
-            return new PaintingVariant(this.readVarInt(input), this.readVarInt(input), this.readResourceLocation(input));
+            return new PaintingVariant(this.readVarInt(input), this.readVarInt(input), this.readResourceLocationString(input));
         });
     }
 
@@ -668,7 +678,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public GlobalPos readGlobalPos(ByteBuf buf) {
-        String dimension = Identifier.formalize(this.readString(buf));
+        Key dimension = readResourceLocation(buf);
         var position = buf.readLong();
         int x = decodePositionX(position);
         int y = decodePositionY(position);
@@ -677,13 +687,13 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     public void writeGlobalPos(ByteBuf buf, GlobalPos pos) {
-        this.writeString(buf, pos.getDimension());
+        this.writeResourceLocation(buf, pos.getDimension());
         this.writePosition(buf, pos.getX(), pos.getY(), pos.getZ());
     }
 
     public PlayerSpawnInfo readPlayerSpawnInfo(ByteBuf buf) {
         int dimension = this.readVarInt(buf);
-        String worldName = this.readString(buf);
+        Key worldName = this.readResourceLocation(buf);
         long hashedSeed = buf.readLong();
         GameMode gameMode = GameMode.byId(buf.readByte());
         GameMode previousGamemode = GameMode.byNullableId(buf.readByte());
@@ -696,7 +706,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public void writePlayerSpawnInfo(ByteBuf buf, PlayerSpawnInfo info) {
         this.writeVarInt(buf, info.getDimension());
-        this.writeString(buf, info.getWorldName());
+        this.writeResourceLocation(buf, info.getWorldName());
         buf.writeLong(info.getHashedSeed());
         buf.writeByte(info.getGameMode().ordinal());
         buf.writeByte(GameMode.toNullableId(info.getPreviousGamemode()));

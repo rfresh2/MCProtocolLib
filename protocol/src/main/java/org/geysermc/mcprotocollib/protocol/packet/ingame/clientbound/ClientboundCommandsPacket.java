@@ -137,14 +137,13 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                     }
                     case SCORE_HOLDER -> properties = new ScoreHolderProperties(in.readBoolean());
                     case TIME -> properties = new TimeProperties(in.readInt());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY ->
-                            properties = new ResourceProperties(helper.readString(in));
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> properties = new ResourceProperties(helper.readResourceLocationString(in));
                     default -> {
                     }
                 }
 
                 if ((flags & FLAG_SUGGESTION_TYPE) != 0) {
-                    suggestionType = helper.readResourceLocation(in);
+                    suggestionType = helper.readResourceLocationString(in);
                 }
             }
 
@@ -287,11 +286,9 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
 
                         out.writeByte(entityFlags);
                     }
-                    case SCORE_HOLDER ->
-                            out.writeBoolean(((ScoreHolderProperties) node.getProperties()).isAllowMultiple());
+                    case SCORE_HOLDER -> out.writeBoolean(((ScoreHolderProperties) node.getProperties()).isAllowMultiple());
                     case TIME -> out.writeInt(((TimeProperties) node.getProperties()).getMin());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY ->
-                            helper.writeString(out, ((ResourceProperties) node.getProperties()).getRegistryKey());
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY -> helper.writeResourceLocation(out, ((ResourceProperties) node.getProperties()).getRegistryKey());
                     default -> {
                     }
                 }

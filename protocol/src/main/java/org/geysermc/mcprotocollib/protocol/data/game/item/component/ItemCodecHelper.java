@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
@@ -373,7 +374,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public ArmorTrim.TrimPattern readTrimPattern(ByteBuf buf) {
-        String assetId = this.readResourceLocation(buf);
+        Key assetId = this.readResourceLocation(buf);
         int templateItemId = this.readVarInt(buf);
         Component description = this.readComponent(buf);
         boolean decal = buf.readBoolean();
@@ -424,7 +425,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         if (buf.readBoolean()) {
             songHolder = this.readHolder(buf, this::readJukeboxSong);
         } else {
-            songLocation = this.readResourceLocation(buf);
+            songLocation = this.readResourceLocationString(buf);
         }
         boolean showInTooltip = buf.readBoolean();
         return new JukeboxPlayable(songHolder, songLocation, showInTooltip);
