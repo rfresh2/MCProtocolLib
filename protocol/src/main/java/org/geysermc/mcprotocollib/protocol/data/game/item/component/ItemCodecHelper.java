@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
@@ -59,9 +58,9 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
 
     public void writeItemEnchantments(ByteBuf buf, ItemEnchantments itemEnchantments) {
         this.writeVarInt(buf, itemEnchantments.getEnchantments().size());
-        for (Map.Entry<Integer, Integer> entry : itemEnchantments.getEnchantments().entrySet()) {
-            this.writeVarInt(buf, entry.getKey());
-            this.writeVarInt(buf, entry.getValue());
+        for (var entry : itemEnchantments.getEnchantments().int2IntEntrySet()) {
+            this.writeVarInt(buf, entry.getIntKey());
+            this.writeVarInt(buf, entry.getIntValue());
         }
 
         buf.writeBoolean(itemEnchantments.isShowInTooltip());
@@ -123,7 +122,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     public HolderSet readHolderSet(ByteBuf buf) {
         int length = this.readVarInt(buf) - 1;
         if (length == -1) {
-            return new HolderSet(this.readResourceLocation(buf));
+            return new HolderSet(this.readResourceLocationString(buf));
         } else {
             int[] holders = new int[length];
             for (int i = 0; i < length; i++) {
@@ -374,7 +373,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public ArmorTrim.TrimPattern readTrimPattern(ByteBuf buf) {
-        Key assetId = this.readResourceLocation(buf);
+        String assetId = this.readResourceLocationString(buf);
         int templateItemId = this.readVarInt(buf);
         Component description = this.readComponent(buf);
         boolean decal = buf.readBoolean();
@@ -553,7 +552,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     }
 
     public BannerPatternLayer.BannerPattern readBannerPattern(ByteBuf buf) {
-        return new BannerPatternLayer.BannerPattern(this.readResourceLocation(buf), this.readString(buf));
+        return new BannerPatternLayer.BannerPattern(this.readResourceLocationString(buf), this.readString(buf));
     }
 
     public void writeBannerPattern(ByteBuf buf, BannerPatternLayer.BannerPattern pattern) {

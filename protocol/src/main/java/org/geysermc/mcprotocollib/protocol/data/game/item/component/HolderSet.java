@@ -2,7 +2,6 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import lombok.Data;
 import lombok.NonNull;
-import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.function.Function;
@@ -13,7 +12,7 @@ import java.util.function.Function;
  */
 @Data
 public final class HolderSet {
-    private final @Nullable Key location;
+    private final @Nullable String location;
     private final int @Nullable [] holders;
 
     public HolderSet(int @NonNull [] holders) {
@@ -21,7 +20,7 @@ public final class HolderSet {
         this.holders = holders;
     }
 
-    public HolderSet(@NonNull Key location) {
+    public HolderSet(@NonNull String location) {
         this.location = location;
         this.holders = null;
     }
@@ -32,7 +31,7 @@ public final class HolderSet {
      * @param tagResolver The function to resolve the tag location to get the holders.
      * @return The holders.
      */
-    public int[] resolve(Function<Key, int[]> tagResolver) {
+    public int[] resolve(Function<String, int[]> tagResolver) {
         if (holders != null) {
             return holders;
         }
