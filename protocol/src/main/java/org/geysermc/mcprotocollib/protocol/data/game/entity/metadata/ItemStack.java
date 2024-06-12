@@ -6,8 +6,8 @@ import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.ListTag;
 import com.viaversion.nbt.tag.NumberTag;
 import com.viaversion.nbt.tag.StringTag;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,7 +19,19 @@ public class ItemStack {
     private final int id;
     private int amount;
     private final @Nullable MNBT nbt;
-    @Getter(lazy = true) private final ObjectSet<Enchantment> enchantments = deserializeEnchantments();
+    // enchantment type -> int level
+    @Getter(lazy = true) private final Object2IntMap<EnchantmentType> enchantments = deserializeEnchantments();
+    // nullable
+    @Getter(lazy = true) private final CompoundTag compoundTag = deserializeNbt();
+
+    private CompoundTag deserializeNbt() {
+        if (nbt == null) return null;
+        try {
+            return (CompoundTag) MNBTIO.read(nbt);
+        } catch (final Exception e) {
+            return null;
+        }
+    }
 
     public ItemStack(int id, int amount, @Nullable MNBT nbt) {
         this.id = id;
@@ -35,11 +47,11 @@ public class ItemStack {
         this(id, amount, null);
     }
 
-    private ObjectSet<Enchantment> deserializeEnchantments() {
-        final ObjectSet<Enchantment> enchantments = new ObjectOpenHashSet<>(1);
+    private Object2IntMap<EnchantmentType> deserializeEnchantments() {
+        final Object2IntMap<EnchantmentType> enchantments = new Object2IntOpenHashMap<>(1);
         if (nbt == null) return enchantments;
         try {
-            final CompoundTag tag = (CompoundTag) MNBTIO.read(nbt);
+            final CompoundTag tag = getCompoundTag();
             final ListTag<CompoundTag> enchantmentTagList = tag.getListTag("Enchantments", CompoundTag.class);
             if (enchantmentTagList == null) return enchantments;
             for (int i = 0; i < enchantmentTagList.size(); i++) {
@@ -51,7 +63,7 @@ public class ItemStack {
                 NumberTag levelTag = enchantmentTag.getNumberTag("lvl");
                 if (levelTag == null) continue;
                 final int level = levelTag.asInt();
-                enchantments.add(new Enchantment(EnchantmentType.valueOf(id.substring(10).toUpperCase()), level));
+                enchantments.put(EnchantmentType.valueOf(id.substring(10).toUpperCase()), level);
             }
         } catch (final Throwable e) {
             // fall through
