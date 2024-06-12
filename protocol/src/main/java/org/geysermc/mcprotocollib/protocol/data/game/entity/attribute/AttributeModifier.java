@@ -3,8 +3,6 @@ package org.geysermc.mcprotocollib.protocol.data.game.entity.attribute;
 import lombok.Data;
 import lombok.NonNull;
 
-import java.util.UUID;
-
 @Data
 public class AttributeModifier {
     private final @NonNull String id;
