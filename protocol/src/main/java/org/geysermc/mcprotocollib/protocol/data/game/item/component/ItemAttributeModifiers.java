@@ -5,7 +5,6 @@ import lombok.Data;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -24,8 +23,7 @@ public class ItemAttributeModifiers {
     @Data
     @AllArgsConstructor
     public static class AttributeModifier {
-        private final UUID id;
-        private final String name;
+        private final String id;
         private final double amount;
         private final ModifierOperation operation;
     }
