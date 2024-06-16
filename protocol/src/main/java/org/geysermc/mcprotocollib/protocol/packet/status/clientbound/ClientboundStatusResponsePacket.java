@@ -54,7 +54,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
         List<GameProfile> profiles = new ArrayList<>();
         if (plrs.has("sample")) {
             JsonArray prof = plrs.get("sample").getAsJsonArray();
-            if (prof.size() > 0) {
+            if (!prof.isEmpty()) {
                 for (int index = 0; index < prof.size(); index++) {
                     JsonObject o = prof.get(index).getAsJsonObject();
                     profiles.add(new GameProfile(o.get("id").getAsString(), o.get("name").getAsString()));
@@ -91,8 +91,10 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
         plrs.addProperty("max", info.getPlayerInfo().getMaxPlayers());
         plrs.addProperty("online", info.getPlayerInfo().getOnlinePlayers());
         if (!info.getPlayerInfo().getPlayers().isEmpty()) {
-            JsonArray array = new JsonArray();
-            for (GameProfile profile : info.getPlayerInfo().getPlayers()) {
+            JsonArray array = new JsonArray(info.getPlayerInfo().getPlayers().size());
+            @NonNull List<GameProfile> players = info.getPlayerInfo().getPlayers();
+            for (int i = 0; i < players.size(); i++) {
+                final GameProfile profile = players.get(i);
                 JsonObject o = new JsonObject();
                 o.addProperty("name", profile.getName());
                 o.addProperty("id", profile.getIdAsString());
@@ -102,7 +104,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
             plrs.add("sample", array);
         }
 
-        obj.add("description", GSON.fromJson(DefaultComponentSerializer.get().serialize(info.getDescription()), JsonElement.class));
+        obj.add("description", DefaultComponentSerializer.get().serializeToTree(info.getDescription()));
         obj.add("players", plrs);
         obj.add("version", ver);
         if (info.getIconPng() != null) {
