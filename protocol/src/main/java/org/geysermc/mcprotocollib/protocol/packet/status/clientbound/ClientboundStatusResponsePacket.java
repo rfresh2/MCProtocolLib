@@ -30,6 +30,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
 
     // vanilla behavior falls back to false if the field was not sent
     private static final boolean ENFORCES_SECURE_CHAT_DEFAULT = false;
+    private static final Gson GSON = new Gson();
 
     private final @NonNull JsonObject data;
 
@@ -38,7 +39,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
     }
 
     public ClientboundStatusResponsePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        data = new Gson().fromJson(helper.readString(in), JsonObject.class);
+        data = GSON.fromJson(helper.readString(in), JsonObject.class);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
             plrs.add("sample", array);
         }
 
-        obj.add("description", new Gson().fromJson(DefaultComponentSerializer.get().serialize(info.getDescription()), JsonElement.class));
+        obj.add("description", GSON.fromJson(DefaultComponentSerializer.get().serialize(info.getDescription()), JsonElement.class));
         obj.add("players", plrs);
         obj.add("version", ver);
         if (info.getIconPng() != null) {
