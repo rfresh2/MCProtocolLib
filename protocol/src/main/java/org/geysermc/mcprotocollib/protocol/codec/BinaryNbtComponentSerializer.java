@@ -3,17 +3,26 @@ package org.geysermc.mcprotocollib.protocol.codec;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.mini.MNBTWriter;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
+import net.kyori.adventure.text.BlockNBTComponent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.EntityNBTComponent;
+import net.kyori.adventure.text.KeybindComponent;
+import net.kyori.adventure.text.NBTComponent;
+import net.kyori.adventure.text.ScoreComponent;
+import net.kyori.adventure.text.SelectorComponent;
+import net.kyori.adventure.text.StorageNBTComponent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.slf4j.Logger;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -21,11 +30,8 @@ public class BinaryNbtComponentSerializer {
     private static final Logger LOGGER = getLogger("Proxy");
 
     public static MNBT serializeToMNBT(Component component) {
-//        component = component.compact();
         try (MNBTWriter writer = new MNBTWriter()) {
-            writer.writeStartTag();
             serialize(writer, component);
-            writer.writeEndTag();
             return writer.toMNBT();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -34,30 +40,66 @@ public class BinaryNbtComponentSerializer {
 
     public static void serializeMNBTToBuffer(Component component, DataOutputStream buf) {
         try (MNBTWriter writer = new MNBTWriter(buf)) {
-            writer.writeStartTag();
             serialize(writer, component);
-            writer.writeEndTag();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void serialize(MNBTWriter writer, TextComponent component) {
+    public static void serialize(MNBTWriter writer, Component component) {
+        writer.writeStartTag();
+        serializeComponent(writer, component);
+        writer.writeEndTag();
+    }
+
+    public static void serializeComponent(MNBTWriter writer, Component component) {
+        if (component instanceof TextComponent textComponent) {
+            serializeTextComponent(writer, textComponent);
+        } else if (component instanceof TranslatableComponent translatableComponent) {
+            serializeTranslatableComponent(writer, translatableComponent);
+        } else if (component instanceof KeybindComponent keybindComponent) {
+            serializeKeybindComponent(writer, keybindComponent);
+        } else if (component instanceof ScoreComponent scoreComponent) {
+            serializeScoreComponent(writer, scoreComponent);
+        } else if (component instanceof SelectorComponent selectorComponent) {
+            serializeSelectorComponent(writer, selectorComponent);
+        } else {
+            LOGGER.error("BinaryNbtComponentSerializer: Unknown component type: {}", component.getClass().getName());
+        }
+        if (!component.style().isEmpty()) {
+            serializeStyle(writer, component.style());
+        }
+        if (!component.children().isEmpty()) {
+            writer.writeListTag("extra", 10, component.children().size());
+            List<Component> children = component.children();
+            for (int i = 0; i < children.size(); i++) {
+                final Component child = children.get(i);
+                serializeComponent(writer, child);
+                writer.writeEndTag();
+            }
+        }
+    }
+
+    public static void serializeTextComponent(MNBTWriter writer, TextComponent component) {
+        writer.writeStringTag("type", "text");
         writer.writeStringTag("text", component.content());
     }
 
-    public static void serialize(MNBTWriter writer, TranslatableComponent component) {
+    public static void serializeTranslatableComponent(MNBTWriter writer, TranslatableComponent component) {
+        writer.writeStringTag("type", "translatable");
         writer.writeStringTag("translate", component.key());
-        if (component.fallback() != null) {
-            writer.writeStringTag("fallback", component.fallback());
+        String fallback = component.fallback();
+        if (fallback != null) {
+            writer.writeStringTag("fallback", fallback);
         }
-        if (!component.arguments().isEmpty()) {
-            if (component.arguments().size() == 1) {
-                var arg = component.arguments().get(0);
+        List<TranslationArgument> arguments = component.arguments();
+        if (!arguments.isEmpty()) {
+            if (arguments.size() == 1) {
+                var arg = arguments.get(0);
                 var argValue = arg.value();
                 if (argValue instanceof Component) {
                     writer.writeListTag("with", 10, 1);
-                    serialize(writer, (Component) argValue);
+                    serializeComponent(writer, (Component) argValue);
                     writer.writeEndTag();
                 } else {
                     if (argValue instanceof LazilyParsedNumber lazy) {
@@ -98,12 +140,12 @@ public class BinaryNbtComponentSerializer {
                     }
                 }
             } else {
-                writer.writeListTag("with", 10, component.arguments().size());
-                for (int i = 0; i < component.arguments().size(); i++) {
-                    var arg = component.arguments().get(i);
+                writer.writeListTag("with", 10, arguments.size());
+                for (int i = 0; i < arguments.size(); i++) {
+                    var arg = arguments.get(i);
                     var argValue = arg.value();
                     if (argValue instanceof Component) {
-                        serialize(writer, (Component) argValue);
+                        serializeComponent(writer, (Component) argValue);
                     } else {
                         if (argValue instanceof final LazilyParsedNumber lazy) {
                             if (lazy.toString().contains(".")) writer.writeFloatTag(lazy.floatValue());
@@ -129,104 +171,131 @@ public class BinaryNbtComponentSerializer {
         }
     }
 
-    public static void serialize(MNBTWriter writer, Component component) {
-        if (component instanceof TextComponent textComponent) {
-            writer.writeStringTag("type", "text");
-            serialize(writer, textComponent);
-        } else if (component instanceof TranslatableComponent translatableComponent) {
-            writer.writeStringTag("type", "translatable");
-            serialize(writer, translatableComponent);
-        } else {
-            LOGGER.error("BinaryNbtComponentSerializer: Unknown component type: {}", component.getClass().getName());
-        }
-        if (!component.style().isEmpty()) {
-            if (component.style().color() != null) {
-                var color = component.style().color();
-                if (color instanceof NamedTextColor namedTextColor) {
-                    writer.writeStringTag("color", namedTextColor.toString());
-                } else {
-                    writer.writeStringTag("color", component.style().color().asHexString());
-                }
-            }
-            if (component.style().hasDecoration(TextDecoration.BOLD)) {
-                writer.writeByteTag("bold", (byte) 1);
-            }
-            if (component.style().hasDecoration(TextDecoration.ITALIC)) {
-                writer.writeByteTag("italic", (byte) 1);
-            }
-            if (component.style().hasDecoration(TextDecoration.UNDERLINED)) {
-                writer.writeByteTag("underlined", (byte) 1);
-            }
-            if (component.style().hasDecoration(TextDecoration.STRIKETHROUGH)) {
-                writer.writeByteTag("strikethrough", (byte) 1);
-            }
-            if (component.style().hasDecoration(TextDecoration.OBFUSCATED)) {
-                writer.writeByteTag("obfuscated", (byte) 1);
-            }
-            if (component.style().clickEvent() != null) {
-                writer.writeCompoundTag("clickEvent");
-                writer.writeStringTag("action", component.style().clickEvent().action().toString());
-                writer.writeStringTag("value", component.style().clickEvent().value());
-                writer.writeEndTag();
-            }
-            if (component.style().hoverEvent() != null) {
-                var hover = component.style().hoverEvent().value();
-                writer.writeCompoundTag("hoverEvent");
-                writer.writeStringTag("action", component.style().hoverEvent().action().toString());
-                writer.writeCompoundTag("contents");
-                if (hover instanceof Component hoverComponent) {
-                    serialize(writer, hoverComponent);
-                } else if (hover instanceof HoverEvent.ShowItem showItem) {
-                    writer.writeStringTag("id", showItem.item().asString());
-                    if (showItem.count() != 1)
-                        writer.writeIntTag("count", showItem.count());
-                    if (showItem.nbt() != null) {
-                        writer.writeStringTag("tag", showItem.nbt().string()); // todo: ??
-                    }
-                } else if (hover instanceof HoverEvent.ShowEntity showEntity) {
-                    writer.writeStringTag("type", showEntity.type().asString());
-                    var uuid = showEntity.id();
-                    writer.writeIntArrayTag("id", new int[]{
-                        (int) (uuid.getMostSignificantBits() >> 32),
-                        (int) uuid.getMostSignificantBits(),
-                        (int) (uuid.getLeastSignificantBits() >> 32),
-                        (int) uuid.getLeastSignificantBits()
-                    });
-                    if (showEntity.name() != null) {
-                        writer.writeCompoundTag("name");
-                        serialize(writer, showEntity.name());
-                        writer.writeEndTag();
-                    }
-                } else {
-                    writer.writeStringTag("value", hover.toString());
-                }
-                writer.writeEndTag();
-                writer.writeEndTag();
-            }
-            if (component.style().insertion() != null) {
-                writer.writeStringTag("insertion", component.style().insertion());
-            }
-            if (component.style().font() != null) {
-                writer.writeStringTag("font", component.style().font().asString());
+    public static void serializeKeybindComponent(MNBTWriter writer, KeybindComponent component) {
+        writer.writeStringTag("type", "keybind");
+        writer.writeStringTag("keybind", component.keybind());
+    }
+
+    public static void serializeStyle(MNBTWriter writer, Style style) {
+        var color = style.color();
+        if (color != null) {
+            if (color instanceof NamedTextColor namedTextColor) {
+                writer.writeStringTag("color", namedTextColor.toString());
+            } else {
+                writer.writeStringTag("color", color.asHexString());
             }
         }
-        if (!component.children().isEmpty()) {
-            writer.writeListTag("extra", 10, component.children().size());
-            for (Component child : component.children()) {
-                serialize(writer, child);
-                writer.writeEndTag();
+        for (var entry : style.decorations().entrySet()) {
+            TextDecoration decoration = entry.getKey();
+            TextDecoration.State state = entry.getValue();
+            if (state != TextDecoration.State.NOT_SET) {
+                var decorationName = switch (decoration) {
+                    case OBFUSCATED -> "obfuscated";
+                    case BOLD -> "bold";
+                    case STRIKETHROUGH -> "strikethrough";
+                    case UNDERLINED -> "underlined";
+                    case ITALIC -> "italic";
+                };
+                writer.writeByteTag(decorationName, (byte) (state == TextDecoration.State.TRUE ? 1 : 0));
             }
+        }
+        var font = style.font();
+        if (font != null) {
+            writer.writeStringTag("font", font.asString());
+        }
+        var insertion = style.insertion();
+        if (insertion != null) {
+            writer.writeStringTag("insertion", insertion);
+        }
+        var clickEvent = style.clickEvent();
+        if (clickEvent != null) {
+            writer.writeCompoundTag("clickEvent");
+            writer.writeStringTag("action", clickEvent.action().toString());
+            writer.writeStringTag("value", clickEvent.value());
+            writer.writeEndTag();
+        }
+        var hoverEvent = style.hoverEvent();
+        if (hoverEvent != null) {
+            serializeHoverEvent(writer, hoverEvent);
         }
     }
 
-    public static Component deserializeFromMNBT(MNBT nbt) {
-        try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(nbt.getData()))) {
-            var builder = Component.text();
-            // TODO: Implement deserialize
-//            deserialize(in, builder);
-            return builder.build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public static void serializeHoverEvent(MNBTWriter writer, HoverEvent<?> hoverEvent) {
+        var value = hoverEvent.value();
+        HoverEvent.Action<?> action = hoverEvent.action();
+        if (action != HoverEvent.Action.SHOW_TEXT && action != HoverEvent.Action.SHOW_ITEM && action != HoverEvent.Action.SHOW_ENTITY) {
+            return;
+        }
+        writer.writeCompoundTag("hoverEvent");
+        writer.writeStringTag("action", action.toString());
+        writer.writeCompoundTag("contents");
+        if (action == HoverEvent.Action.SHOW_TEXT) {
+            serializeComponent(writer, (Component) value);
+        } else if (action == HoverEvent.Action.SHOW_ITEM) {
+            HoverEvent.ShowItem item = (HoverEvent.ShowItem) value;
+            writer.writeStringTag("id", item.item().asString());
+            writer.writeIntTag("count", item.count());
+            @SuppressWarnings("deprecation")
+            BinaryTagHolder nbt = item.nbt(); // replaced with data components on 1.20.5+
+            if (nbt != null) {
+                writer.writeStringTag("tag", nbt.string());
+            }
+        } else if (action == HoverEvent.Action.SHOW_ENTITY) {
+            HoverEvent.ShowEntity entity = (HoverEvent.ShowEntity) value;
+            writer.writeStringTag("type", entity.type().asString());
+            var uuid = entity.id();
+            writer.writeIntArrayTag("id", new int[]{
+                (int) (uuid.getMostSignificantBits() >> 32),
+                (int) uuid.getMostSignificantBits(),
+                (int) (uuid.getLeastSignificantBits() >> 32),
+                (int) uuid.getLeastSignificantBits()
+            });
+            Component entityName = entity.name();
+            if (entityName != null) {
+                writer.writeCompoundTag("name");
+                serializeComponent(writer, entityName);
+                writer.writeEndTag(); // close name
+            }
+        }
+        writer.writeEndTag(); // close contents
+        writer.writeEndTag(); // close hoverEvent
+    }
+
+    public static void serializeScoreComponent(MNBTWriter writer, ScoreComponent scoreComponent) {
+        writer.writeStringTag("type", "score");
+        writer.writeCompoundTag("score");
+        writer.writeStringTag("name", scoreComponent.name());
+        writer.writeStringTag("objective", scoreComponent.objective());
+        writer.writeEndTag(); // close score
+    }
+
+    public static void serializeSelectorComponent(MNBTWriter writer, SelectorComponent selectorComponent) {
+        writer.writeStringTag("type", "selector");
+        writer.writeStringTag("selector", selectorComponent.pattern());
+        var separator = selectorComponent.separator();
+        if (separator != null) {
+            writer.writeCompoundTag("separator");
+            serializeComponent(writer, separator);
+            writer.writeEndTag();
+        }
+    }
+
+    public static void serialize(MNBTWriter writer, NBTComponent<?, ?> nbtComponent) {
+        writer.writeStringTag("type", "nbt");
+        writer.writeStringTag("nbt", nbtComponent.nbtPath());
+        writer.writeByteTag("interpret", (byte) (nbtComponent.interpret() ? 1 : 0));
+        Component separator = nbtComponent.separator();
+        if (separator != null) {
+            writer.writeCompoundTag("separator");
+            serializeComponent(writer, separator);
+            writer.writeEndTag();
+        }
+        if (nbtComponent instanceof BlockNBTComponent blockNBTComponent) {
+            writer.writeStringTag("block", blockNBTComponent.pos().asString());
+        } else if (nbtComponent instanceof EntityNBTComponent entityNBTComponent) {
+            writer.writeStringTag("entity", entityNBTComponent.selector());
+        } else if (nbtComponent instanceof StorageNBTComponent storageNBTComponent) {
+            writer.writeStringTag("storage", storageNBTComponent.storage().asString());
         }
     }
 }
