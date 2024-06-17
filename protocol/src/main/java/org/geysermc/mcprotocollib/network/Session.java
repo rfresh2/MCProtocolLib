@@ -128,6 +128,13 @@ public interface Session {
     <T> void setFlag(Flag<T> flag, T value);
 
     /**
+     * Sets the values for a collection of flags.
+     *
+     * @param flags Collection of flags
+     */
+    void setFlags(Map<String, Object> flags);
+
+    /**
      * Gets the listeners listening on this session.
      *
      * @return This session's listeners.

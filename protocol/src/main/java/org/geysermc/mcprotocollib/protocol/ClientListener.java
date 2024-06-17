@@ -1,13 +1,10 @@
 package org.geysermc.mcprotocollib.protocol;
 
-import com.github.steveice10.mc.auth.data.GameProfile;
-import com.github.steveice10.mc.auth.exception.request.InvalidCredentialsException;
-import com.github.steveice10.mc.auth.exception.request.RequestException;
-import com.github.steveice10.mc.auth.exception.request.ServiceUnavailableException;
-import com.github.steveice10.mc.auth.service.SessionService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.geysermc.mcprotocollib.auth.GameProfile;
+import org.geysermc.mcprotocollib.auth.SessionService;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.event.session.SessionAdapter;
 import org.geysermc.mcprotocollib.network.packet.Packet;
@@ -39,6 +36,7 @@ import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.Serverbound
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 /**
@@ -71,16 +69,10 @@ public class ClientListener extends SessionAdapter {
                 }
 
                 SessionService sessionService = session.getFlag(MinecraftConstants.SESSION_SERVICE_KEY, new SessionService());
-                String serverId = sessionService.getServerId(helloPacket.getServerId(), helloPacket.getPublicKey(), key);
+                String serverId = SessionService.getServerId(helloPacket.getServerId(), helloPacket.getPublicKey(), key);
                 try {
                     sessionService.joinServer(profile, accessToken, serverId);
-                } catch (ServiceUnavailableException e) {
-                    session.disconnect("Login failed: Authentication service unavailable.", e);
-                    return;
-                } catch (InvalidCredentialsException e) {
-                    session.disconnect("Login failed: Invalid login session.", e);
-                    return;
-                } catch (RequestException e) {
+                } catch (IOException e) {
                     session.disconnect("Login failed: Authentication error: " + e.getMessage(), e);
                     return;
                 }
@@ -96,7 +88,7 @@ public class ClientListener extends SessionAdapter {
             }
         } else if (protocol.getState() == ProtocolState.STATUS) {
             if (packet instanceof ClientboundStatusResponsePacket statusResponsePacket) {
-                ServerStatusInfo info = statusResponsePacket.getInfo();
+                ServerStatusInfo info = statusResponsePacket.parseInfo();
                 ServerInfoHandler handler = session.getFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY);
                 if (handler != null) {
                     handler.handle(session, info);

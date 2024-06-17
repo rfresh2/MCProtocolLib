@@ -131,6 +131,11 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
+    public void setFlags(Map<String, Object> flags) {
+        this.flags.putAll(flags);
+    }
+
+    @Override
     public List<SessionListener> getListeners() {
         return Arrays.asList(this.listeners);
     }
