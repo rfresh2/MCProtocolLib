@@ -424,8 +424,11 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public void writeComponent(ByteBuf buf, Component component) {
         if (useBinaryNbtComponentSerializer) {
-            var mnbt = BinaryNbtComponentSerializer.serializeToMNBT(component);
-            writeMNBT(buf, mnbt);
+            try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+                BinaryNbtComponentSerializer.serializeMNBTToBuffer(component, out);
+            } catch (final IOException e) {
+                throw new UncheckedIOException(e);
+            }
         } else {
             JsonElement json = DefaultComponentSerializer.get().serializeToTree(component);
             Tag tag = NbtComponentSerializer.jsonComponentToTag(json);

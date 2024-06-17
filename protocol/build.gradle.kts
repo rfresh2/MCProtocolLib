@@ -30,7 +30,7 @@ val fastutilVersion = "edaf36bfd3"
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
 
-    api("com.github.rfresh2:OpenNBT:7201da6c71")
+    api("com.github.rfresh2:OpenNBT:d3e1a5e287")
     api("com.github.rfresh2:MCAuthLib:627c9f603d") {
         exclude(group = "com.microsoft.azure")
         exclude(group = "fr.litarvan")
