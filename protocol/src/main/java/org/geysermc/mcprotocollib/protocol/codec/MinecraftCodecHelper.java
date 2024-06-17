@@ -1,6 +1,5 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
-import com.github.steveice10.mc.auth.data.GameProfile;
 import com.google.gson.JsonElement;
 import com.viaversion.nbt.io.MNBTIO;
 import com.viaversion.nbt.io.NBTIO;
@@ -17,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
+import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.network.codec.BasePacketCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
