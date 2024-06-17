@@ -36,6 +36,9 @@ dependencies {
         exclude(group = "fr.litarvan")
     }
 
+    // MinecraftAuth for authentication
+    api(libs.minecraftauth)
+
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
