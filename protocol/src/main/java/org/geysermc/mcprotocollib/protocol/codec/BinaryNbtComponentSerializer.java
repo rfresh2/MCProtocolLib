@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -26,6 +27,16 @@ public class BinaryNbtComponentSerializer {
             serialize(writer, component);
             writer.writeEndTag();
             return writer.toMNBT();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void serializeMNBTToBuffer(Component component, DataOutputStream buf) {
+        try (MNBTWriter writer = new MNBTWriter(buf)) {
+            writer.writeStartTag();
+            serialize(writer, component);
+            writer.writeEndTag();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
