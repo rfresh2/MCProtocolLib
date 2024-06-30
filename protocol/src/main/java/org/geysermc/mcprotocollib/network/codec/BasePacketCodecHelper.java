@@ -21,6 +21,12 @@ public class BasePacketCodecHelper implements PacketCodecHelper {
         }
     }
 
+    @Override
+    public void write21BitVarInt(ByteBuf buf, int value) {
+        int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
+        buf.writeMedium(w);
+    }
+
     private static void writeVarIntFull(ByteBuf buf, int value) {
         // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
         if ((value & (0xFFFFFFFF << 7)) == 0) {

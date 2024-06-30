@@ -8,7 +8,6 @@ import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -78,13 +77,11 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsour
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.EntityPositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.PositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.PositionSourceType;
-import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.SoundCategory;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.Ingredient;
 import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
-import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundLoginPacket;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -110,17 +107,13 @@ import java.util.function.ToIntFunction;
 
 @RequiredArgsConstructor
 public class MinecraftCodecHelper extends BasePacketCodecHelper {
+    public static MinecraftCodecHelper INSTANCE = new MinecraftCodecHelper();
     private static final int POSITION_X_SIZE = 38;
     private static final int POSITION_Y_SIZE = 12;
     private static final int POSITION_Z_SIZE = 38;
     private static final int POSITION_Y_SHIFT = 0xFFF;
     private static final int POSITION_WRITE_SHIFT = 0x3FFFFFF;
     public static boolean useBinaryNbtComponentSerializer = true;
-
-    private final Int2ObjectMap<LevelEventType> levelEvents;
-    private final Map<String, BuiltinSound> soundNames;
-
-    protected CompoundTag registry;
 
     @Nullable
     public <T> T readNullable(ByteBuf buf, Function<ByteBuf, T> ifPresent) {
@@ -988,7 +981,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public LevelEvent readLevelEvent(ByteBuf buf) {
         int id = buf.readInt();
-        LevelEventType type = this.levelEvents.get(id);
+        LevelEventType type = LevelEventType.from(id);
         if (type != null) {
             return type;
         }
@@ -1013,11 +1006,6 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public void writeSoundCategory(ByteBuf buf, SoundCategory category) {
         this.writeEnum(buf, category);
-    }
-
-    @Nullable
-    public BuiltinSound getBuiltinSound(String name) {
-        return this.soundNames.get(name);
     }
 
     public EntityEvent readEntityEvent(ByteBuf buf) {
@@ -1206,20 +1194,5 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public void writeNibbleArray(ByteBuf buf, NibbleArray3d nibbleArray) {
         buf.writeBytes(nibbleArray.getData());
-    }
-
-    /**
-     * The game registry sent to clients from the {@link ClientboundLoginPacket}.
-     * Implementations are required to set this value if they intend to use it.
-     *
-     * @return the game registry
-     */
-    @Nullable
-    public CompoundTag getRegistry() {
-        return this.registry;
-    }
-
-    public void setRegistry(CompoundTag registry) {
-        this.registry = registry;
     }
 }

@@ -38,12 +38,11 @@ public abstract class PacketProtocol {
     public abstract PacketHeader getPacketHeader();
 
     /**
-     * Creates a new {@link PacketCodecHelper} that can be used
-     * for each session.
+     * Gets the packet codec helper for this protocol.
      *
      * @return A new {@link PacketCodecHelper}.
      */
-    public abstract PacketCodecHelper createHelper();
+    public abstract PacketCodecHelper getHelper();
 
     /**
      * Called when a client session is created with this protocol.

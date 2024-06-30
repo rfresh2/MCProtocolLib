@@ -8,6 +8,8 @@ public interface PacketCodecHelper {
 
     int readVarInt(ByteBuf buf);
 
+    void write21BitVarInt(ByteBuf buf, int value);
+
     void writeVarLong(ByteBuf buf, long value);
 
     long readVarLong(ByteBuf buf);

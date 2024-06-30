@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
+    public static String ID = "manager";
     protected String host;
     protected int port;
     private final MinecraftProtocol protocol;

@@ -65,7 +65,7 @@ public class TcpClientSession extends TcpSession {
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
         this.proxy = proxy;
-        this.codecHelper = protocol.createHelper();
+        this.codecHelper = protocol.getHelper();
         this.tcpManager = tcpManager;
     }
 

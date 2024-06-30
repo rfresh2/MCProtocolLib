@@ -8,16 +8,19 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 
 import java.util.zip.DataFormatException;
 
 public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<ByteBuf> {
     public static final boolean USE_HEAP_BUF = Natives.cipher.get() == JavaVelocityCipher.FACTORY;
     private final Session session;
+    private final PacketCodecHelper codecHelper;
     private final VelocityCompressor compressor;
 
     public TcpPacketCompressionAndSizeEncoder(Session session, VelocityCompressor compressor) {
         this.session = session;
+        this.codecHelper = session.getCodecHelper();
         this.compressor = compressor;
     }
 
@@ -26,12 +29,12 @@ public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<Byt
         try {
             int uncompressed = in.readableBytes();
             if(uncompressed < this.session.getCompressionThreshold()) {
-                session.getCodecHelper().writeVarInt(out, uncompressed + 1);
-                session.getCodecHelper().writeVarInt(out, 0);
+                codecHelper.writeVarInt(out, uncompressed + 1);
+                codecHelper.writeVarInt(out, 0);
                 out.writeBytes(in);
             } else {
-                out.writeMedium(0); // Dummy packet length
-                session.getCodecHelper().writeVarInt(out, uncompressed);
+                codecHelper.write21BitVarInt(out, 0); // Dummy packet length
+                codecHelper.writeVarInt(out, uncompressed);
                 ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), compressor, in);
 
                 int startCompressed = out.writerIndex();
@@ -48,8 +51,7 @@ public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<Byt
                 int writerIndex = out.writerIndex();
                 int packetLength = out.readableBytes() - 3;
                 out.writerIndex(0);
-                int w = (packetLength & 0x7F | 0x80) << 16 | ((packetLength >>> 7) & 0x7F | 0x80) << 8 | (packetLength >>> 14);
-                out.writeMedium(w); // write actual packet length
+                codecHelper.write21BitVarInt(out, packetLength); // write actual packet length
                 out.writerIndex(writerIndex);
             }
         } catch (final Throwable e) {

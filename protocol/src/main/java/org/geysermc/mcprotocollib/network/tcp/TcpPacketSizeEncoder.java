@@ -6,8 +6,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 
 public class TcpPacketSizeEncoder extends MessageToByteEncoder<ByteBuf> {
+    public static String ID = "size-encoder";
 
     public static final boolean USE_HEAP_BUF = Natives.cipher.get() == JavaVelocityCipher.FACTORY;
     private final Session session;
@@ -19,7 +22,7 @@ public class TcpPacketSizeEncoder extends MessageToByteEncoder<ByteBuf> {
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception {
         try {
-            session.getPacketProtocol().getPacketHeader().writeLength(out, session.getCodecHelper(), msg.readableBytes());
+            MinecraftConstants.PACKET_HEADER.writeLength(out, MinecraftCodecHelper.INSTANCE, msg.readableBytes());
             out.writeBytes(msg);
         } catch (final Throwable e) {
             if (!session.callPacketError(e)) {
@@ -31,7 +34,7 @@ public class TcpPacketSizeEncoder extends MessageToByteEncoder<ByteBuf> {
     @Override
     protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, ByteBuf msg, boolean preferDirect)
         throws Exception {
-        var size = session.getPacketProtocol().getPacketHeader().getLengthSize(msg.readableBytes()) + msg.readableBytes();
+        var size = MinecraftConstants.PACKET_HEADER.getLengthSize(msg.readableBytes()) + msg.readableBytes();
         return USE_HEAP_BUF
             ? ctx.alloc().heapBuffer(size)
             : ctx.alloc().directBuffer(size);
