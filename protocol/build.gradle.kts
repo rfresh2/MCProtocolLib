@@ -61,11 +61,11 @@ dependencies {
 
     api("org.checkerframework:checker-qual:3.44.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }
 
 lombok {
-    version = "1.18.32"
+    version = "1.18.34"
 }
 
 tasks {
