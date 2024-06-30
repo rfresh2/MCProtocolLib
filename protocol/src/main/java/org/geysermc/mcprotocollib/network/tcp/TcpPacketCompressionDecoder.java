@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 
 import java.util.List;
 
@@ -17,11 +18,13 @@ public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf
     private static final int MAX_COMPRESSED_SIZE = 2097152;
 
     private final Session session;
+    private final PacketCodecHelper codecHelper;
     private final boolean validateDecompression;
     private final VelocityCompressor compressor;
 
     public TcpPacketCompressionDecoder(Session session, boolean validateDecompression, final VelocityCompressor compressor) {
         this.session = session;
+        this.codecHelper = session.getCodecHelper();
         this.validateDecompression = validateDecompression;
         this.compressor = compressor;
     }
@@ -30,7 +33,7 @@ public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf
     protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) throws Exception {
         try {
             if(in.readableBytes() != 0) {
-                int size = this.session.getCodecHelper().readVarInt(in);
+                int size = codecHelper.readVarInt(in);
                 if(size == 0) {
                     out.add(in.retain());
                 } else {

@@ -1,10 +1,10 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
-import org.geysermc.mcprotocollib.network.Session;
 
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -12,12 +12,11 @@ import java.util.zip.DataFormatException;
 /**
  * Incoming packet size decoder
  */
+@ChannelHandler.Sharable
 public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
-    private final Session session;
+    public static String ID = "size-decoder";
 
-    public TcpPacketSizeDecoder(Session session) {
-        this.session = session;
-    }
+    public TcpPacketSizeDecoder() { }
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) throws Exception {
