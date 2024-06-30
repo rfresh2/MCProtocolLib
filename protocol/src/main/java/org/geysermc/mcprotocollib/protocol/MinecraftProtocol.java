@@ -151,8 +151,8 @@ public class MinecraftProtocol extends PacketProtocol {
     }
 
     @Override
-    public MinecraftCodecHelper createHelper() {
-        return this.codec.getHelperFactory().get();
+    public MinecraftCodecHelper getHelper() {
+        return this.codec.getHelper();
     }
 
     @Override

@@ -15,7 +15,7 @@ public class TcpServerSession extends TcpSession {
     public TcpServerSession(String host, int port, MinecraftProtocol protocol, TcpServer server) {
         super(host, port, protocol);
         this.server = server;
-        this.codecHelper = protocol.createHelper();
+        this.codecHelper = protocol.getHelper();
     }
 
     @Override

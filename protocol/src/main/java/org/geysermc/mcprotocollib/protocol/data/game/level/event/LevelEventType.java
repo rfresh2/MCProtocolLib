@@ -1,5 +1,7 @@
 package org.geysermc.mcprotocollib.protocol.data.game.level.event;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -82,7 +84,21 @@ public enum LevelEventType implements LevelEvent {
     TRIAL_SPAWNER_DETECT_PLAYER(3013),
     TRIAL_SPAWNER_EJECT_ITEM(3014);
 
+    private static final Int2ObjectMap<LevelEventType> VALUES;
+
+    static {
+        LevelEventType[] values = values();
+        VALUES = new Int2ObjectOpenHashMap<>(values.length);
+        for (LevelEventType value : values) {
+            VALUES.put(value.getId(), value);
+        }
+    }
+
     private final int id;
+
+    public static LevelEventType from(int id) {
+        return VALUES.get(id);
+    }
 
     @Override
     public int getId() {

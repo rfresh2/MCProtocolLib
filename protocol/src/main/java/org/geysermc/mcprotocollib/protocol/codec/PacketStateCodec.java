@@ -27,7 +27,7 @@ public class PacketStateCodec extends PacketProtocol {
     }
 
     @Override
-    public PacketCodecHelper createHelper() {
+    public PacketCodecHelper getHelper() {
         throw new UnsupportedOperationException("Not supported!");
     }
 
