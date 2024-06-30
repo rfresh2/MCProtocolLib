@@ -16,32 +16,32 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
     public static String ID = "codec";
     private final Session session;
     private final PacketCodecHelper codecHelper;
-    private final PacketIdSupplier packetIdSupplier;
-    private final PacketDefinitionSupplier packetDefinitionSupplier;
-    private final PacketSupplier packetSupplier;
+    private final OutboundPacketIdEncoder outboundPacketIdEncoder;
+    private final OutboundPacketDefinitionSupplier outboundPacketDefinitionSupplier;
+    private final InboundPacketFactory inboundPacketFactory;
 
     public TcpPacketCodec(Session session, boolean client) {
         this.session = session;
         this.codecHelper = session.getCodecHelper();
         PacketProtocol packetProtocol = session.getPacketProtocol();
-        this.packetIdSupplier = client ? packetProtocol::getClientboundId : packetProtocol::getServerboundId;
-        this.packetDefinitionSupplier = client ? packetProtocol::getClientboundDefinition : packetProtocol::getServerboundDefinition;
-        this.packetSupplier = client ? packetProtocol::createClientboundPacket : packetProtocol::createServerboundPacket;
+        this.outboundPacketIdEncoder = client ? packetProtocol::getServerboundId : packetProtocol::getClientboundId;
+        this.outboundPacketDefinitionSupplier = client ? packetProtocol::getServerboundDefinition : packetProtocol::getClientboundDefinition;
+        this.inboundPacketFactory = client ? packetProtocol::createClientboundPacket : packetProtocol::createServerboundPacket;
     }
 
     @FunctionalInterface
-    private interface PacketIdSupplier {
+    private interface OutboundPacketIdEncoder {
         int get(Packet packet);
     }
 
     @FunctionalInterface
-    private interface PacketDefinitionSupplier {
+    private interface OutboundPacketDefinitionSupplier {
         @SuppressWarnings("rawtypes")
         PacketDefinition get(int id);
     }
 
     @FunctionalInterface
-    private interface PacketSupplier {
+    private interface InboundPacketFactory {
         Packet get(int id, ByteBuf buf, PacketCodecHelper codecHelper);
     }
 
@@ -51,10 +51,10 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
         int initial = buf.writerIndex();
 
         try {
-            final int packetId = packetIdSupplier.get(packet);
+            final int packetId = outboundPacketIdEncoder.get(packet);
             MinecraftConstants.PACKET_HEADER.writePacketId(buf, codecHelper, packetId);
 
-            final PacketDefinition definition = packetDefinitionSupplier.get(packetId);
+            final PacketDefinition definition = outboundPacketDefinitionSupplier.get(packetId);
             definition.getSerializer().serialize(buf, codecHelper, packet);
         } catch (Throwable t) {
             // Reset writer index to make sure incomplete data is not written out.
@@ -77,7 +77,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
                 return;
             }
 
-            Packet packet = packetSupplier.get(id, buf, codecHelper);
+            Packet packet = inboundPacketFactory.get(id, buf, codecHelper);
 
             if (buf.readableBytes() > 0) {
                 throw new IllegalStateException("Packet \"" + packet.getClass().getSimpleName() + "\" not fully read.");

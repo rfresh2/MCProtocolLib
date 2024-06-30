@@ -5,7 +5,6 @@ import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.net.InetSocketAddress;
 
@@ -25,12 +24,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(final Channel channel) throws Exception {
         InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-        MinecraftProtocol protocol = (MinecraftProtocol) server.createPacketProtocol();
-
-        TcpSession session = new TcpServerSession(address.getHostName(),
-                                                  address.getPort(),
-                                                  protocol,
-                                                  server);
+        TcpSession session = server.createSession(address);
         session.getPacketProtocol().newServerSession(server, session);
 
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);

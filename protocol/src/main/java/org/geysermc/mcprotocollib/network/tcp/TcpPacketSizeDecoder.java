@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
@@ -12,7 +11,6 @@ import java.util.zip.DataFormatException;
 /**
  * Incoming packet size decoder
  */
-@ChannelHandler.Sharable
 public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
     public static String ID = "size-decoder";
 
