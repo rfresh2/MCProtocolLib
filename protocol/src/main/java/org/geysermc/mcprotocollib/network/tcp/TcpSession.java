@@ -43,6 +43,10 @@ import java.util.concurrent.TimeUnit;
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
     public static String ID = "manager";
+    public static String READ_TIMEOUT_HANDLER_ID = "readTimeout";
+    public static String WRITE_TIMEOUT_HANDLER_ID = "writeTimeout";
+    public static String PROXY_HANDLER_ID = "proxy";
+    public static String HA_PROXY_ENCODER_ID = "proxy-protocol-packet-sender";
     protected String host;
     protected int port;
     private final MinecraftProtocol protocol;
@@ -265,22 +269,22 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.compressionThreshold = threshold;
         if (this.channel != null) {
             if (this.compressionThreshold >= 0) {
-                var existingEncoder = (TcpPacketCompressionAndSizeEncoder) this.channel.pipeline().get("compression-encoder");
-                var existingDecoder = (TcpPacketCompressionDecoder) this.channel.pipeline().get("compression-decoder");
+                var existingEncoder = (TcpPacketCompressionAndSizeEncoder) this.channel.pipeline().get(TcpPacketCompressionAndSizeEncoder.ID);
+                var existingDecoder = (TcpPacketCompressionDecoder) this.channel.pipeline().get(TcpPacketCompressionDecoder.ID);
                 if (existingDecoder != null && existingEncoder != null) {
                     return; // we already updated compression threshold on the session field
                 }
                 var compressor = Natives.compress.get().create(level);
                 var encoder = new TcpPacketCompressionAndSizeEncoder(this, compressor);
                 var decoder = new TcpPacketCompressionDecoder(this, validateDecompression, compressor);
-                this.channel.pipeline().addAfter("size-encoder", "compression-encoder", encoder);
-                this.channel.pipeline().addAfter("size-decoder", "compression-decoder", decoder);
-                this.channel.pipeline().remove("size-encoder");
+                this.channel.pipeline().addAfter(TcpPacketSizeEncoder.ID, TcpPacketCompressionAndSizeEncoder.ID, encoder);
+                this.channel.pipeline().addAfter(TcpPacketSizeDecoder.ID, TcpPacketCompressionDecoder.ID, decoder);
+                this.channel.pipeline().remove(TcpPacketSizeEncoder.ID);
             } else {
-                var encoder = this.channel.pipeline().remove("compression-encoder");
-                var decoder = this.channel.pipeline().remove("compression-decoder");
+                var encoder = this.channel.pipeline().remove(TcpPacketCompressionAndSizeEncoder.ID);
+                var decoder = this.channel.pipeline().remove(TcpPacketCompressionDecoder.ID);
                 if (encoder != null && decoder != null) {
-                    this.channel.pipeline().addAfter("size-decoder", "size-encoder", new TcpPacketSizeEncoder(this));
+                    this.channel.pipeline().addAfter(TcpPacketSizeDecoder.ID, TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(this));
                 }
             }
         }
@@ -297,8 +301,8 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
             var encrypt = factory.forEncryption(key);
             var encoder = new TcpPacketEncryptionEncoder(this, encrypt);
             var decoder = new TcpPacketEncryptionDecoder(this, decrypt);
-            this.channel.pipeline().addBefore("size-decoder", "encryption-decoder", decoder);
-            this.channel.pipeline().addBefore("size-encoder", "encryption-encoder", encoder);
+            this.channel.pipeline().addBefore(TcpPacketSizeDecoder.ID, TcpPacketEncryptionDecoder.ID, decoder);
+            this.channel.pipeline().addBefore(TcpPacketSizeEncoder.ID, TcpPacketEncryptionEncoder.ID, encoder);
         } catch (final GeneralSecurityException e) {
             throw new RuntimeException("Failed to initialize encryption.", e);
         }
@@ -557,14 +561,14 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     protected void refreshReadTimeoutHandler(Channel channel) {
         if (channel != null) {
             if (this.readTimeout <= 0) {
-                if (channel.pipeline().get("readTimeout") != null) {
-                    channel.pipeline().remove("readTimeout");
+                if (channel.pipeline().get(READ_TIMEOUT_HANDLER_ID) != null) {
+                    channel.pipeline().remove(READ_TIMEOUT_HANDLER_ID);
                 }
             } else {
-                if (channel.pipeline().get("readTimeout") == null) {
-                    channel.pipeline().addFirst("readTimeout", new ReadTimeoutHandler(this.readTimeout));
+                if (channel.pipeline().get(READ_TIMEOUT_HANDLER_ID) == null) {
+                    channel.pipeline().addFirst(READ_TIMEOUT_HANDLER_ID, new ReadTimeoutHandler(this.readTimeout));
                 } else {
-                    channel.pipeline().replace("readTimeout", "readTimeout", new ReadTimeoutHandler(this.readTimeout));
+                    channel.pipeline().replace(READ_TIMEOUT_HANDLER_ID, READ_TIMEOUT_HANDLER_ID, new ReadTimeoutHandler(this.readTimeout));
                 }
             }
         }
@@ -574,17 +578,18 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.refreshWriteTimeoutHandler(this.channel);
     }
 
+
     protected void refreshWriteTimeoutHandler(Channel channel) {
         if (channel != null) {
             if (this.writeTimeout <= 0) {
-                if (channel.pipeline().get("writeTimeout") != null) {
-                    channel.pipeline().remove("writeTimeout");
+                if (channel.pipeline().get(WRITE_TIMEOUT_HANDLER_ID) != null) {
+                    channel.pipeline().remove(WRITE_TIMEOUT_HANDLER_ID);
                 }
             } else {
-                if (channel.pipeline().get("writeTimeout") == null) {
-                    channel.pipeline().addFirst("writeTimeout", new WriteTimeoutHandler(this.writeTimeout));
+                if (channel.pipeline().get(WRITE_TIMEOUT_HANDLER_ID) == null) {
+                    channel.pipeline().addFirst(WRITE_TIMEOUT_HANDLER_ID, new WriteTimeoutHandler(this.writeTimeout));
                 } else {
-                    channel.pipeline().replace("writeTimeout", "writeTimeout", new WriteTimeoutHandler(this.writeTimeout));
+                    channel.pipeline().replace(WRITE_TIMEOUT_HANDLER_ID, WRITE_TIMEOUT_HANDLER_ID, new WriteTimeoutHandler(this.writeTimeout));
                 }
             }
         }
