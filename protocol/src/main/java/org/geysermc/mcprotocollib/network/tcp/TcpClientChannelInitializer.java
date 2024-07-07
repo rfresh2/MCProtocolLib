@@ -21,6 +21,9 @@ import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 
+import static org.geysermc.mcprotocollib.network.tcp.TcpSession.HA_PROXY_ENCODER_ID;
+import static org.geysermc.mcprotocollib.network.tcp.TcpSession.PROXY_HANDLER_ID;
+
 public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
     public static final Factory DEFAULT_FACTORY = TcpClientChannelInitializer::new;
     private final TcpClientSession client;
@@ -70,23 +73,23 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
             switch (proxy.type()) {
                 case HTTP -> {
                     if (proxy.username() != null && proxy.password() != null) {
-                        pipeline.addFirst("proxy", new HttpProxyHandler(proxy.address(), proxy.username(), proxy.password()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new HttpProxyHandler(proxy.address(), proxy.username(), proxy.password()));
                     } else {
-                        pipeline.addFirst("proxy", new HttpProxyHandler(proxy.address()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new HttpProxyHandler(proxy.address()));
                     }
                 }
                 case SOCKS4 -> {
                     if (proxy.username() != null) {
-                        pipeline.addFirst("proxy", new Socks4ProxyHandler(proxy.address(), proxy.username()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new Socks4ProxyHandler(proxy.address(), proxy.username()));
                     } else {
-                        pipeline.addFirst("proxy", new Socks4ProxyHandler(proxy.address()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new Socks4ProxyHandler(proxy.address()));
                     }
                 }
                 case SOCKS5 -> {
                     if (proxy.username() != null && proxy.password() != null) {
-                        pipeline.addFirst("proxy", new Socks5ProxyHandler(proxy.address(), proxy.username(), proxy.password()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new Socks5ProxyHandler(proxy.address(), proxy.username(), proxy.password()));
                     } else {
-                        pipeline.addFirst("proxy", new Socks5ProxyHandler(proxy.address()));
+                        pipeline.addFirst(PROXY_HANDLER_ID, new Socks5ProxyHandler(proxy.address()));
                     }
                 }
                 default -> throw new UnsupportedOperationException("Unsupported proxy type: " + proxy.type());
@@ -97,7 +100,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
     private void addHAProxySupport(ChannelPipeline pipeline) {
         InetSocketAddress clientAddress = client.getFlag(BuiltinFlags.CLIENT_PROXIED_ADDRESS);
         if (client.getFlag(BuiltinFlags.ENABLE_CLIENT_PROXY_PROTOCOL, false) && clientAddress != null) {
-            pipeline.addFirst("proxy-protocol-packet-sender", new ChannelInboundHandlerAdapter() {
+            pipeline.addFirst(HA_PROXY_ENCODER_ID, new ChannelInboundHandlerAdapter() {
                 @Override
                 public void channelActive(ChannelHandlerContext ctx) throws Exception {
                     HAProxyProxiedProtocol proxiedProtocol = clientAddress.getAddress() instanceof Inet4Address ? HAProxyProxiedProtocol.TCP4 : HAProxyProxiedProtocol.TCP6;
@@ -108,11 +111,11 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
                         clientAddress.getPort(), remoteAddress.getPort()
                     ));
                     ctx.pipeline().remove(this);
-                    ctx.pipeline().remove("proxy-protocol-encoder");
+                    ctx.pipeline().remove(HA_PROXY_ENCODER_ID);
                     super.channelActive(ctx);
                 }
             });
-            pipeline.addFirst("proxy-protocol-encoder", HAProxyMessageEncoder.INSTANCE);
+            pipeline.addFirst(HA_PROXY_ENCODER_ID, HAProxyMessageEncoder.INSTANCE);
         }
     }
 }

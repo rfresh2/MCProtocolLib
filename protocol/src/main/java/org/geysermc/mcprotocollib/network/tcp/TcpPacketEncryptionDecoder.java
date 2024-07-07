@@ -10,7 +10,7 @@ import org.geysermc.mcprotocollib.network.Session;
 import java.util.List;
 
 public class TcpPacketEncryptionDecoder extends MessageToMessageDecoder<ByteBuf> {
-
+    public static String ID = "encryption-decoder";
     private final Session session;
     private final VelocityCipher cipher;
 

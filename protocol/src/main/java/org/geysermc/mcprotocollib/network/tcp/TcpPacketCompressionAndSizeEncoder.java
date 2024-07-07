@@ -13,6 +13,7 @@ import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import java.util.zip.DataFormatException;
 
 public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<ByteBuf> {
+    public static String ID = "compression-encoder";
     public static final boolean USE_HEAP_BUF = Natives.cipher.get() == JavaVelocityCipher.FACTORY;
     private final Session session;
     private final PacketCodecHelper codecHelper;

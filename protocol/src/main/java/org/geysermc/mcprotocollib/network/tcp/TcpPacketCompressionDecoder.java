@@ -15,6 +15,7 @@ import java.util.List;
  * Decompresses incoming packets
  */
 public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf> {
+    public static String ID = "compression-decoder";
     private static final int MAX_COMPRESSED_SIZE = 2097152;
 
     private final Session session;
