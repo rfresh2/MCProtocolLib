@@ -59,7 +59,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.44.0")
+    api("org.checkerframework:checker-qual:3.45.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }
