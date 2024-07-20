@@ -20,7 +20,7 @@ I don't maintain this for use by others and I can't make any guarantees about th
 
 However, I do maintain support for older MC versions longer than upstream when I support those in ZenithProxy.
 
-Precompiled artifacts are only available on [JitPack](https://jitpack.io/#rfresh2/MCProtocolLib/)
+Precompiled artifacts are available on [my personal maven](https://maven.2b2t.vc) or [JitPack](https://jitpack.io/#rfresh2/MCProtocolLib/)
 
 ## Building the Source
 MCProtocolLib uses Gradle to manage dependencies. Simply run '.\gradlew build' in the source's directory.
