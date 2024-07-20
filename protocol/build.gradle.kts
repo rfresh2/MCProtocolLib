@@ -37,7 +37,7 @@ val fastutilVersion = "edaf36bfd3"
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
 
-    api("com.github.rfresh2:OpenNBT:d3e1a5e287")
+    api("com.github.rfresh2:OpenNBT:0c82ff4b58")
 
     // MinecraftAuth for authentication
     api("net.raphimc:MinecraftAuth:4.0.2")
@@ -54,12 +54,12 @@ dependencies {
     api("com.github.rfresh2.fastutil:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil:int-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.111.Final")
+    api("io.netty:netty-all:4.1.112.Final")
     api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
     api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.44.0")
+    api("org.checkerframework:checker-qual:3.45.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }
