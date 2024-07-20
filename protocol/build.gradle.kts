@@ -91,11 +91,27 @@ java {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "vc"
+            url = uri("https://maven.2b2t.vc/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             groupId = "com.github.rfresh2"
             artifactId = "MCProtocolLib"
             version = project.version.toString()
+            System.getenv("PUBLISH_VERSION")?.let {
+                version = it
+            }
             from(components["java"])
         }
     }
