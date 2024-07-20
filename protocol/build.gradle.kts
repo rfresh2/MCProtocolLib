@@ -16,8 +16,7 @@ repositories {
         name = "papermc"
         content { includeGroup("com.velocitypowered") }
     }
-    maven("https://jitpack.io") {
-        name = "jitpack"
+    maven("https://maven.2b2t.vc/releases") {
         content { includeGroupByRegex("com.github.rfresh2.*") }
     }
     maven("https://maven.lenni0451.net/releases") {
@@ -32,12 +31,12 @@ repositories {
 }
 
 val adventureVersion = "4.17.0"
-val fastutilVersion = "edaf36bfd3"
+val fastutilVersion = "8.5.14"
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
 
-    api("com.github.rfresh2:OpenNBT:0c82ff4b58")
+    api("com.github.rfresh2:OpenNBT:3.0.4")
 
     // MinecraftAuth for authentication
     api("net.raphimc:MinecraftAuth:4.0.2")
@@ -50,9 +49,9 @@ dependencies {
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
 
-    api("com.github.rfresh2.fastutil:object-int-maps:$fastutilVersion")
-    api("com.github.rfresh2.fastutil:int-object-maps:$fastutilVersion")
-    api("com.github.rfresh2.fastutil:int-int-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil.maps:object-int-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
 
     api("io.netty:netty-all:4.1.112.Final")
     api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
