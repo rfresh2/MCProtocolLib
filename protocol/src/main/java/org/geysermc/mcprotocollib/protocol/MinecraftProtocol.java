@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol;
 import com.viaversion.nbt.io.NBTIO;
 import com.viaversion.nbt.limiter.TagLimiter;
 import com.viaversion.nbt.tag.CompoundTag;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
