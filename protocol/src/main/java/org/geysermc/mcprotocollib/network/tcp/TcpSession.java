@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.network.Flag;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
@@ -519,22 +520,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public void disconnect(String reason) {
-        this.disconnect(Component.text(reason));
-    }
-
-    @Override
-    public void disconnect(String reason, Throwable cause) {
-        this.disconnect(Component.text(reason), cause);
-    }
-
-    @Override
-    public void disconnect(Component reason) {
-        this.disconnect(reason, null);
-    }
-
-    @Override
-    public void disconnect(final Component reason, final Throwable cause) {
+    public void disconnect(@NonNull Component reason, @Nullable Throwable cause) {
         if (this.disconnected) {
             return;
         }

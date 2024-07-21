@@ -7,7 +7,7 @@ import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.network.packet.PacketRegistry;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 
 import java.util.List;
@@ -23,10 +23,10 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
     public TcpPacketCodec(Session session, boolean client) {
         this.session = session;
         this.codecHelper = session.getCodecHelper();
-        PacketProtocol packetProtocol = session.getPacketProtocol();
-        this.outboundPacketIdEncoder = client ? packetProtocol::getServerboundId : packetProtocol::getClientboundId;
-        this.outboundPacketDefinitionSupplier = client ? packetProtocol::getServerboundDefinition : packetProtocol::getClientboundDefinition;
-        this.inboundPacketFactory = client ? packetProtocol::createClientboundPacket : packetProtocol::createServerboundPacket;
+        PacketRegistry packetRegistry = session.getPacketProtocol().getPacketRegistry();
+        this.outboundPacketIdEncoder = client ? packetRegistry::getServerboundId : packetRegistry::getClientboundId;
+        this.outboundPacketDefinitionSupplier = client ? packetRegistry::getServerboundDefinition : packetRegistry::getClientboundDefinition;
+        this.inboundPacketFactory = client ? packetRegistry::createClientboundPacket : packetRegistry::createServerboundPacket;
     }
 
     @FunctionalInterface

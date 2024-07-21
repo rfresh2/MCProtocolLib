@@ -26,7 +26,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.StyledFormat;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.BitStorage;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
-import org.geysermc.mcprotocollib.protocol.data.game.chunk.NibbleArray3d;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.GlobalPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.ListPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.MapPalette;
@@ -94,7 +93,7 @@ import java.util.function.ToIntFunction;
 
 @RequiredArgsConstructor
 public class MinecraftCodecHelper extends BasePacketCodecHelper {
-    public static MinecraftCodecHelper INSTANCE = new MinecraftCodecHelper();
+    public static final MinecraftCodecHelper INSTANCE = new MinecraftCodecHelper();
     private static final int POSITION_X_SIZE = 38;
     private static final int POSITION_Y_SIZE = 12;
     private static final int POSITION_Z_SIZE = 38;
@@ -952,13 +951,5 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         if (soundEvent.isNewSystem()) {
             buf.writeFloat(soundEvent.getRange());
         }
-    }
-
-    public NibbleArray3d readNibbleArray(ByteBuf buf, int size) {
-        return new NibbleArray3d(this.readByteArray(buf, ignored -> size));
-    }
-
-    public void writeNibbleArray(ByteBuf buf, NibbleArray3d nibbleArray) {
-        buf.writeBytes(nibbleArray.getData());
     }
 }
