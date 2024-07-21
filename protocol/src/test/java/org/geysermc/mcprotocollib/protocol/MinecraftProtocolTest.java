@@ -94,11 +94,11 @@ public class MinecraftProtocolTest {
             session.addListener(new DisconnectListener());
             session.connect();
 
-            handler.status.await(4, SECONDS);
+            assertTrue(handler.status.await(4, SECONDS), "Did not receive server info in time.");
             assertNotNull(handler.info, "Failed to get server info.");
             assertEquals(SERVER_INFO, handler.info, "Received incorrect server info.");
         } finally {
-            session.disconnect("Status test complete.");
+            session.disconnect(Component.text("Status test complete."));
         }
     }
 
@@ -111,11 +111,11 @@ public class MinecraftProtocolTest {
             session.addListener(new DisconnectListener());
             session.connect(true);
 
-            listener.login.await(4, SECONDS);
+            assertTrue(listener.login.await(4, SECONDS), "Did not receive login packet in time.");
             assertNotNull(listener.packet, "Failed to log in.");
             assertEquals(JOIN_GAME_PACKET, listener.packet, "Received incorrect join packet.");
         } finally {
-            session.disconnect("Login test complete.");
+            session.disconnect(Component.text("Login test complete."));
         }
     }
 
@@ -136,8 +136,8 @@ public class MinecraftProtocolTest {
 
         @Override
         public void packetReceived(Session session, Packet packet) {
-            if (packet instanceof ClientboundLoginPacket) {
-                this.packet = (ClientboundLoginPacket) packet;
+            if (packet instanceof ClientboundLoginPacket loginPacket) {
+                this.packet = loginPacket;
                 this.login.countDown();
             }
         }

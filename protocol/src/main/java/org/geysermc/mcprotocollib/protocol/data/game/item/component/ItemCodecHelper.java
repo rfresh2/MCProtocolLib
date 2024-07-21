@@ -28,7 +28,7 @@ import java.util.function.Function;
 
 
 public class ItemCodecHelper extends MinecraftCodecHelper {
-    public static ItemCodecHelper INSTANCE = new ItemCodecHelper();
+    public static final ItemCodecHelper INSTANCE = new ItemCodecHelper();
 
     public <T> Filterable<T> readFilterable(ByteBuf buf, Function<ByteBuf, T> reader) {
         T raw = reader.apply(buf);
