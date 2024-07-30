@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ServerboundChatCommandSignedPacket implements MinecraftPacket {
     private final String command;
-    private final long timeStamp;
+    private long timeStamp;
     private final long salt;
     private final List<ArgumentSignature> signatures;
     private final int offset;
