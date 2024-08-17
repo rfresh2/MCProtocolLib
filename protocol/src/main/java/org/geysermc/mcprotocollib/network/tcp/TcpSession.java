@@ -532,17 +532,15 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
 
         this.disconnected = true;
 
+        this.callDisconnecting(reason, cause);
         if (this.channel != null && this.channel.isOpen()) {
-            this.callDisconnecting(reason, cause);
             try {
                 this.channel.flush().close().await(5, TimeUnit.SECONDS);
             } catch (final Exception e) {
                 this.exceptionCaught(null, e);
             }
-            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
-        } else {
-            this.callDisconnected(reason != null ? reason : Component.text("Connection closed."), cause);
         }
+        this.callDisconnected(reason, cause);
     }
 
     protected void refreshReadTimeoutHandler() {

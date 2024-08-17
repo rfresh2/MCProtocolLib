@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.6"
+    id("io.freefair.lombok") version "8.7.1"
     `maven-publish`
     `java-library`
 }
@@ -34,7 +34,7 @@ val adventureVersion = "4.17.0"
 val fastutilVersion = "8.5.14"
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.13")
+    api("org.slf4j:slf4j-api:2.0.16")
 
     api("com.github.rfresh2:OpenNBT:3.0.4")
 
@@ -58,7 +58,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.45.0")
+    api("org.checkerframework:checker-qual:3.46.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
 }
