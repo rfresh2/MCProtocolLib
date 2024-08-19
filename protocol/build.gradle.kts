@@ -60,7 +60,7 @@ dependencies {
 
     api("org.checkerframework:checker-qual:3.46.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
 }
 
 lombok {
