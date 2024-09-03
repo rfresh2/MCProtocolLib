@@ -179,7 +179,7 @@ public class BasePacketCodecHelper implements PacketCodecHelper {
 
     @Override
     public String readString(ByteBuf buf) {
-        return this.readString(buf, Short.MAX_VALUE);
+        return this.readString(buf, 262143);
     }
 
     @Override

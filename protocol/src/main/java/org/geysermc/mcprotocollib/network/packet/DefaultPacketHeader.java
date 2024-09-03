@@ -7,6 +7,16 @@ import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
  * The default packet header, using a varint packet length and id.
  */
 public class DefaultPacketHeader implements PacketHeader {
+
+    private static final int[] VARINT_EXACT_BYTE_LENGTHS = new int[33];
+
+    static {
+        for (int i = 0; i <= 32; ++i) {
+            VARINT_EXACT_BYTE_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
+        }
+        VARINT_EXACT_BYTE_LENGTHS[32] = 1; // Special case for the number 0.
+    }
+
     @Override
     public boolean isLengthVariable() {
         return true;
@@ -19,17 +29,7 @@ public class DefaultPacketHeader implements PacketHeader {
 
     @Override
     public int getLengthSize(int length) {
-        if ((length & -128) == 0) {
-            return 1;
-        } else if ((length & -16384) == 0) {
-            return 2;
-        } else if ((length & -2097152) == 0) {
-            return 3;
-        } else if ((length & -268435456) == 0) {
-            return 4;
-        } else {
-            return 5;
-        }
+        return VARINT_EXACT_BYTE_LENGTHS[Integer.numberOfLeadingZeros(length)];
     }
 
     @Override
