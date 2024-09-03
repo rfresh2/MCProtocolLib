@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.7.1"
+    id("io.freefair.lombok") version "8.10"
     `maven-publish`
     `java-library`
 }
@@ -56,11 +56,11 @@ dependencies {
     api("io.netty:netty-all:4.1.112.Final")
     api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
-    api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
+    api("com.velocitypowered:velocity-native:3.3.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.46.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
 }
 
 lombok {
