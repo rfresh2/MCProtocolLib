@@ -8,13 +8,13 @@ import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
  */
 public class DefaultPacketHeader implements PacketHeader {
 
-    private static final int[] VARINT_EXACT_BYTE_LENGTHS = new int[33];
+    private static final int[] VAR_INT_LENGTHS = new int[65];
 
     static {
         for (int i = 0; i <= 32; ++i) {
-            VARINT_EXACT_BYTE_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
+            VAR_INT_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
         }
-        VARINT_EXACT_BYTE_LENGTHS[32] = 1; // Special case for the number 0.
+        VAR_INT_LENGTHS[32] = 1; // Special case for the number 0.
     }
 
     @Override
@@ -29,7 +29,7 @@ public class DefaultPacketHeader implements PacketHeader {
 
     @Override
     public int getLengthSize(int length) {
-        return VARINT_EXACT_BYTE_LENGTHS[Integer.numberOfLeadingZeros(length)];
+        return VAR_INT_LENGTHS[Integer.numberOfLeadingZeros(length)];
     }
 
     @Override

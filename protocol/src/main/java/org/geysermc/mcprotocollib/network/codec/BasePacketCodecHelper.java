@@ -51,17 +51,29 @@ public class BasePacketCodecHelper implements PacketCodecHelper {
 
     @Override
     public int readVarInt(ByteBuf buf) {
-        int value = 0;
-        int size = 0;
-        int b;
-        while (((b = buf.readByte()) & 0x80) == 0x80) {
-            value |= (b & 0x7F) << (size++ * 7);
-            if (size > 5) {
-                throw new IllegalArgumentException("VarInt too long (length must be <= 5)");
-            }
+        int readable = buf.readableBytes();
+        if (readable == 0) {
+            // special case for empty buffer
+            throw new IllegalArgumentException("VarInt too short (0 size readable buffer)");
         }
 
-        return value | ((b & 0x7F) << (size * 7));
+        // we can read at least one byte, and this should be a common case
+        int k = buf.readByte();
+        if ((k & 0x80) != 128) {
+            return k;
+        }
+
+        // in case decoding one byte was not enough, use a loop to decode up to the next 4 bytes
+        int maxRead = Math.min(5, readable);
+        int i = k & 0x7F;
+        for (int j = 1; j < maxRead; j++) {
+            k = buf.readByte();
+            i |= (k & 0x7F) << j * 7;
+            if ((k & 0x80) != 128) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("VarInt too long (length must be <= 5)");
     }
 
     // Based off of Andrew Steinborn's blog post:
