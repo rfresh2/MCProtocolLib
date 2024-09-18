@@ -18,7 +18,6 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.slf4j.Logger;
@@ -133,7 +132,8 @@ public class BinaryNbtComponentSerializer {
                         writer.writeListTag("with", 3, 1);
                         writer.writeIntTag((Integer) argValue);
                     } else if (argValue instanceof Long) {
-                        writer.writeListTag("with", 4, 1);writer.writeLongTag((Long) argValue);
+                        writer.writeListTag("with", 4, 1);
+                        writer.writeLongTag((Long) argValue);
                     } else if (argValue instanceof Float) {
                         writer.writeListTag("with", 5, 1);
                         writer.writeFloatTag((Float) argValue);
@@ -182,11 +182,7 @@ public class BinaryNbtComponentSerializer {
     public static void serializeStyle(MNBTWriter writer, Style style) {
         var color = style.color();
         if (color != null) {
-            if (color instanceof NamedTextColor namedTextColor) {
-                writer.writeStringTag("color", namedTextColor.toString());
-            } else {
-                writer.writeStringTag("color", color.asHexString());
-            }
+            writer.writeStringTag("color", color.toString());
         }
         for (var entry : style.decorations().entrySet()) {
             TextDecoration decoration = entry.getKey();
