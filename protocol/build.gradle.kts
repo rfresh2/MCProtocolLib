@@ -56,7 +56,7 @@ dependencies {
     api("io.netty:netty-all:4.1.112.Final")
     api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
-    api("com.velocitypowered:velocity-native:3.3.0-SNAPSHOT")
+    api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.46.0")
 
