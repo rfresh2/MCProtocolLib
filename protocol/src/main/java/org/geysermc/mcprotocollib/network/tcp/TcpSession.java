@@ -281,6 +281,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                     return; // we already updated compression threshold on the session field
                 }
                 var compressor = Natives.compress.get().create(level);
+                LOGGER.debug("Initialized compression variant: {}", Natives.compress.getLoadedVariant());
                 var encoder = new TcpPacketCompressionAndSizeEncoder(this, compressor);
                 var decoder = new TcpPacketCompressionDecoder(this, validateDecompression, compressor);
                 this.channel.pipeline().addAfter(TcpPacketSizeEncoder.ID, TcpPacketCompressionAndSizeEncoder.ID, encoder);
@@ -303,6 +304,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         }
         try {
             var factory = Natives.cipher.get();
+            LOGGER.debug("Initialized encryption variant: {}", Natives.cipher.getLoadedVariant());
             var decrypt = factory.forDecryption(key);
             var encrypt = factory.forEncryption(key);
             var encoder = new TcpPacketEncryptionEncoder(this, encrypt);
