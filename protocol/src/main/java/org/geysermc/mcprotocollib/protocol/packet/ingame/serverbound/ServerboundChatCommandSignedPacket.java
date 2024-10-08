@@ -23,6 +23,15 @@ public class ServerboundChatCommandSignedPacket implements MinecraftPacket {
     private final int offset;
     private final BitSet acknowledgedMessages;
 
+    public ServerboundChatCommandSignedPacket(String command) {
+        this.command = command;
+        this.timeStamp = System.currentTimeMillis();
+        this.salt = 0;
+        this.signatures = new ArrayList<>(0);
+        this.offset = 0;
+        this.acknowledgedMessages = new BitSet(20);
+    }
+
     public ServerboundChatCommandSignedPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.command = helper.readString(in);
         this.timeStamp = in.readLong();
