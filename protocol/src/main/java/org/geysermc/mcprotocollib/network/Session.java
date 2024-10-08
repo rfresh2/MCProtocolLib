@@ -1,5 +1,6 @@
 package org.geysermc.mcprotocollib.network;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -7,7 +8,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
 import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.network.tcp.FlushHandler;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
+import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 
 import javax.crypto.SecretKey;
 import java.net.SocketAddress;
@@ -340,4 +343,43 @@ public interface Session {
      * @param cause  Throwable responsible for disconnecting.
      */
     void disconnect(@NonNull Component reason, @Nullable Throwable cause);
+
+    /**
+     * Auto read in netty means that the server is automatically reading from the channel.
+     * Turning it off means that we won't get more packets being decoded until we turn it back on.
+     * We use this to hold off on reading packets until we are ready to process them.
+     * For example this is used for switching inbound states with {@link #switchInboundState(ProtocolState)}.
+     *
+     * @param autoRead Whether to enable auto read.
+     *                 Default is true.
+     */
+    void setAutoRead(boolean autoRead);
+
+    /**
+     * Returns the underlying netty channel of this session.
+     *
+     * @return The netty channel
+     */
+    Channel getChannel();
+
+    /**
+     * Changes the inbound state of the session and then re-enables auto read.
+     * This is used after a terminal packet was handled and the session is ready to receive more packets in the new state.
+     *
+     */
+    default void switchInboundState(ProtocolState protocolState) {
+        getPacketProtocol().setInboundState(protocolState);
+        // We switched to the new inbound state
+        // we can start reading again
+        setAutoRead(true);
+    }
+
+    /**
+     * Flushes all packets that are due to be sent and changes the outbound state of the session.
+     * This makes sure no other threads have scheduled packets to be sent.
+     */
+    default void switchOutboundState(ProtocolState protocolState) {
+        getChannel().writeAndFlush(FlushHandler.FLUSH_PACKET).syncUninterruptibly();
+        getPacketProtocol().setOutboundState(protocolState);
+    }
 }

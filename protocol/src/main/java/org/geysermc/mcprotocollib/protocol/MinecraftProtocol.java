@@ -10,8 +10,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.network.Server;
 import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.crypt.AESEncryption;
-import org.geysermc.mcprotocollib.network.crypt.PacketEncryption;
 import org.geysermc.mcprotocollib.network.packet.PacketHeader;
 import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import org.geysermc.mcprotocollib.network.packet.PacketRegistry;
@@ -19,11 +17,11 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodec;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.PacketCodec;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.security.Key;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
@@ -32,6 +30,7 @@ import java.util.zip.GZIPInputStream;
  * Implements the Minecraft protocol.
  */
 public class MinecraftProtocol extends PacketProtocol {
+    private static final Logger log = LoggerFactory.getLogger(MinecraftProtocol.class);
 
     /**
      * The network codec sent from the server to the client during {@link ProtocolState#CONFIGURATION}.
@@ -47,8 +46,27 @@ public class MinecraftProtocol extends PacketProtocol {
     @Getter
     private final PacketCodec codec;
 
-    private ProtocolState state;
-    private PacketRegistry stateRegistry;
+    /**
+     * -- GETTER --
+     *  Gets the current inbound
+     *  we're in.
+     *
+     * @return The current inbound {@link ProtocolState}.
+     */
+    @Getter
+    private ProtocolState inboundState;
+    private PacketRegistry inboundStateRegistry;
+
+    /**
+     * -- GETTER --
+     *  Gets the current outbound
+     *  we're in.
+     *
+     * @return The current outbound {@link ProtocolState}.
+     */
+    @Getter
+    private ProtocolState outboundState;
+    private PacketRegistry outboundStateRegistry;
 
     @Setter
     private ProtocolState targetState;
@@ -72,6 +90,8 @@ public class MinecraftProtocol extends PacketProtocol {
     @Setter
     private boolean useDefaultListeners = false;
 
+    private boolean client = true;
+
     /**
      * Constructs a new MinecraftProtocol instance for making status queries.
      */
@@ -88,7 +108,7 @@ public class MinecraftProtocol extends PacketProtocol {
         this.codec = codec;
         this.targetState = ProtocolState.STATUS;
 
-        this.setState(ProtocolState.HANDSHAKE);
+        resetStates();
     }
 
     /**
@@ -133,7 +153,7 @@ public class MinecraftProtocol extends PacketProtocol {
         this.profile = profile;
         this.accessToken = accessToken;
 
-        this.setState(ProtocolState.HANDSHAKE);
+        resetStates();
     }
 
     @Override
@@ -156,16 +176,17 @@ public class MinecraftProtocol extends PacketProtocol {
         session.setFlag(MinecraftConstants.PROFILE_KEY, this.profile);
         session.setFlag(MinecraftConstants.ACCESS_TOKEN_KEY, this.accessToken);
 
-        this.setState(ProtocolState.HANDSHAKE);
+        resetStates();
 
         if (this.useDefaultListeners) {
             session.addListener(new ClientListener(this.targetState, transferring));
         }
+        this.client = true;
     }
 
     @Override
     public void newServerSession(Server server, Session session) {
-        this.setState(ProtocolState.HANDSHAKE);
+        resetStates();
 
         if (this.useDefaultListeners) {
             if (DEFAULT_NETWORK_CODEC == null) {
@@ -174,33 +195,39 @@ public class MinecraftProtocol extends PacketProtocol {
 
             session.addListener(new ServerListener(DEFAULT_NETWORK_CODEC));
         }
+        this.client = false;
     }
 
     @Override
-    public PacketRegistry getPacketRegistry() {
-        return this.stateRegistry;
+    public PacketRegistry getInboundPacketRegistry() {
+        return this.inboundStateRegistry;
     }
 
-    protected PacketEncryption enableEncryption(Key key) {
-        try {
-            return new AESEncryption(key);
-        } catch (GeneralSecurityException e) {
-            throw new Error("Failed to enable protocol encryption.", e);
-        }
+    @Override
+    public PacketRegistry getOutboundPacketRegistry() {
+        return this.outboundStateRegistry;
     }
 
     /**
-     * Gets the current {@link ProtocolState} the client is in.
-     *
-     * @return The current {@link ProtocolState}.
+     * Resets the protocol states to {@link ProtocolState#HANDSHAKE}.
      */
-    public ProtocolState getState() {
-        return this.state;
+    public void resetStates() {
+        this.setInboundState(ProtocolState.HANDSHAKE);
+        this.setOutboundState(ProtocolState.HANDSHAKE);
     }
 
-    public void setState(ProtocolState state) {
-        this.state = state;
-        this.stateRegistry = this.codec.getCodec(state);
+    public void setInboundState(ProtocolState state) {
+        log.debug("[{}] Setting inbound protocol state to: {}", client ? "Client" : "Server", state);
+
+        this.inboundState = state;
+        this.inboundStateRegistry = this.codec.getCodec(state);
+    }
+
+    public void setOutboundState(ProtocolState state) {
+        log.debug("[{}] Setting outbound protocol state to: {}", client ? "Client" : "Server", state);
+
+        this.outboundState = state;
+        this.outboundStateRegistry = this.codec.getCodec(state);
     }
 
     public static CompoundTag loadNetworkCodec() {

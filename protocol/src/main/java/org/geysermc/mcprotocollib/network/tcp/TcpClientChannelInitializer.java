@@ -62,6 +62,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
             .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder())
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(client))
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(client, true))
+            .addLast(FlushHandler.ID, new FlushHandler())
             .addLast(TcpSession.ID, client);
 
         addHAProxySupport(pipeline);

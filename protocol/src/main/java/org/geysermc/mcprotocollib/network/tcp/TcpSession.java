@@ -545,6 +545,13 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
         this.callDisconnected(reason, cause);
     }
 
+    @Override
+    public void setAutoRead(boolean autoRead) {
+        if (this.channel != null) {
+            this.channel.config().setAutoRead(autoRead);
+        }
+    }
+
     protected void refreshReadTimeoutHandler() {
         this.refreshReadTimeoutHandler(this.channel);
     }
