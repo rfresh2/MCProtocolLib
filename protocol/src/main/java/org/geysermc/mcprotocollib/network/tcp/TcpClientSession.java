@@ -119,53 +119,45 @@ public class TcpClientSession extends TcpSession {
 
     private InetSocketAddress resolveAddress() {
         String name = this.getPacketProtocol().getSRVRecordPrefix() + "._tcp." + this.getHost();
-        LOGGER.debug("Attempting SRV lookup for \"" + name + "\".");
+        LOGGER.debug("Attempting SRV lookup for \"{}\".", name);
 
-        if(getFlag(BuiltinFlags.ATTEMPT_SRV_RESOLVE, true) && (!this.host.matches(IP_REGEX) && !this.host.equalsIgnoreCase("localhost"))) {
-            DnsNameResolver resolver = null;
-            AddressedEnvelope<DnsResponse, InetSocketAddress> envelope = null;
-            try {
-                resolver = new DnsNameResolverBuilder(tcpManager.getWorkerGroup().next())
-                    .channelType(tcpManager.getDatagramChannelClass())
-                    .build();
-                envelope = resolver.query(new DefaultDnsQuestion(name, DnsRecordType.SRV)).get();
+        if (getFlag(BuiltinFlags.ATTEMPT_SRV_RESOLVE, true) && (!this.host.matches(IP_REGEX) && !this.host.equalsIgnoreCase("localhost"))) {
+            try (DnsNameResolver resolver = new DnsNameResolverBuilder(tcpManager.getWorkerGroup().next())
+                .datagramChannelType(tcpManager.getDatagramChannelClass())
+                .build()) {
+                AddressedEnvelope<DnsResponse, InetSocketAddress> envelope = resolver.query(new DefaultDnsQuestion(name, DnsRecordType.SRV)).get();
+                try {
+                    DnsResponse response = envelope.content();
+                    if (response.count(DnsSection.ANSWER) > 0) {
+                        DefaultDnsRawRecord record = response.recordAt(DnsSection.ANSWER, 0);
+                        if (record.type() == DnsRecordType.SRV) {
+                            ByteBuf buf = record.content();
+                            buf.skipBytes(4); // Skip priority and weight.
 
-                DnsResponse response = envelope.content();
-                if (response.count(DnsSection.ANSWER) > 0) {
-                    DefaultDnsRawRecord record = response.recordAt(DnsSection.ANSWER, 0);
-                    if (record.type() == DnsRecordType.SRV) {
-                        ByteBuf buf = record.content();
-                        buf.skipBytes(4); // Skip priority and weight.
+                            int port = buf.readUnsignedShort();
+                            String host = DefaultDnsRecordDecoder.decodeName(buf);
+                            if (host.endsWith(".")) {
+                                host = host.substring(0, host.length() - 1);
+                            }
 
-                        int port = buf.readUnsignedShort();
-                        String host = DefaultDnsRecordDecoder.decodeName(buf);
-                        if (host.endsWith(".")) {
-                            host = host.substring(0, host.length() - 1);
+                            LOGGER.debug("Found SRV record containing \"{}:{}\".", host, port);
+
+                            this.host = host;
+                            this.port = port;
+                        } else {
+                            LOGGER.debug("Received non-SRV record in response.");
                         }
-
-                        LOGGER.debug("Found SRV record containing \"" + host + ":" + port + "\".");
-
-                        this.host = host;
-                        this.port = port;
                     } else {
-                        LOGGER.debug("Received non-SRV record in response.");
+                        LOGGER.debug("No SRV record found.");
                     }
-                } else {
-                    LOGGER.debug("No SRV record found.");
-                }
-            } catch(Exception e) {
-                LOGGER.debug("Failed to resolve SRV record.", e);
-            } finally {
-                if (envelope != null) {
+                } finally {
                     envelope.release();
                 }
-
-                if (resolver != null) {
-                    resolver.close();
-                }
+            } catch (Exception e) {
+                LOGGER.debug("Failed to resolve SRV record.", e);
             }
         } else {
-            LOGGER.debug("Not resolving SRV record for " + this.host);
+            LOGGER.debug("Not resolving SRV record for {}", this.host);
         }
 
         // Resolve host here
