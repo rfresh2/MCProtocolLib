@@ -7,7 +7,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.dns.DefaultDnsQuestion;
 import io.netty.handler.codec.dns.DefaultDnsRawRecord;
 import io.netty.handler.codec.dns.DefaultDnsRecordDecoder;
@@ -29,18 +28,12 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 @Setter
 public class TcpClientSession extends TcpSession {
     private static final String IP_REGEX = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
-    /**
-     * See {@link EventLoopGroup#shutdownGracefully(long, long, TimeUnit)}
-     */
-    private static final int SHUTDOWN_QUIET_PERIOD_MS = 100;
-    private static final int SHUTDOWN_TIMEOUT_MS = 500;
-    private static Logger LOGGER = LoggerFactory.getLogger("Proxy");
+    private static final Logger LOGGER = LoggerFactory.getLogger("Proxy");
 
     private final String bindAddress;
     private final int bindPort;
@@ -84,10 +77,10 @@ public class TcpClientSession extends TcpSession {
 
     @Override
     public void connect(boolean wait, boolean transferring) {
-        connect(wait, transferring, buildBootstrap(buildChannelInitializer(transferring)));
+        connect(wait, buildBootstrap(buildChannelInitializer(transferring)));
     }
 
-    public void connect(boolean wait, boolean transferring, Bootstrap bootstrap) {
+    public void connect(boolean wait, Bootstrap bootstrap) {
         if(this.disconnected) {
             throw new IllegalStateException("Session has already been disconnected.");
         }

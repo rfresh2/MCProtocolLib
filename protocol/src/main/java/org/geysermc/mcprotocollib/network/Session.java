@@ -379,7 +379,13 @@ public interface Session {
      * This makes sure no other threads have scheduled packets to be sent.
      */
     default void switchOutboundState(ProtocolState protocolState) {
-        getChannel().writeAndFlush(FlushHandler.FLUSH_PACKET).syncUninterruptibly();
-        getPacketProtocol().setOutboundState(protocolState);
+        if (getChannel().eventLoop().inEventLoop()) {
+            getChannel().writeAndFlush(FlushHandler.FLUSH_PACKET).addListener(f -> {
+                getPacketProtocol().setOutboundState(protocolState);
+            });
+        } else {
+            getChannel().writeAndFlush(FlushHandler.FLUSH_PACKET).syncUninterruptibly();
+            getPacketProtocol().setOutboundState(protocolState);
+        }
     }
 }
