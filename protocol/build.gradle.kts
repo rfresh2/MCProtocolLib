@@ -38,13 +38,11 @@ dependencies {
 
     api("com.github.rfresh2:OpenNBT:3.0.4")
 
-    // MinecraftAuth for authentication
-    api("net.raphimc:MinecraftAuth:4.1.1")
-
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
+    api("net.kyori:adventure-text-minimessage:$adventureVersion")
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
@@ -58,7 +56,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.48.0")
+    api("org.checkerframework:checker-qual:3.48.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.2")
 }
