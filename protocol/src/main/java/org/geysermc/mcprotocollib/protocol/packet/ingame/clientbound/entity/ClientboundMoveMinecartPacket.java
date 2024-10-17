@@ -37,9 +37,9 @@ public class ClientboundMoveMinecartPacket implements MinecraftPacket {
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.entityId);
         helper.writeList(out, this.lerpSteps, (output, lerpStep) -> {
-            output.writeDouble(lerpStep.posX());
-            output.writeDouble(lerpStep.posY());
-            output.writeDouble(lerpStep.posZ());
+            output.writeDouble(lerpStep.x());
+            output.writeDouble(lerpStep.y());
+            output.writeDouble(lerpStep.z());
 
             output.writeDouble(lerpStep.motionX());
             output.writeDouble(lerpStep.motionY());
