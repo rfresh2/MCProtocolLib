@@ -5,8 +5,7 @@ import com.viaversion.nbt.tag.StringTag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
@@ -143,8 +142,8 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
     public Equippable readEquippable(ByteBuf buf) {
         EquipmentSlot slot = EquipmentSlot.from(this.readVarInt(buf));
         Sound equipSound = this.readById(buf, BuiltinSound::from, this::readSoundEvent);
-        Key model = this.readNullable(buf, this::readResourceLocation);
-        Key cameraOverlay = this.readNullable(buf, this::readResourceLocation);
+        String model = this.readNullable(buf, this::readResourceLocationString);
+        String cameraOverlay = this.readNullable(buf, this::readResourceLocationString);
         HolderSet allowedEntities = this.readNullable(buf, this::readHolderSet);
         boolean dispensable = buf.readBoolean();
         boolean swappable = buf.readBoolean();

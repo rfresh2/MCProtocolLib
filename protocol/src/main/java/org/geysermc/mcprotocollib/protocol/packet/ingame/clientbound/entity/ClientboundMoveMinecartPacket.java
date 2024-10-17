@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3d;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.MinecartStep;
@@ -21,12 +20,16 @@ public class ClientboundMoveMinecartPacket implements MinecraftPacket {
     public ClientboundMoveMinecartPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.entityId = helper.readVarInt(in);
         this.lerpSteps = helper.readList(in, (input) -> {
-            Vector3d position = Vector3d.from(input.readDouble(), input.readDouble(), input.readDouble());
-            Vector3d movement = Vector3d.from(input.readDouble(), input.readDouble(), input.readDouble());
+            double posX = input.readDouble();
+            double posY = input.readDouble();
+            double posZ = input.readDouble();
+            double motionX = input.readDouble();
+            double motionY = input.readDouble();
+            double motionZ = input.readDouble();
             float yRot = input.readByte() * 360F / 256F;
             float xRot = input.readByte() * 360F / 256F;
             float weight = input.readFloat();
-            return new MinecartStep(position, movement, yRot, xRot, weight);
+            return new MinecartStep(posX, posY, posZ, motionX, motionY, motionZ, yRot, xRot, weight);
         });
     }
 
@@ -34,13 +37,13 @@ public class ClientboundMoveMinecartPacket implements MinecraftPacket {
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.entityId);
         helper.writeList(out, this.lerpSteps, (output, lerpStep) -> {
-            output.writeDouble(lerpStep.position().getX());
-            output.writeDouble(lerpStep.position().getY());
-            output.writeDouble(lerpStep.position().getZ());
+            output.writeDouble(lerpStep.posX());
+            output.writeDouble(lerpStep.posY());
+            output.writeDouble(lerpStep.posZ());
 
-            output.writeDouble(lerpStep.movement().getX());
-            output.writeDouble(lerpStep.movement().getY());
-            output.writeDouble(lerpStep.movement().getZ());
+            output.writeDouble(lerpStep.motionX());
+            output.writeDouble(lerpStep.motionY());
+            output.writeDouble(lerpStep.motionZ());
 
             float yRot = lerpStep.yRot() * 256F / 360F;
             output.writeByte(yRot < (int)yRot ? (int)yRot - 1 : (int)yRot);

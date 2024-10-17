@@ -28,7 +28,7 @@ public class DataComponentType<T> {
     public static final BooleanComponentType UNBREAKABLE = new BooleanComponentType(ByteBuf::readBoolean, ByteBuf::writeBoolean, BooleanDataComponent::new);
     public static final DataComponentType<Component> CUSTOM_NAME = new DataComponentType<>(ItemCodecHelper::readComponent, ItemCodecHelper::writeComponent, ObjectDataComponent::new);
     public static final DataComponentType<Component> ITEM_NAME = new DataComponentType<>(ItemCodecHelper::readComponent, ItemCodecHelper::writeComponent, ObjectDataComponent::new);
-    public static final DataComponentType<Key> ITEM_MODEL = new DataComponentType<>(ItemCodecHelper::readResourceLocation, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
+    public static final DataComponentType<String> ITEM_MODEL = new DataComponentType<>(ItemCodecHelper::readResourceLocationString, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
     public static final DataComponentType<List<Component>> LORE = new DataComponentType<>(listReader(ItemCodecHelper::readComponent), listWriter(ItemCodecHelper::writeComponent), ObjectDataComponent::new);
     public static final IntComponentType RARITY = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<ItemEnchantments> ENCHANTMENTS = new DataComponentType<>(ItemCodecHelper::readItemEnchantments, ItemCodecHelper::writeItemEnchantments, ObjectDataComponent::new);
@@ -46,13 +46,13 @@ public class DataComponentType<T> {
     public static final DataComponentType<Consumable> CONSUMABLE = new DataComponentType<>(ItemCodecHelper::readConsumable, ItemCodecHelper::writeConsumable, ObjectDataComponent::new);
     public static final DataComponentType<ItemStack> USE_REMAINDER = new DataComponentType<>(ItemCodecHelper::readItemStack, ItemCodecHelper::writeItemStack, ObjectDataComponent::new);
     public static final DataComponentType<UseCooldown> USE_COOLDOWN = new DataComponentType<>(ItemCodecHelper::readUseCooldown, ItemCodecHelper::writeUseCooldown, ObjectDataComponent::new);
-    public static final DataComponentType<Key> DAMAGE_RESISTANT = new DataComponentType<>(ItemCodecHelper::readResourceLocation, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
+    public static final DataComponentType<String> DAMAGE_RESISTANT = new DataComponentType<>(ItemCodecHelper::readResourceLocationString, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
     public static final DataComponentType<ToolData> TOOL = new DataComponentType<>(ItemCodecHelper::readToolData, ItemCodecHelper::writeToolData, ObjectDataComponent::new);
     public static final IntComponentType ENCHANTABLE = new IntComponentType(ItemCodecHelper::readVarInt, ItemCodecHelper::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<Equippable> EQUIPPABLE = new DataComponentType<>(ItemCodecHelper::readEquippable, ItemCodecHelper::writeEquippable, ObjectDataComponent::new);
     public static final DataComponentType<HolderSet> REPAIRABLE = new DataComponentType<>(ItemCodecHelper::readHolderSet, ItemCodecHelper::writeHolderSet, ObjectDataComponent::new);
     public static final DataComponentType<Unit> GLIDER = new DataComponentType<>(unitReader(), unitWriter(), ObjectDataComponent::new);
-    public static final DataComponentType<Key> TOOLTIP_STYLE = new DataComponentType<>(ItemCodecHelper::readResourceLocation, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
+    public static final DataComponentType<String> TOOLTIP_STYLE = new DataComponentType<>(ItemCodecHelper::readResourceLocationString, ItemCodecHelper::writeResourceLocation, ObjectDataComponent::new);
     public static final DataComponentType<List<ConsumeEffect>> DEATH_PROTECTION = new DataComponentType<>(listReader(ItemCodecHelper::readConsumeEffect), listWriter(ItemCodecHelper::writeConsumeEffect), ObjectDataComponent::new);
     public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = new DataComponentType<>(ItemCodecHelper::readItemEnchantments, ItemCodecHelper::writeItemEnchantments, ObjectDataComponent::new);
     public static final DataComponentType<DyedItemColor> DYED_COLOR = new DataComponentType<>(ItemCodecHelper::readDyedItemColor, ItemCodecHelper::writeDyedItemColor, ObjectDataComponent::new);

@@ -13,7 +13,6 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.cloudburstmc.math.vector.Vector3d;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
@@ -84,9 +83,9 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.SoundCategory;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.Ingredient;
-import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.RecipeDisplayType;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.FurnaceRecipeDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.RecipeDisplay;
+import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.RecipeDisplayType;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.ShapedCraftingRecipeDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.ShapelessCraftingRecipeDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.SmithingRecipeDisplay;
@@ -103,7 +102,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.TagSlot
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.WithRemainderSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -187,7 +185,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     public HolderSet readHolderSet(ByteBuf buf) {
         int length = this.readVarInt(buf) - 1;
         if (length == -1) {
-            return new HolderSet(this.readResourceLocation(buf));
+            return new HolderSet(this.readResourceLocationString(buf));
         } else {
             int[] holders = new int[length];
             for (int i = 0; i < length; i++) {
@@ -800,7 +798,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             case ITEM -> new ItemParticleData(this.readOptionalItemStack(buf));
             case SCULK_CHARGE -> new SculkChargeParticleData(buf.readFloat());
             case SHRIEK -> new ShriekParticleData(this.readVarInt(buf));
-            case TRAIL -> new TargetColorParticleData(Vector3d.from(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readInt());
+            case TRAIL -> new TargetColorParticleData(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readInt());
             case VIBRATION -> new VibrationParticleData(this.readPositionSource(buf), this.readVarInt(buf));
             default -> null;
         };
@@ -841,9 +839,9 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             }
             case TRAIL -> {
                 TargetColorParticleData targetColorData = (TargetColorParticleData) data;
-                buf.writeDouble(targetColorData.target().getX());
-                buf.writeDouble(targetColorData.target().getY());
-                buf.writeDouble(targetColorData.target().getZ());
+                buf.writeDouble(targetColorData.targetX());
+                buf.writeDouble(targetColorData.targetY());
+                buf.writeDouble(targetColorData.targetZ());
                 buf.writeInt(targetColorData.color());
             }
             case VIBRATION -> {

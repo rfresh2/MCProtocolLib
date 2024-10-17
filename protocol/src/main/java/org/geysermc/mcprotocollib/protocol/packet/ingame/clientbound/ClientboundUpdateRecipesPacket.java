@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
@@ -18,16 +17,16 @@ import java.util.Map;
 @Data
 @With
 @AllArgsConstructor
-@ToString(exclude = "recipes")
+@ToString(exclude = {"itemSets", "stonecutterRecipes"})
 public class ClientboundUpdateRecipesPacket implements MinecraftPacket {
-    private final Map<Key, int[]> itemSets;
+    private final Map<String, int[]> itemSets;
     private final List<SelectableRecipe> stonecutterRecipes;
 
     public ClientboundUpdateRecipesPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.itemSets = new HashMap<>();
         int itemCount = helper.readVarInt(in);
+        this.itemSets = new HashMap<>(itemCount);
         for (int i = 0; i < itemCount; i++) {
-            Key propertySetType = helper.readResourceLocation(in);
+            String propertySetType = helper.readResourceLocationString(in);
             int[] propertySet = new int[helper.readVarInt(in)];
             for (int j = 0; j < propertySet.length; j++) {
                 propertySet[j] = helper.readVarInt(in);
@@ -45,7 +44,7 @@ public class ClientboundUpdateRecipesPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
         helper.writeVarInt(out, this.itemSets.size());
-        for (Map.Entry<Key, int[]> itemSet : this.itemSets.entrySet()) {
+        for (var itemSet : this.itemSets.entrySet()) {
             helper.writeResourceLocation(out, itemSet.getKey());
 
             helper.writeVarInt(out, itemSet.getValue().length);

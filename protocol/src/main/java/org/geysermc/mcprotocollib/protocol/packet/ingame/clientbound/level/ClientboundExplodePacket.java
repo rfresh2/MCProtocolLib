@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.cloudburstmc.math.vector.Vector3d;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
@@ -13,36 +12,49 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.jetbrains.annotations.Nullable;
-
 @Data
 @With
 @AllArgsConstructor
 public class ClientboundExplodePacket implements MinecraftPacket {
-    private final Vector3d center;
-    private final @Nullable Vector3d playerKnockback;
+    private final double centerX;
+    private final double centerY;
+    private final double centerZ;
+    private final boolean hasKnockback;
+    private final double playerKnockbackX;
+    private final double playerKnockbackY;
+    private final double playerKnockbackZ;
     private final @NonNull Particle explosionParticle;
     private final @NonNull Sound explosionSound;
 
     public ClientboundExplodePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.center = Vector3d.from(in.readDouble(), in.readDouble(), in.readDouble());
-        this.playerKnockback = helper.readNullable(in, (input) -> Vector3d.from(input.readDouble(), input.readDouble(), input.readDouble()));
+        this.centerX = in.readDouble();
+        this.centerY = in.readDouble();
+        this.centerZ = in.readDouble();
+        this.hasKnockback = in.readBoolean();
+        if (this.hasKnockback) {
+            this.playerKnockbackX = in.readDouble();
+            this.playerKnockbackY = in.readDouble();
+            this.playerKnockbackZ = in.readDouble();
+        } else {
+            this.playerKnockbackX = 0.0;
+            this.playerKnockbackY = 0.0;
+            this.playerKnockbackZ = 0.0;
+        }
         this.explosionParticle = helper.readParticle(in);
         this.explosionSound = helper.readById(in, BuiltinSound::from, helper::readSoundEvent);
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        out.writeDouble(this.center.getX());
-        out.writeDouble(this.center.getY());
-        out.writeDouble(this.center.getZ());
-        helper.writeNullable(out, this.playerKnockback, (output, playerKnockback) -> {
-            output.writeDouble(playerKnockback.getX());
-            output.writeDouble(playerKnockback.getY());
-            output.writeDouble(playerKnockback.getZ());
-        });
+        out.writeDouble(this.centerX);
+        out.writeDouble(this.centerY);
+        out.writeDouble(this.centerZ);
+        out.writeBoolean(this.hasKnockback);
+        if (this.hasKnockback) {
+            out.writeDouble(this.playerKnockbackX);
+            out.writeDouble(this.playerKnockbackY);
+            out.writeDouble(this.playerKnockbackZ);
+        }
         helper.writeParticle(out, this.explosionParticle);
         if (this.explosionSound instanceof CustomSound) {
             helper.writeVarInt(out, 0);
