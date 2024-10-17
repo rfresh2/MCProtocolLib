@@ -10,6 +10,7 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PositionElement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -26,6 +27,19 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
     private final float yaw;
     private final float pitch;
     private final @NonNull List<PositionElement> relatives;
+
+    public ClientboundPlayerPositionPacket(int id, double x, double y, double z, double deltaX, double deltaY, double deltaZ, float yaw, float pitch) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.deltaX = deltaX;
+        this.deltaY = deltaY;
+        this.deltaZ = deltaZ;
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.relatives = Collections.emptyList();
+    }
 
     public ClientboundPlayerPositionPacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.id = helper.readVarInt(in);
