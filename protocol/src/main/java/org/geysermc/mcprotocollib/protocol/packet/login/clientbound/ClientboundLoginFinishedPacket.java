@@ -15,11 +15,10 @@ import java.util.List;
 @Data
 @With
 @AllArgsConstructor
-public class ClientboundGameProfilePacket implements MinecraftPacket {
+public class ClientboundLoginFinishedPacket implements MinecraftPacket {
     private final @NonNull GameProfile profile;
-    private final boolean strictErrorHandling;
 
-    public ClientboundGameProfilePacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundLoginFinishedPacket(ByteBuf in, MinecraftCodecHelper helper) {
         GameProfile profile = new GameProfile(helper.readUUID(in), helper.readString(in));
         int properties = helper.readVarInt(in);
         List<GameProfile.Property> propertyList = new ArrayList<>(properties);
@@ -28,7 +27,6 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
         }
         profile.setProperties(propertyList);
         this.profile = profile;
-        this.strictErrorHandling = in.readBoolean();
     }
 
     @Override
@@ -39,7 +37,6 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
         for (GameProfile.Property property : this.profile.getProperties()) {
             helper.writeProperty(out, property);
         }
-        out.writeBoolean(this.strictErrorHandling);
     }
 
     @Override

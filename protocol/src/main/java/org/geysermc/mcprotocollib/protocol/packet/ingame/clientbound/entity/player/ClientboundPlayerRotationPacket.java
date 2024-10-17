@@ -10,15 +10,18 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 @Data
 @With
 @AllArgsConstructor
-public class ClientboundSetCarriedItemPacket implements MinecraftPacket {
-    private final int slot;
+public class ClientboundPlayerRotationPacket implements MinecraftPacket {
+    private final float yRot;
+    private final float xRot;
 
-    public ClientboundSetCarriedItemPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.slot = in.readByte();
+    public ClientboundPlayerRotationPacket(ByteBuf in, MinecraftCodecHelper helper) {
+        this.yRot = in.readFloat();
+        this.xRot = in.readFloat();
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        out.writeByte(this.slot);
+        out.writeFloat(this.yRot);
+        out.writeFloat(this.xRot);
     }
 }

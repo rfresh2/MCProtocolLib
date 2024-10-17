@@ -23,6 +23,7 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
     private final float cursorY;
     private final float cursorZ;
     private final boolean insideBlock;
+    private final boolean hitWorldBorder;
     private final int sequence;
 
     public ServerboundUseItemOnPacket(ByteBuf in, MinecraftCodecHelper helper) {
@@ -36,6 +37,7 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
         this.cursorY = in.readFloat();
         this.cursorZ = in.readFloat();
         this.insideBlock = in.readBoolean();
+        this.hitWorldBorder = in.readBoolean();
         this.sequence = helper.readVarInt(in);
     }
 
@@ -48,6 +50,7 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
         out.writeFloat(this.cursorY);
         out.writeFloat(this.cursorZ);
         out.writeBoolean(this.insideBlock);
+        out.writeBoolean(this.hitWorldBorder);
         helper.writeVarInt(out, this.sequence);
     }
 }

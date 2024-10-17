@@ -83,6 +83,11 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
 
                         entry.setDisplayName(displayName);
                     }
+                    case UPDATE_LIST_ORDER -> {
+                        int listOrder = helper.readVarInt(in);
+
+                        entry.setListOrder(listOrder);
+                    }
                 }
             }
 
@@ -122,6 +127,7 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                     case UPDATE_LISTED -> out.writeBoolean(entry.isListed());
                     case UPDATE_LATENCY -> helper.writeVarInt(out, entry.getLatency());
                     case UPDATE_DISPLAY_NAME -> helper.writeNullable(out, entry.getDisplayName(), helper::writeComponent);
+                    case UPDATE_LIST_ORDER -> helper.writeVarInt(out, entry.getListOrder());
                 }
             }
         }
