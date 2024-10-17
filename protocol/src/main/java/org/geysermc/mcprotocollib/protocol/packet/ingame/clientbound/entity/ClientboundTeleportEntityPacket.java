@@ -23,8 +23,8 @@ public class ClientboundTeleportEntityPacket implements MinecraftPacket {
     private final double deltaX;
     private final double deltaY;
     private final double deltaZ;
-    private final float yRot;
-    private final float xRot;
+    private final float yaw;
+    private final float pitch;
     private final @NonNull List<PositionElement> relatives;
     private final boolean onGround;
 
@@ -36,8 +36,8 @@ public class ClientboundTeleportEntityPacket implements MinecraftPacket {
         this.deltaX = in.readDouble();
         this.deltaY = in.readDouble();
         this.deltaZ = in.readDouble();
-        this.yRot = in.readFloat();
-        this.xRot = in.readFloat();
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
 
         this.relatives = new ArrayList<>(PositionElement.values().length);
         int flags = in.readInt();
@@ -60,8 +60,8 @@ public class ClientboundTeleportEntityPacket implements MinecraftPacket {
         out.writeDouble(this.deltaX);
         out.writeDouble(this.deltaY);
         out.writeDouble(this.deltaZ);
-        out.writeFloat(this.yRot);
-        out.writeFloat(this.xRot);
+        out.writeFloat(this.yaw);
+        out.writeFloat(this.pitch);
 
         int flags = 0;
         for (PositionElement element : this.relatives) {

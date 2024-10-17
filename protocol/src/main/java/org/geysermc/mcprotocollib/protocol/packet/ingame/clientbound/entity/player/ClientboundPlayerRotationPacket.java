@@ -11,17 +11,17 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 @With
 @AllArgsConstructor
 public class ClientboundPlayerRotationPacket implements MinecraftPacket {
-    private final float yRot;
-    private final float xRot;
+    private final float yaw;
+    private final float pitch;
 
     public ClientboundPlayerRotationPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.yRot = in.readFloat();
-        this.xRot = in.readFloat();
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        out.writeFloat(this.yRot);
-        out.writeFloat(this.xRot);
+        out.writeFloat(this.yaw);
+        out.writeFloat(this.pitch);
     }
 }

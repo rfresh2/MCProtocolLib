@@ -26,10 +26,10 @@ public class ClientboundMoveMinecartPacket implements MinecraftPacket {
             double motionX = input.readDouble();
             double motionY = input.readDouble();
             double motionZ = input.readDouble();
-            float yRot = input.readByte() * 360F / 256F;
-            float xRot = input.readByte() * 360F / 256F;
+            float yaw = input.readByte() * 360F / 256F;
+            float pitch = input.readByte() * 360F / 256F;
             float weight = input.readFloat();
-            return new MinecartStep(posX, posY, posZ, motionX, motionY, motionZ, yRot, xRot, weight);
+            return new MinecartStep(posX, posY, posZ, motionX, motionY, motionZ, yaw, pitch, weight);
         });
     }
 
@@ -45,10 +45,10 @@ public class ClientboundMoveMinecartPacket implements MinecraftPacket {
             output.writeDouble(lerpStep.motionY());
             output.writeDouble(lerpStep.motionZ());
 
-            float yRot = lerpStep.yRot() * 256F / 360F;
-            output.writeByte(yRot < (int)yRot ? (int)yRot - 1 : (int)yRot);
-            float xRot = lerpStep.xRot() * 256F / 360F;
-            output.writeByte(xRot < (int)xRot ? (int)xRot - 1 : (int)xRot);
+            float yaw = lerpStep.yaw() * 256F / 360F;
+            output.writeByte(yaw < (int)yaw ? (int)yaw - 1 : (int)yaw);
+            float pitch = lerpStep.pitch() * 256F / 360F;
+            output.writeByte(pitch < (int)pitch ? (int)pitch - 1 : (int)pitch);
 
             output.writeFloat(lerpStep.weight());
         });
