@@ -38,6 +38,5 @@ public class ClientboundRecipeBookSettingsPacket implements MinecraftPacket {
         }
     }
 
-    private record TypeSettings(boolean open, boolean filtering) {
-    }
+    public record TypeSettings(boolean open, boolean filtering) { }
 }
