@@ -8,6 +8,7 @@ import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.ParticleStatus;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart;
 
@@ -18,23 +19,21 @@ import java.util.List;
 @With
 @AllArgsConstructor
 public class ServerboundClientInformationPacket implements MinecraftPacket {
-    private final @NonNull String locale;
-    private final int renderDistance;
+    private final @NonNull String language;
+    private final int viewDistance;
     private final @NonNull ChatVisibility chatVisibility;
-    private final boolean useChatColors;
+    private final boolean chatColors;
     private final @NonNull List<SkinPart> visibleParts;
     private final @NonNull HandPreference mainHand;
     private final boolean textFilteringEnabled;
-    /**
-     * Whether the client permits being shown in server ping responses.
-     */
     private final boolean allowsListing;
+    private final @NonNull ParticleStatus particleStatus;
 
     public ServerboundClientInformationPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.locale = helper.readString(in);
-        this.renderDistance = in.readByte();
+        this.language = helper.readString(in);
+        this.viewDistance = in.readByte();
         this.chatVisibility = ChatVisibility.from(helper.readVarInt(in));
-        this.useChatColors = in.readBoolean();
+        this.chatColors = in.readBoolean();
         this.visibleParts = new ArrayList<>(SkinPart.VALUES.length);
 
         int flags = in.readUnsignedByte();
@@ -48,14 +47,15 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
         this.mainHand = HandPreference.from(helper.readVarInt(in));
         this.textFilteringEnabled = in.readBoolean();
         this.allowsListing = in.readBoolean();
+        this.particleStatus = ParticleStatus.from(helper.readVarInt(in));
     }
 
     @Override
     public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeString(out, this.locale);
-        out.writeByte(this.renderDistance);
+        helper.writeString(out, this.language);
+        out.writeByte(this.viewDistance);
         helper.writeVarInt(out, this.chatVisibility.ordinal());
-        out.writeBoolean(this.useChatColors);
+        out.writeBoolean(this.chatColors);
 
         int flags = 0;
         for (SkinPart part : this.visibleParts) {
@@ -67,5 +67,6 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
         helper.writeVarInt(out, this.mainHand.ordinal());
         out.writeBoolean(this.textFilteringEnabled);
         out.writeBoolean(allowsListing);
+        helper.writeVarInt(out, this.particleStatus.ordinal());
     }
 }
