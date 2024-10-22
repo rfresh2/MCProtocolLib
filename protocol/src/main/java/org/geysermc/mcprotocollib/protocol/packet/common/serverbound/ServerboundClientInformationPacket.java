@@ -8,8 +8,8 @@ import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.player.ParticleStatus;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility;
+import org.geysermc.mcprotocollib.protocol.data.game.setting.ParticleStatus;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart;
 
 import java.util.ArrayList;

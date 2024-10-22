@@ -60,5 +60,6 @@ public class ClientboundRecipeBookAddPacket implements MinecraftPacket {
         out.writeBoolean(this.replace);
     }
 
-    public record Entry(RecipeDisplayEntry contents, boolean notification, boolean highlight) { }
+    public record Entry(RecipeDisplayEntry contents, boolean notification, boolean highlight) {
+    }
 }

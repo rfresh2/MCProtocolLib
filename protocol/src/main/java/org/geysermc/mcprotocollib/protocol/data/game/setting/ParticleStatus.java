@@ -1,7 +1,9 @@
-package org.geysermc.mcprotocollib.protocol.data.game.entity.player;
+package org.geysermc.mcprotocollib.protocol.data.game.setting;
 
 public enum ParticleStatus {
-    ALL, DECREASED, MINIMAL;
+    ALL,
+    DECREASED,
+    MINIMAL;
 
     private static final ParticleStatus[] VALUES = values();
 
