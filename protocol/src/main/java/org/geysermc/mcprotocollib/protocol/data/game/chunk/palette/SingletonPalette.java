@@ -1,7 +1,9 @@
 package org.geysermc.mcprotocollib.protocol.data.game.chunk.palette;
 
+import io.netty.buffer.ByteBuf;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 
 /**
  * A palette containing one state.
@@ -10,6 +12,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SingletonPalette implements Palette {
     private final int state;
+
+    public SingletonPalette(ByteBuf in, MinecraftCodecHelper helper) {
+        this.state = helper.readVarInt(in);
+    }
 
     @Override
     public int size() {
@@ -23,7 +29,10 @@ public class SingletonPalette implements Palette {
 
     @Override
     public int idToState(int id) {
-        return id == 0 ? this.state : 0;
+        if (id != 0) {
+            throw new IllegalArgumentException("Invalid id: " + id);
+        }
+        return this.state;
     }
 
     @Override

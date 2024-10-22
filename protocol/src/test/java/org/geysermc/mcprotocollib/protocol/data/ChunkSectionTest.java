@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 
 public class ChunkSectionTest {
     // warning: modded servers with custom blocks can be even higher which WILL break a global palette
-    private static final int MAX_BLOCK_STATE_ID_1_20_4 = 26644;
+    private static final int MAX_BLOCK_STATE_ID_1_21 = 26684;
 
     @Test
     public void testLargeBlockStateId() {
         final ChunkSection section = new ChunkSection();
-        writeNewBlockStates(section, 0, MAX_BLOCK_STATE_ID_1_20_4);
+        writeNewBlockStates(section, 0, MAX_BLOCK_STATE_ID_1_21);
         // we now have a global palette
 
         try {
@@ -29,7 +29,7 @@ public class ChunkSectionTest {
 
         try {
             for (int i = 0; i < 16; i++) {
-                nextBlockStateId = writeNewBlockStates(section, nextBlockStateId++, MAX_BLOCK_STATE_ID_1_20_4);
+                nextBlockStateId = writeNewBlockStates(section, nextBlockStateId++, MAX_BLOCK_STATE_ID_1_21);
             }
         } catch (final Throwable e) {
             Assertions.fail(e);
