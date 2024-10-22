@@ -26,14 +26,6 @@ public class DataPalette {
     private BitStorage storage;
     private final PaletteType paletteType;
 
-    /*
-     * @deprecated globalPaletteBits is no longer in use, use {@link #DataPalette(Palette, BitStorage, PaletteType)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public DataPalette(@NonNull Palette palette, BitStorage storage, PaletteType paletteType, int globalPaletteBits) {
-        this(palette, storage, paletteType);
-    }
-
     public DataPalette(DataPalette original) {
         this(original.palette.copy(), original.storage == null ? null : new BitStorage(original.storage), original.paletteType);
     }
@@ -42,39 +34,16 @@ public class DataPalette {
         return createEmpty(PaletteType.CHUNK);
     }
 
-    /*
-     * @deprecated globalPaletteBits is no longer in use, use {@link #createForChunk()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public static DataPalette createForChunk(int globalPaletteBits) {
-        return createForChunk();
-    }
-
-    /*
-     * @deprecated globalPaletteBits is no longer in use, use {@link #createForBiome()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public static DataPalette createForBiome(int globalPaletteBits) {
-        return createForBiome();
-    }
-
     public static DataPalette createForBiome() {
         return createEmpty(PaletteType.BIOME);
     }
 
     public static DataPalette createEmpty(PaletteType paletteType) {
-        return new DataPalette(new ListPalette(paletteType.getMinBitsPerEntry()),
-                new BitStorage(paletteType.getMinBitsPerEntry(), paletteType.getStorageSize()), paletteType);
+        return new DataPalette(
+            createEmptyPalette(paletteType.getMinBitsPerEntry()),
+            new BitStorage(paletteType.getMinBitsPerEntry(), paletteType.getStorageSize()),
+            paletteType);
     }
-
-    /*
-     * @deprecated globalPaletteBits is no longer in use, use {@link #createEmpty(PaletteType)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public static DataPalette createEmpty(PaletteType paletteType, int globalPaletteBits) {
-        return createEmpty(paletteType);
-    }
-
 
     public int get(int x, int y, int z) {
         if (storage != null) {
@@ -120,7 +89,7 @@ public class DataPalette {
         BitStorage oldData = this.storage;
 
         int bitsPerEntry = sanitizeBitsPerEntry(oldPalette instanceof SingletonPalette ? 1 : oldData.getBitsPerEntry() + 1);
-        this.palette = createPalette(bitsPerEntry, paletteType);
+        this.palette = createEmptyPalette(bitsPerEntry);
         this.storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize());
 
         if (oldPalette instanceof SingletonPalette) {
@@ -132,14 +101,13 @@ public class DataPalette {
         }
     }
 
-    private static Palette createPalette(int bitsPerEntry, PaletteType paletteType) {
-        if (bitsPerEntry <= paletteType.getMinBitsPerEntry()) {
-            return new ListPalette(bitsPerEntry);
-        } else if (bitsPerEntry <= paletteType.getMaxBitsPerEntry()) {
-            return new MapPalette(bitsPerEntry);
-        } else {
-            return new GlobalPalette();
-        }
+    private static Palette createEmptyPalette(int bitsPerEntry) {
+        return switch (bitsPerEntry) {
+            case 0 -> new SingletonPalette(0);
+            case 1,2,3 -> new ListPalette(bitsPerEntry);
+            case 4,5,6,7,8 -> new MapPalette(bitsPerEntry);
+            default -> GlobalPalette.INSTANCE;
+        };
     }
 
     private int index(int x, int y, int z) {

@@ -20,13 +20,14 @@ public class MapPalette implements Palette {
     private final int capacity;
 
     private final int[] idToState;
-    private final Int2IntMap stateToId = new Int2IntOpenHashMap();
+    private final Int2IntMap stateToId;
     private int nextId = 0;
 
     public MapPalette(int bitsPerEntry) {
         this.capacity = 1 << bitsPerEntry;
 
         this.idToState = new int[this.capacity];
+        this.stateToId = new Int2IntOpenHashMap(capacity, 0.5f);
         this.stateToId.defaultReturnValue(MISSING_ID);
     }
 
@@ -61,16 +62,15 @@ public class MapPalette implements Palette {
 
     @Override
     public int idToState(int id) {
-        if (id >= 0 && id < this.size()) {
-            return this.idToState[id];
-        } else {
-            return 0;
+        if (id < 0 || id >= this.size()) {
+            throw new IllegalArgumentException("Invalid id: " + id);
         }
+        return this.idToState[id];
     }
 
     @Override
     public MapPalette copy() {
-        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), this.nextId);
+        MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), new Int2IntOpenHashMap(capacity, 0.5f), this.nextId);
         mapPalette.stateToId.putAll(this.stateToId);
         return mapPalette;
     }

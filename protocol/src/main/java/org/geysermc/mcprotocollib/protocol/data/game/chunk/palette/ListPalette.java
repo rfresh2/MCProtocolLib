@@ -62,11 +62,10 @@ public class ListPalette implements Palette {
 
     @Override
     public int idToState(int id) {
-        if (id >= 0 && id < this.size()) {
-            return this.data[id];
-        } else {
-            return 0;
+        if (id < 0 || id >= this.size()) {
+            throw new IllegalArgumentException("Palette index out of bounds: " + id);
         }
+        return this.data[id];
     }
 
     @Override
