@@ -4,7 +4,7 @@ plugins {
     `java-library`
 }
 
-version = "1.21.2"
+version = "1.21.3"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
 
 repositories {
