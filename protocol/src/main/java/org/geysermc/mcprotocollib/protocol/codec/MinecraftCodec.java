@@ -216,7 +216,7 @@ public class MinecraftCodec {
     public static final PacketCodec CODEC = PacketCodec.builder()
             .protocolVersion(768)
             .helper(MinecraftCodecHelper.INSTANCE)
-            .minecraftVersion("1.21.2")
+            .minecraftVersion("1.21.3")
             .state(ProtocolState.HANDSHAKE, MinecraftPacketRegistry.builder()
                     .registerServerboundPacket(ClientIntentionPacket.class, ClientIntentionPacket::new)
             )
