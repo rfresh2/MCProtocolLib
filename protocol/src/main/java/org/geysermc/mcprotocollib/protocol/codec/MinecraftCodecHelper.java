@@ -1033,7 +1033,10 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
     public DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType) {
         int bitsPerEntry = buf.readByte() & 0xFF;
-        Palette palette = this.readPalette(buf, bitsPerEntry);
+        Palette palette = switch (paletteType) {
+            case CHUNK -> this.readChunkPalette(buf, bitsPerEntry);
+            case BIOME -> this.readBiomePalette(buf, bitsPerEntry);
+        };
         long[] data = readLongArray(buf);
         BitStorage storage;
         if (palette instanceof SingletonPalette) {
@@ -1067,11 +1070,19 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         this.writeLongArray(buf, data);
     }
 
-    private Palette readPalette(ByteBuf buf, int bitsPerEntry) {
+    private Palette readChunkPalette(ByteBuf buf, int bitsPerEntry) {
         return switch (bitsPerEntry) {
             case 0 -> new SingletonPalette(buf, this);
             case 1,2,3 -> new ListPalette(bitsPerEntry, buf, this);
             case 4,5,6,7,8 -> new MapPalette(bitsPerEntry, buf, this);
+            default -> GlobalPalette.INSTANCE;
+        };
+    }
+
+    private Palette readBiomePalette(ByteBuf buf, int bitsPerEntry) {
+        return switch (bitsPerEntry) {
+            case 0 -> new SingletonPalette(buf, this);
+            case 1,2,3 -> new ListPalette(bitsPerEntry, buf, this);
             default -> GlobalPalette.INSTANCE;
         };
     }
