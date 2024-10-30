@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 /**
@@ -37,5 +38,14 @@ public final class HolderSet {
         }
 
         return tagResolver.apply(location);
+    }
+
+    @Override
+    public String toString() {
+        if (this.holders != null) {
+            return getClass().getSimpleName() + "[holders=" + Arrays.toString(this.holders) + "]";
+        } else {
+            return getClass().getSimpleName() + "[location=" + this.location + "]";
+        }
     }
 }
