@@ -18,10 +18,10 @@ import java.util.List;
 public class ServerboundChatCommandSignedPacket implements MinecraftPacket {
     private final String command;
     private long timeStamp;
-    private final long salt;
-    private final List<ArgumentSignature> signatures;
-    private final int offset;
-    private final BitSet acknowledgedMessages;
+    private long salt;
+    private List<ArgumentSignature> signatures;
+    private int offset;
+    private BitSet acknowledgedMessages;
 
     public ServerboundChatCommandSignedPacket(String command) {
         this.command = command;
