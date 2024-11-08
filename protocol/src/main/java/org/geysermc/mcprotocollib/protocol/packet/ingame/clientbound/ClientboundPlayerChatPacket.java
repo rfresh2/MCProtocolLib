@@ -29,7 +29,7 @@ public class ClientboundPlayerChatPacket implements MinecraftPacket {
     private final long salt;
     private final List<MessageSignature> lastSeenMessages;
     private final @Nullable Component unsignedContent;
-    private final ChatFilterType filterMask;
+    private ChatFilterType filterMask;
     private final Holder<ChatType> chatType;
     private final Component name;
     private final @Nullable Component targetName;
