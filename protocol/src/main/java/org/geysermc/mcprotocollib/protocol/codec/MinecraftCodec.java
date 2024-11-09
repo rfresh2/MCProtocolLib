@@ -406,7 +406,7 @@ public class MinecraftCodec {
                     .registerServerboundPacket(ServerboundChatSessionUpdatePacket.class, ServerboundChatSessionUpdatePacket::new)
                     .registerServerboundPacket(ServerboundChunkBatchReceivedPacket.class, ServerboundChunkBatchReceivedPacket::new)
                     .registerServerboundPacket(ServerboundClientCommandPacket.class, ServerboundClientCommandPacket::new)
-                    .registerServerboundPacket(ServerboundClientTickEndPacket.class, ServerboundClientTickEndPacket::new)
+                    .registerServerboundPacket(ServerboundClientTickEndPacket.class, (buf, helper) -> ServerboundClientTickEndPacket.INSTANCE)
                     .registerServerboundPacket(ServerboundClientInformationPacket.class, ServerboundClientInformationPacket::new)
                     .registerServerboundPacket(ServerboundCommandSuggestionPacket.class, ServerboundCommandSuggestionPacket::new)
                     .registerServerboundPacket(ServerboundConfigurationAcknowledgedPacket.class, ServerboundConfigurationAcknowledgedPacket::new)

@@ -86,7 +86,7 @@ public class DataComponentType<T> {
     public static final DataComponentType<List<ItemStack>> CONTAINER = new DataComponentType<>(listReader(ItemCodecHelper::readOptionalItemStack), listWriter(MinecraftCodecHelper::writeOptionalItemStack), ObjectDataComponent::new);
     public static final DataComponentType<BlockStateProperties> BLOCK_STATE = new DataComponentType<>(ItemCodecHelper::readBlockStateProperties, ItemCodecHelper::writeBlockStateProperties, ObjectDataComponent::new);
     public static final DataComponentType<List<BeehiveOccupant>> BEES = new DataComponentType<>(listReader(ItemCodecHelper::readBeehiveOccupant), listWriter(ItemCodecHelper::writeBeehiveOccupant), ObjectDataComponent::new);
-    public static final DataComponentType<StringTag> LOCK = new DataComponentType<>(ItemCodecHelper::readLock, ItemCodecHelper::writeLock, ObjectDataComponent::new);
+    public static final DataComponentType<MNBT> LOCK = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
     public static final DataComponentType<MNBT> CONTAINER_LOOT = new DataComponentType<>(ItemCodecHelper::readMNBT, ItemCodecHelper::writeMNBT, ObjectDataComponent::new);
 
     protected final int id;

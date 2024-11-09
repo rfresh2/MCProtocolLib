@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.viaversion.nbt.tag.ListTag;
-import com.viaversion.nbt.tag.StringTag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -160,6 +159,7 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         }
 
         this.writeNullable(buf, equippable.model(), this::writeResourceLocation);
+        this.writeNullable(buf, equippable.cameraOverlay(), this::writeResourceLocation);
         this.writeNullable(buf, equippable.allowedEntities(), this::writeHolderSet);
         buf.writeBoolean(equippable.dispensable());
         buf.writeBoolean(equippable.swappable());
@@ -637,13 +637,5 @@ public class ItemCodecHelper extends MinecraftCodecHelper {
         this.writeMNBT(buf, occupant.getEntityData());
         this.writeVarInt(buf, occupant.getTicksInHive());
         this.writeVarInt(buf, occupant.getMinTicksInHive());
-    }
-
-    public StringTag readLock(ByteBuf buf) {
-        return this.readTag(buf, StringTag.class);
-    }
-
-    public void writeLock(ByteBuf buf, StringTag key) {
-        this.writeTag(buf, key);
     }
 }
