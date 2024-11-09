@@ -17,10 +17,10 @@ import java.util.BitSet;
 public class ServerboundChatPacket implements MinecraftPacket {
     private @NotNull String message;
     private long timeStamp;
-    private final long salt;
-    private final byte @Nullable [] signature;
-    private final int offset;
-    private final BitSet acknowledgedMessages;
+    private long salt;
+    private byte @Nullable [] signature;
+    private int offset;
+    private BitSet acknowledgedMessages;
 
 
     // default unsigned chat packet

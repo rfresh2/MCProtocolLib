@@ -59,9 +59,9 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.48.1")
+    api("org.checkerframework:checker-qual:3.48.2")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
 }
 
 lombok {

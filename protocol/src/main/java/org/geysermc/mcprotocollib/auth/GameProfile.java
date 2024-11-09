@@ -2,6 +2,9 @@ package org.geysermc.mcprotocollib.auth;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.Getter;
+import lombok.Setter;
+import net.raphimc.minecraftauth.step.java.StepPlayerCertificates;
 import org.geysermc.mcprotocollib.auth.util.TextureUrlChecker;
 import org.geysermc.mcprotocollib.auth.util.UndashedUUIDAdapter;
 
@@ -43,6 +46,7 @@ public class GameProfile {
     private List<Property> properties;
     private Map<TextureType, Texture> textures;
     private boolean texturesVerified;
+    @Getter @Setter private StepPlayerCertificates.PlayerCertificates playerCertificates;
 
     /**
      * Creates a new GameProfile instance.
