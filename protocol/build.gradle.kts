@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.10.2"
+    id("io.freefair.lombok") version "8.11"
     `maven-publish`
     `java-library`
 }
@@ -31,12 +31,12 @@ repositories {
 }
 
 val adventureVersion = "4.17.0"
-val fastutilVersion = "8.5.14"
+val fastutilVersion = "8.5.15"
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.16")
 
-    api("com.github.rfresh2:OpenNBT:3.0.4")
+    api("com.github.rfresh2:OpenNBT:3.0.5")
 
     // MinecraftAuth for authentication
     api("net.raphimc:MinecraftAuth:4.1.1")
@@ -54,8 +54,8 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.114.Final")
-    api("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
+    api("io.netty:netty-all:4.1.115.Final")
+    compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
