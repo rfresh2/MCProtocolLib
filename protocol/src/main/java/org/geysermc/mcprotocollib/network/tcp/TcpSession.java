@@ -1,8 +1,8 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
-import com.google.common.util.concurrent.Futures;
 import com.velocitypowered.natives.util.Natives;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ConnectTimeoutException;
@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -354,9 +353,9 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public Future<Void> send(@NotNull Packet packet) {
+    public ChannelFuture send(@NotNull Packet packet) {
         if(this.channel == null || !this.channel.isActive()) {
-            return Futures.immediateVoidFuture();
+            return InvalidVoidChannelFuture.create();
         }
         final Packet toSend = this.callPacketSending(packet);
         if (toSend != null) {
@@ -410,9 +409,9 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     }
 
     @Override
-    public Future<Void> sendDirect(@NotNull Packet packet) {
+    public ChannelFuture sendDirect(@NotNull Packet packet) {
         if(this.channel == null || !this.channel.isActive()) {
-            return Futures.immediateVoidFuture();
+            return InvalidVoidChannelFuture.create();
         }
         return this.channel.writeAndFlush(packet).addListener((ChannelFutureListener) future -> {
             if(!future.isSuccess()) {
