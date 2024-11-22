@@ -1,6 +1,7 @@
 package org.geysermc.mcprotocollib.network;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -11,12 +12,12 @@ import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.tcp.FlushHandler;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -267,7 +268,9 @@ public interface Session {
      *
      * @param packet Packet to send.
      */
-    Future<Void> send(@NonNull Packet packet);
+    ChannelFuture send(@NonNull Packet packet);
+
+    void sendAwait(@NotNull Packet packet);
 
     void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
 
@@ -277,7 +280,7 @@ public interface Session {
      * @param packet Packet to send
      * @return
      */
-    Future<Void> sendDirect(@NonNull Packet packet);
+    ChannelFuture sendDirect(@NonNull Packet packet);
 
     /**
      * Writes a packet without flushing
