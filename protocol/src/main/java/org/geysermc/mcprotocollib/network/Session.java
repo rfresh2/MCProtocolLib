@@ -11,6 +11,7 @@ import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.tcp.FlushHandler;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.net.SocketAddress;
@@ -268,6 +269,8 @@ public interface Session {
      * @param packet Packet to send.
      */
     Future<Void> send(@NonNull Packet packet);
+
+    void sendAwait(@NotNull Packet packet);
 
     void send(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
 
