@@ -88,6 +88,11 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
 
                         entry.setListOrder(listOrder);
                     }
+                    case UPDATE_HAT -> {
+                        boolean showHat = in.readBoolean();
+
+                        entry.setShowHat(showHat);
+                    }
                 }
             }
 
@@ -128,6 +133,7 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                     case UPDATE_LATENCY -> helper.writeVarInt(out, entry.getLatency());
                     case UPDATE_DISPLAY_NAME -> helper.writeNullable(out, entry.getDisplayName(), helper::writeComponent);
                     case UPDATE_LIST_ORDER -> helper.writeVarInt(out, entry.getListOrder());
+                    case UPDATE_HAT -> out.writeBoolean(entry.isShowHat());
                 }
             }
         }

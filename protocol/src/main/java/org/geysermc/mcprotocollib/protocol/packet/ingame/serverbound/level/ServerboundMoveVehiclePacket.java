@@ -16,6 +16,7 @@ public class ServerboundMoveVehiclePacket implements MinecraftPacket {
     private final double z;
     private final float yaw;
     private final float pitch;
+    private final boolean onGround;
 
     public ServerboundMoveVehiclePacket(ByteBuf in, MinecraftCodecHelper helper) {
         this.x = in.readDouble();
@@ -23,6 +24,7 @@ public class ServerboundMoveVehiclePacket implements MinecraftPacket {
         this.z = in.readDouble();
         this.yaw = in.readFloat();
         this.pitch = in.readFloat();
+        this.onGround = in.readBoolean();
     }
 
     @Override
@@ -32,5 +34,6 @@ public class ServerboundMoveVehiclePacket implements MinecraftPacket {
         out.writeDouble(this.z);
         out.writeFloat(this.yaw);
         out.writeFloat(this.pitch);
+        out.writeBoolean(this.onGround);
     }
 }

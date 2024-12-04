@@ -23,6 +23,7 @@ public class PlayerListEntry {
     private int latency;
     private GameMode gameMode;
     private @Nullable Component displayName;
+    private boolean showHat;
     private int listOrder;
     private UUID sessionId;
     private long expiresAt;
@@ -30,11 +31,11 @@ public class PlayerListEntry {
     private byte @Nullable[] keySignature;
 
     public PlayerListEntry(UUID profileId) {
-        this(profileId, new GameProfile(profileId, null), true, 0, GameMode.SURVIVAL, null, 0, null, 0, null, null);
+        this(profileId, new GameProfile(profileId, null), true, 0, GameMode.SURVIVAL, null, false, 0, null, 0, null, null);
     }
 
     public PlayerListEntry(String name, UUID profileId) {
-        this(profileId, new GameProfile(profileId, name), true, 0, GameMode.SURVIVAL, null, 0, null, 0, null, null);
+        this(profileId, new GameProfile(profileId, name), true, 0, GameMode.SURVIVAL, null, false, 0, null, 0, null, null);
     }
 
     public String getName() {

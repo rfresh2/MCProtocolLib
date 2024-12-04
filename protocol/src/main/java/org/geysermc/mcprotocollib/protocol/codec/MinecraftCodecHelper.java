@@ -73,7 +73,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.SculkChargeParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ShriekParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.TargetColorParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.TrailParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.VibrationParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.BlockPositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.EntityPositionSource;
@@ -798,7 +798,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             case ITEM -> new ItemParticleData(this.readOptionalItemStack(buf));
             case SCULK_CHARGE -> new SculkChargeParticleData(buf.readFloat());
             case SHRIEK -> new ShriekParticleData(this.readVarInt(buf));
-            case TRAIL -> new TargetColorParticleData(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readInt());
+            case TRAIL -> new TrailParticleData(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readInt(), this.readVarInt(buf));
             case VIBRATION -> new VibrationParticleData(this.readPositionSource(buf), this.readVarInt(buf));
             default -> null;
         };
@@ -838,11 +838,12 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
                 this.writeVarInt(buf, shriekData.getDelay());
             }
             case TRAIL -> {
-                TargetColorParticleData targetColorData = (TargetColorParticleData) data;
-                buf.writeDouble(targetColorData.targetX());
-                buf.writeDouble(targetColorData.targetY());
-                buf.writeDouble(targetColorData.targetZ());
-                buf.writeInt(targetColorData.color());
+                TrailParticleData trailData = (TrailParticleData) data;
+                buf.writeDouble(trailData.targetX());
+                buf.writeDouble(trailData.targetY());
+                buf.writeDouble(trailData.targetZ());
+                buf.writeInt(trailData.color());
+                this.writeVarInt(buf, trailData.duration());
             }
             case VIBRATION -> {
                 VibrationParticleData vibrationData = (VibrationParticleData) data;
