@@ -3,9 +3,7 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
@@ -52,8 +50,6 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     private final int z;
     private final int rawType;
     private final int rawValue;
-    private final @NonNull BlockValueType type;
-    private final @NonNull BlockValue value;
     private final int blockId;
 
     public ClientboundBlockEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
@@ -64,39 +60,6 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
         this.rawType = in.readUnsignedByte();
         this.rawValue = in.readUnsignedByte();
         this.blockId = helper.readVarInt(in);
-
-        // TODO: Handle this in MinecraftCodecHelper
-        try {
-            if (this.blockId == NOTE_BLOCK) {
-                this.type = NoteBlockValueType.from(rawType);
-                this.value = new NoteBlockValue();
-            } else if (this.blockId == STICKY_PISTON || this.blockId == PISTON) {
-                this.type = PistonValueType.from(rawType);
-                this.value = new PistonValue(Direction.from(Math.abs((rawValue & 7) % 6)));
-            } else if (this.blockId == MOB_SPAWNER) {
-                this.type = MobSpawnerValueType.from(rawType - 1);
-                this.value = new MobSpawnerValue();
-            } else if (this.blockId == CHEST || this.blockId == ENDER_CHEST || this.blockId == TRAPPED_CHEST
-                || (this.blockId >= SHULKER_BOX_LOWER && this.blockId <= SHULKER_BOX_HIGHER)) {
-                this.type = ChestValueType.from(rawType - 1);
-                this.value = new ChestValue(rawValue);
-            } else if (this.blockId == END_GATEWAY) {
-                this.type = EndGatewayValueType.from(rawType - 1);
-                this.value = new EndGatewayValue();
-            } else if (this.blockId == BELL) {
-                this.type = BellValueType.from(rawType - 1);
-                this.value = new BellValue(Direction.from(Math.abs(rawValue % 6)));
-            } else if (this.blockId == DECORATED_POT) {
-                this.type = DecoratedPotValueType.from(rawType - 1);
-                this.value = new DecoratedPotValue(WobbleStyle.from(Math.abs(rawValue % 2)));
-            } else {
-                this.type = GenericBlockValueType.from(rawType);
-                this.value = new GenericBlockValue(rawValue);
-            }
-        } catch (Throwable t) {
-            this.type = null;
-            this.value = null;
-        }
     }
 
     @Override
@@ -105,5 +68,47 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
         out.writeByte(rawType);
         out.writeByte(rawValue);
         helper.writeVarInt(out, this.blockId);
+    }
+
+    public BlockValueType getType() {
+        if (this.blockId == NOTE_BLOCK) {
+            return NoteBlockValueType.from(rawType);
+        } else if (this.blockId == STICKY_PISTON || this.blockId == PISTON) {
+            return PistonValueType.from(rawType);
+        } else if (this.blockId == MOB_SPAWNER) {
+            return MobSpawnerValueType.from(rawType - 1);
+        } else if (this.blockId == CHEST || this.blockId == ENDER_CHEST || this.blockId == TRAPPED_CHEST
+            || (this.blockId >= SHULKER_BOX_LOWER && this.blockId <= SHULKER_BOX_HIGHER)) {
+            return ChestValueType.from(rawType - 1);
+        } else if (this.blockId == END_GATEWAY) {
+            return EndGatewayValueType.from(rawType - 1);
+        } else if (this.blockId == BELL) {
+            return BellValueType.from(rawType - 1);
+        } else if (this.blockId == DECORATED_POT) {
+            return DecoratedPotValueType.from(rawType - 1);
+        } else {
+            return GenericBlockValueType.from(rawType);
+        }
+    }
+
+    public BlockValue getValue() {
+        if (this.blockId == NOTE_BLOCK) {
+            return new NoteBlockValue();
+        } else if (this.blockId == STICKY_PISTON || this.blockId == PISTON) {
+            return new PistonValue(Direction.from(Math.abs((rawValue & 7) % 6)));
+        } else if (this.blockId == MOB_SPAWNER) {
+            return new MobSpawnerValue();
+        } else if (this.blockId == CHEST || this.blockId == ENDER_CHEST || this.blockId == TRAPPED_CHEST
+            || (this.blockId >= SHULKER_BOX_LOWER && this.blockId <= SHULKER_BOX_HIGHER)) {
+            return new ChestValue(rawValue);
+        } else if (this.blockId == END_GATEWAY) {
+            return new EndGatewayValue();
+        } else if (this.blockId == BELL) {
+            return new BellValue(Direction.from(Math.abs(rawValue % 6)));
+        } else if (this.blockId == DECORATED_POT) {
+            return new DecoratedPotValue(WobbleStyle.from(Math.abs(rawValue % 2)));
+        } else {
+            return new GenericBlockValue(rawValue);
+        }
     }
 }
