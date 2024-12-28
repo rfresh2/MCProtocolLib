@@ -49,6 +49,14 @@ public class NbtComponentSerializerTest {
     }
 
 //    @Test
+    public void shadowColorTest() {
+        var json = "{\"color\":\"black\",\"shadow_color\":1694498815,\"text\":\"hello\"}";
+        var component = DefaultComponentSerializer.get().deserialize(json);
+        componentEqualityTest(component);
+        binaryTest(component);
+    }
+
+//    @Test
 //    public void translatableArgsTest() {
 //        var component = Component.translatable()
 //            .key("argument.block.property.unknown")

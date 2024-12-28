@@ -30,7 +30,7 @@ repositories {
     mavenLocal()
 }
 
-val adventureVersion = "4.17.0"
+val adventureVersion = "4.18.0"
 val fastutilVersion = "8.5.15"
 
 dependencies {
@@ -54,14 +54,14 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.115.Final")
+    api("io.netty:netty-all:4.1.116.Final")
     compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.48.3")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 }
 
 lombok {
