@@ -18,6 +18,7 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.slf4j.Logger;
@@ -197,6 +198,10 @@ public class BinaryNbtComponentSerializer {
                 };
                 writer.writeByteTag(decorationName, (byte) (state == TextDecoration.State.TRUE ? 1 : 0));
             }
+        }
+        ShadowColor shadowColor = style.shadowColor();
+        if (shadowColor != null) {
+            writer.writeIntTag("shadow_color", shadowColor.value());
         }
         var font = style.font();
         if (font != null) {
