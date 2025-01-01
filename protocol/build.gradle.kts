@@ -12,7 +12,7 @@ repositories {
         name = "opencollab-releases"
         content { includeGroupByRegex("org.cloudburstmc.*") }
     }
-    maven("https://papermc.io/repo/repository/maven-public/") {
+    maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc"
         content { includeGroup("com.velocitypowered") }
     }
