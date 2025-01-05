@@ -69,6 +69,12 @@ public class MapPalette implements Palette {
     }
 
     @Override
+    public boolean contains(final int state) {
+        int id = this.stateToId.get(state);
+        return id != MISSING_ID;
+    }
+
+    @Override
     public MapPalette copy() {
         MapPalette mapPalette = new MapPalette(this.capacity, Arrays.copyOf(this.idToState, this.idToState.length), new Int2IntOpenHashMap(capacity, 0.5f), this.nextId);
         mapPalette.stateToId.putAll(this.stateToId);
