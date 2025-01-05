@@ -25,6 +25,11 @@ public class GlobalPalette implements Palette {
     }
 
     @Override
+    public boolean contains(final int state) {
+        return true;
+    }
+
+    @Override
     public GlobalPalette copy() {
         return this;
     }

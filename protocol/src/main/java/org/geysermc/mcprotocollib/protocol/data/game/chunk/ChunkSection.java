@@ -16,7 +16,6 @@ public class ChunkSection {
 
     private int blockCount;
     private @NonNull DataPalette chunkData;
-    @Getter
     private @NonNull DataPalette biomeData;
 
     public ChunkSection() {

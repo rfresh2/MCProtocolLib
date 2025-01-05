@@ -30,6 +30,11 @@ public interface Palette {
     int idToState(int id);
 
     /**
+     * Checks if this palette contains a given block state.
+     */
+    boolean contains(int state);
+
+    /**
      * Creates a copy of this palette.
      * This performs a deep copy of the palette's internal data.
      *

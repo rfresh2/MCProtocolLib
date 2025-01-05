@@ -69,6 +69,18 @@ public class ListPalette implements Palette {
     }
 
     @Override
+    public boolean contains(final int state) {
+        int id = -1;
+        for (int i = 0; i < this.nextId; i++) { // Linear search for state
+            if (this.data[i] == state) {
+                id = i;
+                break;
+            }
+        }
+        return id != -1;
+    }
+
+    @Override
     public ListPalette copy() {
         return new ListPalette(this.capacity, Arrays.copyOf(this.data, this.data.length), this.nextId);
     }

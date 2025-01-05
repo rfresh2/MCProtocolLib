@@ -36,6 +36,11 @@ public class SingletonPalette implements Palette {
     }
 
     @Override
+    public boolean contains(final int state) {
+        return this.state == state;
+    }
+
+    @Override
     public SingletonPalette copy() {
         return this;
     }
