@@ -55,11 +55,11 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
 
     api("io.netty:netty-all:4.1.116.Final")
-    compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.25.Final")
+    compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.48.3")
+    api("org.checkerframework:checker-qual:3.48.4")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 }
