@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> implements Session {
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpSession.class);
-    public static String ID = "manager";
-    public static String READ_TIMEOUT_HANDLER_ID = "readTimeout";
-    public static String WRITE_TIMEOUT_HANDLER_ID = "writeTimeout";
-    public static String PROXY_HANDLER_ID = "proxy";
-    public static String HA_PROXY_ENCODER_ID = "proxy-protocol-packet-sender";
+    public static final String ID = "manager";
+    public static final String READ_TIMEOUT_HANDLER_ID = "readTimeout";
+    public static final String WRITE_TIMEOUT_HANDLER_ID = "writeTimeout";
+    public static final String PROXY_HANDLER_ID = "proxy";
+    public static final String HA_PROXY_ENCODER_ID = "proxy-protocol-packet-sender";
     protected String host;
     protected int port;
     private final MinecraftProtocol protocol;

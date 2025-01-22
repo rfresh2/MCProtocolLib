@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.PlayerListEntry;
 import org.geysermc.mcprotocollib.protocol.data.game.PlayerListEntryAction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
@@ -27,19 +27,19 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
     private final EnumSet<PlayerListEntryAction> actions;
     private final PlayerListEntry[] entries;
 
-    public ClientboundPlayerInfoUpdatePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.actions = helper.readEnumSet(in, PlayerListEntryAction.VALUES, PlayerListEntryAction.class);
-        this.entries = new PlayerListEntry[helper.readVarInt(in)];
+    public ClientboundPlayerInfoUpdatePacket(ByteBuf in) {
+        this.actions = MinecraftTypes.readEnumSet(in, PlayerListEntryAction.VALUES, PlayerListEntryAction.class);
+        this.entries = new PlayerListEntry[MinecraftTypes.readVarInt(in)];
         for (int count = 0; count < this.entries.length; count++) {
-            PlayerListEntry entry = new PlayerListEntry(helper.readUUID(in));
+            PlayerListEntry entry = new PlayerListEntry(MinecraftTypes.readUUID(in));
             for (PlayerListEntryAction action : this.actions) {
                 switch (action) {
                     case ADD_PLAYER -> {
-                        GameProfile profile = new GameProfile(entry.getProfileId(), helper.readString(in, 16));
-                        int propertyCount = helper.readVarInt(in);
+                        GameProfile profile = new GameProfile(entry.getProfileId(), MinecraftTypes.readString(in, 16));
+                        int propertyCount = MinecraftTypes.readVarInt(in);
                         List<GameProfile.Property> propertyList = new ArrayList<>(propertyCount);
                         for (int index = 0; index < propertyCount; index++) {
-                            propertyList.add(helper.readProperty(in));
+                            propertyList.add(MinecraftTypes.readProperty(in));
                         }
 
                         profile.setProperties(propertyList);
@@ -48,10 +48,10 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                     }
                     case INITIALIZE_CHAT -> {
                         if (in.readBoolean()) {
-                            entry.setSessionId(helper.readUUID(in));
+                            entry.setSessionId(MinecraftTypes.readUUID(in));
                             entry.setExpiresAt(in.readLong());
-                            byte[] keyBytes = helper.readByteArray(in);
-                            entry.setKeySignature(helper.readByteArray(in));
+                            byte[] keyBytes = MinecraftTypes.readByteArray(in);
+                            entry.setKeySignature(MinecraftTypes.readByteArray(in));
 
                             PublicKey publicKey;
                             try {
@@ -64,7 +64,7 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                         }
                     }
                     case UPDATE_GAME_MODE -> {
-                        GameMode gameMode = GameMode.byId(helper.readVarInt(in));
+                        GameMode gameMode = GameMode.byId(MinecraftTypes.readVarInt(in));
 
                         entry.setGameMode(gameMode);
                     }
@@ -74,12 +74,12 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                         entry.setListed(listed);
                     }
                     case UPDATE_LATENCY -> {
-                        int latency = helper.readVarInt(in);
+                        int latency = MinecraftTypes.readVarInt(in);
 
                         entry.setLatency(latency);
                     }
                     case UPDATE_DISPLAY_NAME -> {
-                        Component displayName = helper.readNullable(in, helper::readComponent);
+                        Component displayName = MinecraftTypes.readNullable(in, MinecraftTypes::readComponent);
 
                         entry.setDisplayName(displayName);
                     }
@@ -90,11 +90,11 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
         }
     }
 
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeEnumSet(out, this.actions, PlayerListEntryAction.VALUES);
-        helper.writeVarInt(out, this.entries.length);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeEnumSet(out, this.actions, PlayerListEntryAction.VALUES);
+        MinecraftTypes.writeVarInt(out, this.entries.length);
         for (PlayerListEntry entry : this.entries) {
-            helper.writeUUID(out, entry.getProfileId());
+            MinecraftTypes.writeUUID(out, entry.getProfileId());
             for (PlayerListEntryAction action : this.actions) {
                 switch (action) {
                     case ADD_PLAYER -> {
@@ -103,25 +103,25 @@ public class ClientboundPlayerInfoUpdatePacket implements MinecraftPacket {
                             throw new IllegalArgumentException("Cannot ADD " + entry.getProfileId() + " without a profile.");
                         }
 
-                        helper.writeString(out, profile.getName());
-                        helper.writeVarInt(out, profile.getProperties().size());
+                        MinecraftTypes.writeString(out, profile.getName());
+                        MinecraftTypes.writeVarInt(out, profile.getProperties().size());
                         for (GameProfile.Property property : profile.getProperties()) {
-                            helper.writeProperty(out, property);
+                            MinecraftTypes.writeProperty(out, property);
                         }
                     }
                     case INITIALIZE_CHAT -> {
                         out.writeBoolean(entry.getPublicKey() != null);
                         if (entry.getPublicKey() != null) {
-                            helper.writeUUID(out, entry.getSessionId());
+                            MinecraftTypes.writeUUID(out, entry.getSessionId());
                             out.writeLong(entry.getExpiresAt());
-                            helper.writeByteArray(out, entry.getPublicKey().getEncoded());
-                            helper.writeByteArray(out, entry.getKeySignature());
+                            MinecraftTypes.writeByteArray(out, entry.getPublicKey().getEncoded());
+                            MinecraftTypes.writeByteArray(out, entry.getKeySignature());
                         }
                     }
-                    case UPDATE_GAME_MODE -> helper.writeVarInt(out, entry.getGameMode().ordinal());
+                    case UPDATE_GAME_MODE -> MinecraftTypes.writeVarInt(out, entry.getGameMode().ordinal());
                     case UPDATE_LISTED -> out.writeBoolean(entry.isListed());
-                    case UPDATE_LATENCY -> helper.writeVarInt(out, entry.getLatency());
-                    case UPDATE_DISPLAY_NAME -> helper.writeNullable(out, entry.getDisplayName(), helper::writeComponent);
+                    case UPDATE_LATENCY -> MinecraftTypes.writeVarInt(out, entry.getLatency());
+                    case UPDATE_DISPLAY_NAME -> MinecraftTypes.writeNullable(out, entry.getDisplayName(), MinecraftTypes::writeComponent);
                 }
             }
         }

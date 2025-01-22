@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.CommandBlockMode;
 
 @Data
@@ -26,13 +26,13 @@ public class ServerboundSetCommandBlockPacket implements MinecraftPacket {
     private final boolean conditional;
     private final boolean automatic;
 
-    public ServerboundSetCommandBlockPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ServerboundSetCommandBlockPacket(ByteBuf in) {
         var position = in.readLong();
-        this.x = helper.decodePositionX(position);
-        this.y = helper.decodePositionY(position);
-        this.z = helper.decodePositionZ(position);
-        this.command = helper.readString(in);
-        this.mode = CommandBlockMode.from(helper.readVarInt(in));
+        this.x = MinecraftTypes.decodePositionX(position);
+        this.y = MinecraftTypes.decodePositionY(position);
+        this.z = MinecraftTypes.decodePositionZ(position);
+        this.command = MinecraftTypes.readString(in);
+        this.mode = CommandBlockMode.from(MinecraftTypes.readVarInt(in));
 
         int flags = in.readUnsignedByte();
         this.doesTrackOutput = (flags & FLAG_TRACK_OUTPUT) != 0;
@@ -41,10 +41,10 @@ public class ServerboundSetCommandBlockPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writePosition(out, this.x, this.y, this.z);
-        helper.writeString(out, this.command);
-        helper.writeVarInt(out, this.mode.ordinal());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writePosition(out, this.x, this.y, this.z);
+        MinecraftTypes.writeString(out, this.command);
+        MinecraftTypes.writeVarInt(out, this.mode.ordinal());
 
         int flags = 0;
         if (this.doesTrackOutput) {

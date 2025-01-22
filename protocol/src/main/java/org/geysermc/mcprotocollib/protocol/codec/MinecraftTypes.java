@@ -8,7 +8,9 @@ import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
-import lombok.RequiredArgsConstructor;
+import io.netty.buffer.ByteBufUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -16,7 +18,6 @@ import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.math.vector.Vector4f;
 import org.geysermc.mcprotocollib.auth.GameProfile;
-import org.geysermc.mcprotocollib.network.codec.BasePacketCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
 import org.geysermc.mcprotocollib.protocol.data.game.Identifier;
@@ -55,7 +56,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponent;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.ItemCodecHelper;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEvent;
@@ -90,6 +90,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -104,9 +105,8 @@ import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 import java.util.function.ToIntFunction;
 
-@RequiredArgsConstructor
-public class MinecraftCodecHelper extends BasePacketCodecHelper {
-    public static final MinecraftCodecHelper INSTANCE = new MinecraftCodecHelper();
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MinecraftTypes {
     private static final int POSITION_X_SIZE = 38;
     private static final int POSITION_Y_SIZE = 12;
     private static final int POSITION_Z_SIZE = 38;
@@ -114,8 +114,121 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     private static final int POSITION_WRITE_SHIFT = 0x3FFFFFF;
     public static boolean useBinaryNbtComponentSerializer = true;
 
+    public static void writeVarInt(ByteBuf buf, int value) {
+        // Peel the one and two byte count cases explicitly as they are the most common VarInt sizes
+        // that the proxy will write, to improve inlining.
+        if ((value & (0xFFFFFFFF << 7)) == 0) {
+            buf.writeByte(value);
+        } else if ((value & (0xFFFFFFFF << 14)) == 0) {
+            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
+            buf.writeShort(w);
+        } else {
+            writeVarIntFull(buf, value);
+        }
+    }
+
+    public static void write21BitVarInt(ByteBuf buf, int value) {
+        int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
+        buf.writeMedium(w);
+    }
+
+    private static void writeVarIntFull(ByteBuf buf, int value) {
+        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
+        if ((value & (0xFFFFFFFF << 7)) == 0) {
+            buf.writeByte(value);
+        } else if ((value & (0xFFFFFFFF << 14)) == 0) {
+            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
+            buf.writeShort(w);
+        } else if ((value & (0xFFFFFFFF << 21)) == 0) {
+            int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
+            buf.writeMedium(w);
+        } else if ((value & (0xFFFFFFFF << 28)) == 0) {
+            int w = (value & 0x7F | 0x80) << 24 | (((value >>> 7) & 0x7F | 0x80) << 16)
+                | ((value >>> 14) & 0x7F | 0x80) << 8 | (value >>> 21);
+            buf.writeInt(w);
+        } else {
+            int w = (value & 0x7F | 0x80) << 24 | ((value >>> 7) & 0x7F | 0x80) << 16
+                | ((value >>> 14) & 0x7F | 0x80) << 8 | ((value >>> 21) & 0x7F | 0x80);
+            buf.writeInt(w);
+            buf.writeByte(value >>> 28);
+        }
+    }
+
+    public static int readVarInt(ByteBuf buf) {
+        int readable = buf.readableBytes();
+        if (readable == 0) {
+            // special case for empty buffer
+            throw new IllegalArgumentException("VarInt too short (0 size readable buffer)");
+        }
+
+        // we can read at least one byte, and this should be a common case
+        int k = buf.readByte();
+        if ((k & 0x80) != 128) {
+            return k;
+        }
+
+        // in case decoding one byte was not enough, use a loop to decode up to the next 4 bytes
+        int maxRead = Math.min(5, readable);
+        int i = k & 0x7F;
+        for (int j = 1; j < maxRead; j++) {
+            k = buf.readByte();
+            i |= (k & 0x7F) << j * 7;
+            if ((k & 0x80) != 128) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("VarInt too long (length must be <= 5)");
+    }
+
+    public static void writeVarLong(ByteBuf buf, long value) {
+        while ((value & -128L) != 0) {
+            buf.writeByte((int) (value & 127L) | 128);
+            value >>>= 7;
+        }
+
+        buf.writeByte((int) value);
+    }
+
+    public static long readVarLong(ByteBuf buf) {
+        long value = 0L;
+        int i = 0;
+
+        byte b;
+        do {
+            if (i >= 10) {
+                throw new RuntimeException("VarLong wider than 10 bytes");
+            }
+            b = buf.readByte();
+            value |= (long) (b & 127) << i++ * 7;
+        } while ((b & 128) == 128);
+
+        return value;
+    }
+
+    public static String readString(ByteBuf buf) {
+        return readString(buf, 262144);
+    }
+
+    public static String readString(ByteBuf buf, int maxLength) {
+        int length = readVarInt(buf);
+        if (length > maxLength * 3) {
+            throw new IllegalArgumentException("String buffer is longer than maximum allowed length");
+        }
+        String string = (String) buf.readCharSequence(length, StandardCharsets.UTF_8);
+        if (string.length() > maxLength) {
+            throw new IllegalArgumentException("String is longer than maximum allowed length");
+        }
+
+        return string;
+    }
+
+    public static void writeString(ByteBuf buf, String value) {
+        writeVarInt(buf, ByteBufUtil.utf8Bytes(value));
+        buf.writeCharSequence(value, StandardCharsets.UTF_8);
+    }
+
     @Nullable
-    public <T> T readNullable(ByteBuf buf, Function<ByteBuf, T> ifPresent) {
+    public static <T> T readNullable(ByteBuf buf, Function<ByteBuf, T> ifPresent) {
         if (buf.readBoolean()) {
             return ifPresent.apply(buf);
         } else {
@@ -123,7 +236,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public <T> void writeNullable(ByteBuf buf, @Nullable T value, BiConsumer<ByteBuf, T> ifPresent) {
+    public static <T> void writeNullable(ByteBuf buf, @Nullable T value, BiConsumer<ByteBuf, T> ifPresent) {
         if (value != null) {
             buf.writeBoolean(true);
             ifPresent.accept(buf, value);
@@ -132,8 +245,8 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public <T> List<T> readList(ByteBuf buf, Function<ByteBuf, T> reader) {
-        int size = this.readVarInt(buf);
+    public static <T> List<T> readList(ByteBuf buf, Function<ByteBuf, T> reader) {
+        int size = readVarInt(buf);
         List<T> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             list.add(reader.apply(buf));
@@ -142,78 +255,78 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return list;
     }
 
-    public <T> void writeList(ByteBuf buf, List<T> value, BiConsumer<ByteBuf, T> writer) {
-        this.writeVarInt(buf, value.size());
+    public static <T> void writeList(ByteBuf buf, List<T> value, BiConsumer<ByteBuf, T> writer) {
+        writeVarInt(buf, value.size());
         for (int i = 0; i < value.size(); i++) {
             writer.accept(buf, value.get(i));
         }
     }
 
-    public <T> Holder<T> readHolder(ByteBuf buf, Function<ByteBuf, T> readCustom) {
-        int registryId = this.readVarInt(buf);
+    public static <T> Holder<T> readHolder(ByteBuf buf, Function<ByteBuf, T> readCustom) {
+        int registryId = readVarInt(buf);
         return registryId == 0 ? Holder.ofCustom(readCustom.apply(buf)) : Holder.ofId(registryId - 1);
     }
 
-    public <T> void writeHolder(ByteBuf buf, Holder<T> holder, BiConsumer<ByteBuf, T> writeCustom) {
+    public static <T> void writeHolder(ByteBuf buf, Holder<T> holder, BiConsumer<ByteBuf, T> writeCustom) {
         if (holder.isCustom()) {
-            this.writeVarInt(buf, 0);
+            writeVarInt(buf, 0);
             writeCustom.accept(buf, holder.custom());
         } else {
-            this.writeVarInt(buf, holder.id() + 1);
+            writeVarInt(buf, holder.id() + 1);
         }
     }
 
     @SuppressWarnings("PatternValidation")
-    public Key readResourceLocation(ByteBuf buf) {
-        return Key.key(this.readString(buf));
+    public static Key readResourceLocation(ByteBuf buf) {
+        return Key.key(readString(buf));
     }
 
-    public String readResourceLocationString(ByteBuf buf) {
-        return Identifier.formalize(this.readString(buf));
+    public static String readResourceLocationString(ByteBuf buf) {
+        return Identifier.formalize(readString(buf));
     }
 
-    public void writeResourceLocation(ByteBuf buf, Key location) {
-        this.writeString(buf, location.asString());
+    public static void writeResourceLocation(ByteBuf buf, Key location) {
+        writeString(buf, location.asString());
     }
 
-    public void writeResourceLocation(ByteBuf buf, String location) {
-        this.writeString(buf, location);
+    public static void writeResourceLocation(ByteBuf buf, String location) {
+        writeString(buf, location);
     }
 
-    public UUID readUUID(ByteBuf buf) {
+    public static UUID readUUID(ByteBuf buf) {
         return new UUID(buf.readLong(), buf.readLong());
     }
 
-    public void writeUUID(ByteBuf buf, UUID uuid) {
+    public static void writeUUID(ByteBuf buf, UUID uuid) {
         buf.writeLong(uuid.getMostSignificantBits());
         buf.writeLong(uuid.getLeastSignificantBits());
     }
 
-    public byte[] readByteArray(ByteBuf buf) {
-        return this.readByteArray(buf, this::readVarInt);
+    public static byte[] readByteArray(ByteBuf buf) {
+        return readByteArray(buf, MinecraftTypes::readVarInt);
     }
 
-    public byte[] readByteArray(ByteBuf buf, ToIntFunction<ByteBuf> reader) {
+    public static byte[] readByteArray(ByteBuf buf, ToIntFunction<ByteBuf> reader) {
         int length = reader.applyAsInt(buf);
         byte[] bytes = new byte[length];
         buf.readBytes(bytes);
         return bytes;
     }
 
-    public void writeByteArray(ByteBuf buf, byte[] bytes) {
-        this.writeByteArray(buf, bytes, this::writeVarInt);
+    public static void writeByteArray(ByteBuf buf, byte[] bytes) {
+        writeByteArray(buf, bytes, MinecraftTypes::writeVarInt);
     }
 
-    public void writeByteArray(ByteBuf buf, byte[] bytes, ObjIntConsumer<ByteBuf> writer) {
+    public static void writeByteArray(ByteBuf buf, byte[] bytes, ObjIntConsumer<ByteBuf> writer) {
         writer.accept(buf, bytes.length);
         buf.writeBytes(bytes);
     }
 
-    public long[] readLongArray(ByteBuf buf) {
-        return this.readLongArray(buf, this::readVarInt);
+    public static long[] readLongArray(ByteBuf buf) {
+        return readLongArray(buf, MinecraftTypes::readVarInt);
     }
 
-    public long[] readLongArray(ByteBuf buf, ToIntFunction<ByteBuf> reader) {
+    public static long[] readLongArray(ByteBuf buf, ToIntFunction<ByteBuf> reader) {
         int length = reader.applyAsInt(buf);
         if (length < 0) {
             throw new IllegalArgumentException("Array cannot have length less than 0.");
@@ -227,11 +340,11 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return l;
     }
 
-    public void writeLongArray(ByteBuf buf, long[] l) {
-        this.writeLongArray(buf, l, this::writeVarInt);
+    public static void writeLongArray(ByteBuf buf, long[] l) {
+        writeLongArray(buf, l, MinecraftTypes::writeVarInt);
     }
 
-    public void writeLongArray(ByteBuf buf, long[] l, ObjIntConsumer<ByteBuf> writer) {
+    public static void writeLongArray(ByteBuf buf, long[] l, ObjIntConsumer<ByteBuf> writer) {
         writer.accept(buf, l.length);
         for (long value : l) {
             buf.writeLong(value);
@@ -239,12 +352,12 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public CompoundTag readTag(ByteBuf buf) {
+    public static CompoundTag readTag(ByteBuf buf) {
         return readTag(buf, CompoundTag.class);
     }
 
     @NonNull
-    public CompoundTag readTagOrThrow(ByteBuf buf) {
+    public static CompoundTag readTagOrThrow(ByteBuf buf) {
         CompoundTag tag = readTag(buf);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read CompoundTag");
@@ -253,7 +366,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) {
+    public static <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) {
         if (buf.readByte() == 0) {
             return null;
         }
@@ -265,7 +378,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public <T extends Tag> void writeTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
+    public static <T extends Tag> void writeTag(ByteBuf buf, @Nullable T tag) throws UncheckedIOException {
         if (tag == null) {
             buf.writeByte(0);
             return;
@@ -277,7 +390,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public <T extends Tag> void writeNamedTag(ByteBuf buf, CompoundTag tag, String name) throws UncheckedIOException {
+    public static <T extends Tag> void writeNamedTag(ByteBuf buf, CompoundTag tag, String name) throws UncheckedIOException {
         try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
             NBTIO.writeTag(out, tag, false);
         } catch (final IOException e) {
@@ -285,7 +398,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public MNBT readNamedMNBT(ByteBuf buf) throws UncheckedIOException {
+    public static MNBT readNamedMNBT(ByteBuf buf) throws UncheckedIOException {
         try (DataInputStream in = byteBufToDataInputStream(buf)) {
             var mnbt = MNBTIO.read(in, true);
             if (mnbt.isEmpty()) return null;
@@ -295,7 +408,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
+    public static MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
         try (DataInputStream in = byteBufToDataInputStream(buf)) {
             var mnbt = MNBTIO.read(in, false);
             if (mnbt.isEmpty()) return null;
@@ -305,7 +418,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
+    public static void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
         try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
             MNBTIO.write(out, mnbt);
         } catch (final IOException e) {
@@ -313,7 +426,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    private DataInputStream byteBufToDataInputStream(ByteBuf buf) {
+    private static DataInputStream byteBufToDataInputStream(ByteBuf buf) {
         return new DataInputStream(new InputStream() {
             @Override
             public int read() {
@@ -322,7 +435,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         });
     }
 
-    private DataOutputStream byteBufToDataOutputStream(ByteBuf buf) {
+    private static DataOutputStream byteBufToDataOutputStream(ByteBuf buf) {
         return new DataOutputStream(new OutputStream() {
             @Override
             public void write(int b) {
@@ -332,51 +445,51 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public ItemStack readOptionalItemStack(ByteBuf buf) {
+    public static ItemStack readOptionalItemStack(ByteBuf buf) {
         byte count = buf.readByte();
         if (count <= 0) {
             return null;
         }
 
-        int item = this.readVarInt(buf);
-        return new ItemStack(item, count, this.readDataComponentPatch(buf));
+        int item = readVarInt(buf);
+        return new ItemStack(item, count, readDataComponentPatch(buf));
     }
 
-    public void writeOptionalItemStack(ByteBuf buf, ItemStack item) {
+    public static void writeOptionalItemStack(ByteBuf buf, ItemStack item) {
         boolean empty = item == null || item.getAmount() <= 0;
         buf.writeByte(!empty ? item.getAmount() : 0);
         if (!empty) {
-            this.writeVarInt(buf, item.getId());
-            this.writeDataComponentPatch(buf, item.getDataComponents());
+            writeVarInt(buf, item.getId());
+            writeDataComponentPatch(buf, item.getDataComponents());
         }
     }
 
     @NotNull
-    public ItemStack readItemStack(ByteBuf buf) {
-        return this.readOptionalItemStack(buf);
+    public static ItemStack readItemStack(ByteBuf buf) {
+        return readOptionalItemStack(buf);
     }
 
-    public void writeItemStack(ByteBuf buf, @NotNull ItemStack item) {
-        this.writeOptionalItemStack(buf, item);
+    public static void writeItemStack(ByteBuf buf, @NotNull ItemStack item) {
+        writeOptionalItemStack(buf, item);
     }
 
     @Nullable
-    public DataComponents readDataComponentPatch(ByteBuf buf) {
-        int nonNullComponents = this.readVarInt(buf);
-        int nullComponents = this.readVarInt(buf);
+    public static DataComponents readDataComponentPatch(ByteBuf buf) {
+        int nonNullComponents = readVarInt(buf);
+        int nullComponents = readVarInt(buf);
         if (nonNullComponents == 0 && nullComponents == 0) {
             return null;
         }
 
         Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(nonNullComponents + nullComponents);
         for (int k = 0; k < nonNullComponents; k++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
-            DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(ItemCodecHelper.INSTANCE, buf);
+            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
+            DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
             dataComponents.put(dataComponentType, dataComponent);
         }
 
         for (int k = 0; k < nullComponents; k++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
+            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readNullDataComponent();
             dataComponents.put(dataComponentType, dataComponent);
         }
@@ -384,10 +497,10 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new DataComponents(dataComponents);
     }
 
-    public void writeDataComponentPatch(ByteBuf buf, DataComponents dataComponents) {
+    public static void writeDataComponentPatch(ByteBuf buf, DataComponents dataComponents) {
         if (dataComponents == null) {
-            this.writeVarInt(buf, 0);
-            this.writeVarInt(buf, 0);
+            writeVarInt(buf, 0);
+            writeVarInt(buf, 0);
         } else {
             int i = 0;
             int j = 0;
@@ -399,58 +512,58 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
                 }
             }
 
-            this.writeVarInt(buf, i);
-            this.writeVarInt(buf, j);
+            writeVarInt(buf, i);
+            writeVarInt(buf, j);
 
             for (DataComponent<?, ?> component : dataComponents.getDataComponents().values()) {
                 if (component.getValue() != null) {
-                    this.writeVarInt(buf, component.getType().getId());
-                    component.write(ItemCodecHelper.INSTANCE, buf);
+                    writeVarInt(buf, component.getType().getId());
+                    component.write(buf);
                 }
             }
 
             for (DataComponent<?, ?> component : dataComponents.getDataComponents().values()) {
                 if (component.getValue() == null) {
-                    this.writeVarInt(buf, component.getType().getId());
+                    writeVarInt(buf, component.getType().getId());
                 }
             }
         }
     }
 
     @NotNull
-    public ItemStack readTradeItemStack(ByteBuf buf) {
-        int item = this.readVarInt(buf);
-        int count = this.readVarInt(buf);
-        int componentsLength = this.readVarInt(buf);
+    public static ItemStack readTradeItemStack(ByteBuf buf) {
+        int item = readVarInt(buf);
+        int count = readVarInt(buf);
+        int componentsLength = readVarInt(buf);
 
         Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(componentsLength);
         for (int i = 0; i < componentsLength; i++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(this.readVarInt(buf));
-            DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(ItemCodecHelper.INSTANCE, buf);
+            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
+            DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
             dataComponents.put(dataComponentType, dataComponent);
         }
 
         return new ItemStack(item, count, new DataComponents(dataComponents));
     }
 
-    public void writeTradeItemStack(ByteBuf buf, @NotNull ItemStack item) {
-        this.writeVarInt(buf, item.getId());
-        this.writeVarInt(buf, item.getAmount());
+    public static void writeTradeItemStack(ByteBuf buf, @NotNull ItemStack item) {
+        writeVarInt(buf, item.getId());
+        writeVarInt(buf, item.getAmount());
 
         DataComponents dataComponents = item.getDataComponents();
         if (dataComponents == null) {
-            this.writeVarInt(buf, 0);
+            writeVarInt(buf, 0);
             return;
         }
 
-        this.writeVarInt(buf, dataComponents.getDataComponents().size());
+        writeVarInt(buf, dataComponents.getDataComponents().size());
         for (DataComponent<?, ?> component : dataComponents.getDataComponents().values()) {
-            this.writeVarInt(buf, component.getType().getId());
-            component.write(ItemCodecHelper.INSTANCE, buf);
+            writeVarInt(buf, component.getType().getId());
+            component.write(buf);
         }
     }
 
-    public Vector3i readPosition(ByteBuf buf) {
+    public static Vector3i readPosition(ByteBuf buf) {
         long val = buf.readLong();
 
         int x = (int) (val >> POSITION_X_SIZE);
@@ -460,19 +573,19 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return Vector3i.from(x, y, z);
     }
 
-    public int decodePositionX(long position) {
+    public static int decodePositionX(long position) {
         return (int) (position >> POSITION_X_SIZE);
     }
 
-    public int decodePositionY(long position) {
+    public static int decodePositionY(long position) {
         return (int) (position << 52 >> 52);
     }
 
-    public int decodePositionZ(long position) {
+    public static int decodePositionZ(long position) {
         return (int) (position << 26 >> POSITION_Z_SIZE);
     }
 
-    public void writePosition(ByteBuf buf, Vector3i pos) {
+    public static void writePosition(ByteBuf buf, Vector3i pos) {
         long x = pos.getX() & POSITION_WRITE_SHIFT;
         long y = pos.getY() & POSITION_Y_SHIFT;
         long z = pos.getZ() & POSITION_WRITE_SHIFT;
@@ -480,7 +593,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         buf.writeLong(x << POSITION_X_SIZE | z << POSITION_Y_SIZE | y);
     }
 
-    public void writePosition(ByteBuf buf, int posX, int posY, int posZ) {
+    public static void writePosition(ByteBuf buf, int posX, int posY, int posZ) {
         long x = posX & POSITION_WRITE_SHIFT;
         long y = posY & POSITION_Y_SHIFT;
         long z = posZ & POSITION_WRITE_SHIFT;
@@ -488,7 +601,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         buf.writeLong(x << POSITION_X_SIZE | z << POSITION_Y_SIZE | y);
     }
 
-    public Vector3f readRotation(ByteBuf buf) {
+    public static Vector3f readRotation(ByteBuf buf) {
         float x = buf.readFloat();
         float y = buf.readFloat();
         float z = buf.readFloat();
@@ -496,13 +609,13 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return Vector3f.from(x, y, z);
     }
 
-    public void writeRotation(ByteBuf buf, Vector3f rot) {
+    public static void writeRotation(ByteBuf buf, Vector3f rot) {
         buf.writeFloat(rot.getX());
         buf.writeFloat(rot.getY());
         buf.writeFloat(rot.getZ());
     }
 
-    public Vector4f readQuaternion(ByteBuf buf) {
+    public static Vector4f readQuaternion(ByteBuf buf) {
         float x = buf.readFloat();
         float y = buf.readFloat();
         float z = buf.readFloat();
@@ -511,102 +624,102 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return Vector4f.from(x, y, z, w);
     }
 
-    public void writeQuaternion(ByteBuf buf, Vector4f vec4) {
+    public static void writeQuaternion(ByteBuf buf, Vector4f vec4) {
         buf.writeFloat(vec4.getX());
         buf.writeFloat(vec4.getY());
         buf.writeFloat(vec4.getZ());
         buf.writeFloat(vec4.getW());
     }
 
-    public Direction readDirection(ByteBuf buf) {
-        return Direction.from(this.readVarInt(buf));
+    public static Direction readDirection(ByteBuf buf) {
+        return Direction.from(readVarInt(buf));
     }
 
-    public void writeDirection(ByteBuf buf, Direction dir) {
-        this.writeEnum(buf, dir);
+    public static void writeDirection(ByteBuf buf, Direction dir) {
+        writeEnum(buf, dir);
     }
 
-    public Pose readPose(ByteBuf buf) {
-        return Pose.from(this.readVarInt(buf));
+    public static Pose readPose(ByteBuf buf) {
+        return Pose.from(readVarInt(buf));
     }
 
-    public void writePose(ByteBuf buf, Pose pose) {
-        this.writeEnum(buf, pose);
+    public static void writePose(ByteBuf buf, Pose pose) {
+        writeEnum(buf, pose);
     }
 
-    public Holder<WolfVariant> readWolfVariant(ByteBuf buf) {
-        return this.readHolder(buf, input -> {
-            String wildTexture = this.readResourceLocationString(input);
-            String tameTexture = this.readResourceLocationString(input);
-            String angryTexture = this.readResourceLocationString(input);
+    public static Holder<WolfVariant> readWolfVariant(ByteBuf buf) {
+        return readHolder(buf, input -> {
+            String wildTexture = readResourceLocationString(input);
+            String tameTexture = readResourceLocationString(input);
+            String angryTexture = readResourceLocationString(input);
             String biomeLocation = null;
             int[] biomeHolders = null;
 
-            int length = this.readVarInt(input) - 1;
+            int length = readVarInt(input) - 1;
             if (length == -1) {
-                biomeLocation = this.readResourceLocationString(input);
+                biomeLocation = readResourceLocationString(input);
             } else {
                 biomeHolders = new int[length];
                 for (int j = 0; j < length; j++) {
-                    biomeHolders[j] = this.readVarInt(input);
+                    biomeHolders[j] = readVarInt(input);
                 }
             }
             return new WolfVariant(wildTexture, tameTexture, angryTexture, biomeLocation, biomeHolders);
         });
     }
 
-    public void writeWolfVariant(ByteBuf buf, Holder<WolfVariant> variantHolder) {
-        this.writeHolder(buf, variantHolder, (output, variant) -> {
-            this.writeResourceLocation(output, variant.wildTexture());
-            this.writeResourceLocation(output, variant.tameTexture());
-            this.writeResourceLocation(output, variant.angryTexture());
+    public static void writeWolfVariant(ByteBuf buf, Holder<WolfVariant> variantHolder) {
+        writeHolder(buf, variantHolder, (output, variant) -> {
+            writeResourceLocation(output, variant.wildTexture());
+            writeResourceLocation(output, variant.tameTexture());
+            writeResourceLocation(output, variant.angryTexture());
             if (variant.biomeLocation() != null) {
-                this.writeVarInt(output, 0);
-                this.writeResourceLocation(output, variant.biomeLocation());
+                writeVarInt(output, 0);
+                writeResourceLocation(output, variant.biomeLocation());
             } else {
-                this.writeVarInt(output, variant.biomeHolders().length + 1);
+                writeVarInt(output, variant.biomeHolders().length + 1);
                 for (int holder : variant.biomeHolders()) {
-                    this.writeVarInt(output, holder);
+                    writeVarInt(output, holder);
                 }
             }
         });
     }
 
-    public Holder<PaintingVariant> readPaintingVariant(ByteBuf buf) {
-        return this.readHolder(buf, input -> {
-            return new PaintingVariant(this.readVarInt(input), this.readVarInt(input), this.readResourceLocationString(input));
+    public static Holder<PaintingVariant> readPaintingVariant(ByteBuf buf) {
+        return readHolder(buf, input -> {
+            return new PaintingVariant(readVarInt(input), readVarInt(input), readResourceLocationString(input));
         });
     }
 
-    public void writePaintingVariant(ByteBuf buf, Holder<PaintingVariant> variantHolder) {
-        this.writeHolder(buf, variantHolder, (output, variant) -> {
-            this.writeVarInt(buf, variant.width());
-            this.writeVarInt(buf, variant.height());
-            this.writeResourceLocation(buf, variant.assetId());
+    public static void writePaintingVariant(ByteBuf buf, Holder<PaintingVariant> variantHolder) {
+        writeHolder(buf, variantHolder, (output, variant) -> {
+            writeVarInt(buf, variant.width());
+            writeVarInt(buf, variant.height());
+            writeResourceLocation(buf, variant.assetId());
         });
     }
 
-    public SnifferState readSnifferState(ByteBuf buf) {
-        return SnifferState.from(this.readVarInt(buf));
+    public static SnifferState readSnifferState(ByteBuf buf) {
+        return SnifferState.from(readVarInt(buf));
     }
 
-    public void writeSnifferState(ByteBuf buf, SnifferState state) {
-        this.writeEnum(buf, state);
+    public static void writeSnifferState(ByteBuf buf, SnifferState state) {
+        writeEnum(buf, state);
     }
 
-    public ArmadilloState readArmadilloState(ByteBuf buf) {
-        return ArmadilloState.from(this.readVarInt(buf));
+    public static ArmadilloState readArmadilloState(ByteBuf buf) {
+        return ArmadilloState.from(readVarInt(buf));
     }
 
-    public void writeArmadilloState(ByteBuf buf, ArmadilloState state) {
-        this.writeEnum(buf, state);
+    public static void writeArmadilloState(ByteBuf buf, ArmadilloState state) {
+        writeEnum(buf, state);
     }
 
-    private void writeEnum(ByteBuf buf, Enum<?> e) {
-        this.writeVarInt(buf, e.ordinal());
+    private static void writeEnum(ByteBuf buf, Enum<?> e) {
+        writeVarInt(buf, e.ordinal());
     }
 
-    public Component readComponent(ByteBuf buf) {
+    public static Component readComponent(ByteBuf buf) {
         // do not use CompoundTag, as mojang serializes a plaintext component as just a single StringTag
         Tag tag = readTag(buf, null);
         if (tag == null) {
@@ -616,7 +729,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return DefaultComponentSerializer.get().deserializeFromTree(json);
     }
 
-    public void writeComponent(ByteBuf buf, Component component) {
+    public static void writeComponent(ByteBuf buf, Component component) {
         if (useBinaryNbtComponentSerializer) {
             try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
                 BinaryNbtComponentSerializer.serializeMNBTToBuffer(component, out);
@@ -630,37 +743,37 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public List<EntityMetadata<?, ?>> readEntityMetadata(ByteBuf buf) {
+    public static List<EntityMetadata<?, ?>> readEntityMetadata(ByteBuf buf) {
         List<EntityMetadata<?, ?>> ret = new ArrayList<>();
         int id;
         while ((id = buf.readUnsignedByte()) != 255) {
-            ret.add(this.readMetadata(buf, id));
+            ret.add(readMetadata(buf, id));
         }
 
         return ret;
     }
 
-    public void writeEntityMetadata(ByteBuf buf, List<EntityMetadata<?, ?>> metadata) {
+    public static void writeEntityMetadata(ByteBuf buf, List<EntityMetadata<?, ?>> metadata) {
         for (int i = 0; i < metadata.size(); i++) {
-            this.writeMetadata(buf, metadata.get(i));
+            writeMetadata(buf, metadata.get(i));
         }
 
         buf.writeByte(255);
     }
 
-    public EntityMetadata<?, ?> readMetadata(ByteBuf buf, int id) {
-        MetadataType<?> type = this.readMetadataType(buf);
-        return type.readMetadata(this, buf, id);
+    public static EntityMetadata<?, ?> readMetadata(ByteBuf buf, int id) {
+        MetadataType<?> type = readMetadataType(buf);
+        return type.readMetadata(buf, id);
     }
 
-    public void writeMetadata(ByteBuf buf, EntityMetadata<?, ?> metadata) {
+    public static void writeMetadata(ByteBuf buf, EntityMetadata<?, ?> metadata) {
         buf.writeByte(metadata.getId());
-        this.writeMetadataType(buf, metadata.getType());
-        metadata.write(this, buf);
+        writeMetadataType(buf, metadata.getType());
+        metadata.write(buf);
     }
 
-    public MetadataType<?> readMetadataType(ByteBuf buf) {
-        int id = this.readVarInt(buf);
+    public static MetadataType<?> readMetadataType(ByteBuf buf) {
+        int id = readVarInt(buf);
         if (id >= MetadataType.size()) {
             throw new IllegalArgumentException("Received id " + id + " for MetadataType when the maximum was " + MetadataType.size() + "!");
         }
@@ -668,11 +781,11 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return MetadataType.from(id);
     }
 
-    public void writeMetadataType(ByteBuf buf, MetadataType<?> type) {
-        this.writeVarInt(buf, type.getId());
+    public static void writeMetadataType(ByteBuf buf, MetadataType<?> type) {
+        writeVarInt(buf, type.getId());
     }
 
-    public GlobalPos readGlobalPos(ByteBuf buf) {
+    public static GlobalPos readGlobalPos(ByteBuf buf) {
         Key dimension = readResourceLocation(buf);
         var position = buf.readLong();
         int x = decodePositionX(position);
@@ -681,57 +794,57 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new GlobalPos(dimension, x, y, z);
     }
 
-    public void writeGlobalPos(ByteBuf buf, GlobalPos pos) {
-        this.writeResourceLocation(buf, pos.getDimension());
-        this.writePosition(buf, pos.getX(), pos.getY(), pos.getZ());
+    public static void writeGlobalPos(ByteBuf buf, GlobalPos pos) {
+        writeResourceLocation(buf, pos.getDimension());
+        writePosition(buf, pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public PlayerSpawnInfo readPlayerSpawnInfo(ByteBuf buf) {
-        int dimension = this.readVarInt(buf);
-        Key worldName = this.readResourceLocation(buf);
+    public static PlayerSpawnInfo readPlayerSpawnInfo(ByteBuf buf) {
+        int dimension = readVarInt(buf);
+        Key worldName = readResourceLocation(buf);
         long hashedSeed = buf.readLong();
         GameMode gameMode = GameMode.byId(buf.readByte());
         GameMode previousGamemode = GameMode.byNullableId(buf.readByte());
         boolean debug = buf.readBoolean();
         boolean flat = buf.readBoolean();
-        GlobalPos lastDeathPos = this.readNullable(buf, this::readGlobalPos);
-        int portalCooldown = this.readVarInt(buf);
+        GlobalPos lastDeathPos = readNullable(buf, MinecraftTypes::readGlobalPos);
+        int portalCooldown = readVarInt(buf);
         return new PlayerSpawnInfo(dimension, worldName, hashedSeed, gameMode, previousGamemode, debug, flat, lastDeathPos, portalCooldown);
     }
 
-    public void writePlayerSpawnInfo(ByteBuf buf, PlayerSpawnInfo info) {
-        this.writeVarInt(buf, info.getDimension());
-        this.writeResourceLocation(buf, info.getWorldName());
+    public static void writePlayerSpawnInfo(ByteBuf buf, PlayerSpawnInfo info) {
+        writeVarInt(buf, info.getDimension());
+        writeResourceLocation(buf, info.getWorldName());
         buf.writeLong(info.getHashedSeed());
         buf.writeByte(info.getGameMode().ordinal());
         buf.writeByte(GameMode.toNullableId(info.getPreviousGamemode()));
         buf.writeBoolean(info.isDebug());
         buf.writeBoolean(info.isFlat());
-        this.writeNullable(buf, info.getLastDeathPos(), this::writeGlobalPos);
-        this.writeVarInt(buf, info.getPortalCooldown());
+        writeNullable(buf, info.getLastDeathPos(), MinecraftTypes::writeGlobalPos);
+        writeVarInt(buf, info.getPortalCooldown());
     }
 
-    public ParticleType readParticleType(ByteBuf buf) {
-        return ParticleType.from(this.readVarInt(buf));
+    public static ParticleType readParticleType(ByteBuf buf) {
+        return ParticleType.from(readVarInt(buf));
     }
 
-    public void writeParticleType(ByteBuf buf, ParticleType type) {
-        this.writeEnum(buf, type);
+    public static void writeParticleType(ByteBuf buf, ParticleType type) {
+        writeEnum(buf, type);
     }
 
-    public Particle readParticle(ByteBuf buf) {
-        ParticleType particleType = this.readParticleType(buf);
-        return new Particle(particleType, this.readParticleData(buf, particleType));
+    public static Particle readParticle(ByteBuf buf) {
+        ParticleType particleType = readParticleType(buf);
+        return new Particle(particleType, readParticleData(buf, particleType));
     }
 
-    public void writeParticle(ByteBuf buf, Particle particle) {
-        this.writeEnum(buf, particle.getType());
-        this.writeParticleData(buf, particle.getType(), particle.getData());
+    public static void writeParticle(ByteBuf buf, Particle particle) {
+        writeEnum(buf, particle.getType());
+        writeParticleData(buf, particle.getType(), particle.getData());
     }
 
-    public ParticleData readParticleData(ByteBuf buf, ParticleType type) {
+    public static ParticleData readParticleData(ByteBuf buf, ParticleType type) {
         return switch (type) {
-            case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR -> new BlockParticleData(this.readVarInt(buf));
+            case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR -> new BlockParticleData(readVarInt(buf));
             case DUST -> {
                 float red = buf.readFloat();
                 float green = buf.readFloat();
@@ -750,19 +863,19 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
                 yield new DustColorTransitionParticleData(red, green, blue, scale, newRed, newGreen, newBlue);
             }
             case ENTITY_EFFECT -> new EntityEffectParticleData(buf.readInt());
-            case ITEM -> new ItemParticleData(this.readOptionalItemStack(buf));
+            case ITEM -> new ItemParticleData(readOptionalItemStack(buf));
             case SCULK_CHARGE -> new SculkChargeParticleData(buf.readFloat());
-            case SHRIEK -> new ShriekParticleData(this.readVarInt(buf));
-            case VIBRATION -> new VibrationParticleData(this.readPositionSource(buf), this.readVarInt(buf));
+            case SHRIEK -> new ShriekParticleData(readVarInt(buf));
+            case VIBRATION -> new VibrationParticleData(readPositionSource(buf), readVarInt(buf));
             default -> null;
         };
     }
 
-    public void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) {
+    public static void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) {
         switch (type) {
             case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR -> {
                 BlockParticleData blockData = (BlockParticleData) data;
-                this.writeVarInt(buf, blockData.getBlockState());
+                writeVarInt(buf, blockData.getBlockState());
             }
             case DUST -> {
                 DustParticleData dustData = (DustParticleData) data;
@@ -787,7 +900,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             }
             case ITEM -> {
                 ItemParticleData itemData = (ItemParticleData) data;
-                this.writeOptionalItemStack(buf, itemData.getItemStack());
+                writeOptionalItemStack(buf, itemData.getItemStack());
             }
             case SCULK_CHARGE -> {
                 SculkChargeParticleData sculkData = (SculkChargeParticleData) data;
@@ -795,122 +908,122 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
             }
             case SHRIEK -> {
                 ShriekParticleData shriekData = (ShriekParticleData) data;
-                this.writeVarInt(buf, shriekData.getDelay());
+                writeVarInt(buf, shriekData.getDelay());
             }
             case VIBRATION -> {
                 VibrationParticleData vibrationData = (VibrationParticleData) data;
-                this.writePositionSource(buf, vibrationData.getPositionSource());
-                this.writeVarInt(buf, vibrationData.getArrivalTicks());
+                writePositionSource(buf, vibrationData.getPositionSource());
+                writeVarInt(buf, vibrationData.getArrivalTicks());
             }
         }
     }
 
-    public NumberFormat readNumberFormat(ByteBuf buf) {
-        int id = this.readVarInt(buf);
+    public static NumberFormat readNumberFormat(ByteBuf buf) {
+        int id = readVarInt(buf);
         return switch (id) {
             case 0 -> BlankFormat.INSTANCE;
-            case 1 -> new StyledFormat(this.readMNBT(buf));
-            case 2 -> new FixedFormat(this.readComponent(buf));
+            case 1 -> new StyledFormat(readMNBT(buf));
+            case 2 -> new FixedFormat(readComponent(buf));
             default -> throw new IllegalArgumentException("Unknown number format type: " + id);
         };
     }
 
-    public void writeNumberFormat(ByteBuf buf, NumberFormat numberFormat) {
+    public static void writeNumberFormat(ByteBuf buf, NumberFormat numberFormat) {
         if (numberFormat instanceof BlankFormat) {
-            this.writeVarInt(buf, 0);
+            writeVarInt(buf, 0);
         } else if (numberFormat instanceof StyledFormat styledFormat) {
-            this.writeVarInt(buf, 1);
-            this.writeMNBT(buf, styledFormat.getStyle());
+            writeVarInt(buf, 1);
+            writeMNBT(buf, styledFormat.getStyle());
         } else if (numberFormat instanceof FixedFormat fixedFormat) {
-            this.writeVarInt(buf, 2);
-            this.writeComponent(buf, fixedFormat.getValue());
+            writeVarInt(buf, 2);
+            writeComponent(buf, fixedFormat.getValue());
         } else {
             throw new IllegalArgumentException("Unknown number format: " + numberFormat);
         }
     }
 
-    public ChatType readChatType(ByteBuf buf) {
+    public static ChatType readChatType(ByteBuf buf) {
         return new ChatType(readChatTypeDecoration(buf), readChatTypeDecoration(buf));
     }
 
-    public void writeChatType(ByteBuf buf, ChatType chatType) {
-        this.writeChatTypeDecoration(buf, chatType.chat());
-        this.writeChatTypeDecoration(buf, chatType.narration());
+    public static void writeChatType(ByteBuf buf, ChatType chatType) {
+        writeChatTypeDecoration(buf, chatType.chat());
+        writeChatTypeDecoration(buf, chatType.narration());
     }
 
-    public ChatTypeDecoration readChatTypeDecoration(ByteBuf buf) {
-        String translationKey = this.readString(buf);
+    public static ChatTypeDecoration readChatTypeDecoration(ByteBuf buf) {
+        String translationKey = readString(buf);
 
-        int size = this.readVarInt(buf);
+        int size = readVarInt(buf);
         List<ChatTypeDecoration.Parameter> parameters = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            parameters.add(ChatTypeDecoration.Parameter.VALUES[this.readVarInt(buf)]);
+            parameters.add(ChatTypeDecoration.Parameter.VALUES[readVarInt(buf)]);
         }
 
-        MNBT style = this.readMNBT(buf);
+        MNBT style = readMNBT(buf);
         return new ChatType.ChatTypeDecorationImpl(translationKey, parameters, style);
     }
 
-    public void writeChatTypeDecoration(ByteBuf buf, ChatTypeDecoration decoration) {
-        this.writeString(buf, decoration.translationKey());
+    public static void writeChatTypeDecoration(ByteBuf buf, ChatTypeDecoration decoration) {
+        writeString(buf, decoration.translationKey());
 
-        this.writeVarInt(buf, decoration.parameters().size());
+        writeVarInt(buf, decoration.parameters().size());
         List<ChatTypeDecoration.Parameter> parameters = decoration.parameters();
         for (int i = 0; i < parameters.size(); i++) {
             ChatTypeDecoration.Parameter parameter = parameters.get(i);
-            this.writeVarInt(buf, parameter.ordinal());
+            writeVarInt(buf, parameter.ordinal());
         }
 
-        this.writeMNBT(buf, decoration.style());
+        writeMNBT(buf, decoration.style());
     }
 
-    public PositionSource readPositionSource(ByteBuf buf) {
-        PositionSourceType type = PositionSourceType.from(this.readVarInt(buf));
+    public static PositionSource readPositionSource(ByteBuf buf) {
+        PositionSourceType type = PositionSourceType.from(readVarInt(buf));
         return switch (type) {
-            case BLOCK -> new BlockPositionSource(this.readPosition(buf));
-            case ENTITY -> new EntityPositionSource(this.readVarInt(buf), buf.readFloat());
+            case BLOCK -> new BlockPositionSource(readPosition(buf));
+            case ENTITY -> new EntityPositionSource(readVarInt(buf), buf.readFloat());
         };
     }
 
-    public void writePositionSource(ByteBuf buf, PositionSource positionSource) {
-        this.writeVarInt(buf, positionSource.getType().ordinal());
+    public static void writePositionSource(ByteBuf buf, PositionSource positionSource) {
+        writeVarInt(buf, positionSource.getType().ordinal());
         if (positionSource instanceof BlockPositionSource blockPositionSource) {
-            this.writePosition(buf, blockPositionSource.getPosition());
+            writePosition(buf, blockPositionSource.getPosition());
         } else if (positionSource instanceof EntityPositionSource entityPositionSource) {
-            this.writeVarInt(buf, entityPositionSource.getEntityId());
+            writeVarInt(buf, entityPositionSource.getEntityId());
             buf.writeFloat(entityPositionSource.getYOffset());
         } else {
             throw new IllegalStateException("Unknown position source type!");
         }
     }
 
-    public VillagerData readVillagerData(ByteBuf buf) {
-        return new VillagerData(this.readVarInt(buf), this.readVarInt(buf), this.readVarInt(buf));
+    public static VillagerData readVillagerData(ByteBuf buf) {
+        return new VillagerData(readVarInt(buf), readVarInt(buf), readVarInt(buf));
     }
 
-    public void writeVillagerData(ByteBuf buf, VillagerData villagerData) {
-        this.writeVarInt(buf, villagerData.getType());
-        this.writeVarInt(buf, villagerData.getProfession());
-        this.writeVarInt(buf, villagerData.getLevel());
+    public static void writeVillagerData(ByteBuf buf, VillagerData villagerData) {
+        writeVarInt(buf, villagerData.getType());
+        writeVarInt(buf, villagerData.getProfession());
+        writeVarInt(buf, villagerData.getLevel());
     }
 
-    public ModifierOperation readModifierOperation(ByteBuf buf) {
+    public static ModifierOperation readModifierOperation(ByteBuf buf) {
         return ModifierOperation.from(buf.readByte());
     }
 
-    public void writeModifierOperation(ByteBuf buf, ModifierOperation operation) {
+    public static void writeModifierOperation(ByteBuf buf, ModifierOperation operation) {
         buf.writeByte(operation.ordinal());
     }
 
-    public Effect readEffect(ByteBuf buf) {
-        return Effect.from(this.readVarInt(buf));
+    public static Effect readEffect(ByteBuf buf) {
+        return Effect.from(readVarInt(buf));
     }
 
-    public void writeEffect(ByteBuf buf, Effect effect) {
-        this.writeVarInt(buf, effect.ordinal());
+    public static void writeEffect(ByteBuf buf, Effect effect) {
+        writeVarInt(buf, effect.ordinal());
     }
 
-    public BlockBreakStage readBlockBreakStage(ByteBuf buf) {
+    public static BlockBreakStage readBlockBreakStage(ByteBuf buf) {
         int stage = buf.readUnsignedByte();
         if (stage >= 0 && stage < 10) {
             return BlockBreakStage.STAGES[stage];
@@ -919,7 +1032,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public void writeBlockBreakStage(ByteBuf buf, BlockBreakStage stage) {
+    public static void writeBlockBreakStage(ByteBuf buf, BlockBreakStage stage) {
         if (stage == BlockBreakStage.RESET) {
             buf.writeByte(255);
         } else {
@@ -928,15 +1041,15 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
     }
 
     @Nullable
-    public BlockEntityType readBlockEntityType(ByteBuf buf) {
-        return BlockEntityType.from(this.readVarInt(buf));
+    public static BlockEntityType readBlockEntityType(ByteBuf buf) {
+        return BlockEntityType.from(readVarInt(buf));
     }
 
-    public void writeBlockEntityType(ByteBuf buf, BlockEntityType type) {
-        this.writeEnum(buf, type);
+    public static void writeBlockEntityType(ByteBuf buf, BlockEntityType type) {
+        writeEnum(buf, type);
     }
 
-    public LightUpdateData readLightUpdateData(ByteBuf buf) {
+    public static LightUpdateData readLightUpdateData(ByteBuf buf) {
         var skyYMask = readLongArray(buf);
         var blockYMask = readLongArray(buf);
         var emptySkyYMask = readLongArray(buf);
@@ -956,7 +1069,7 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new LightUpdateData(skyYMask, blockYMask, emptySkyYMask, emptyBlockYMask, skyUpdates, blockUpdates);
     }
 
-    public void writeLightUpdateData(ByteBuf buf, LightUpdateData data) {
+    public static void writeLightUpdateData(ByteBuf buf, LightUpdateData data) {
         writeLongArray(buf, data.getSkyYMask());
         writeLongArray(buf, data.getBlockYMask());
         writeLongArray(buf, data.getEmptySkyYMask());
@@ -973,12 +1086,12 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    private void writeBitSet(ByteBuf buf, BitSet bitSet) {
+    private static void writeBitSet(ByteBuf buf, BitSet bitSet) {
         long[] array = bitSet.toLongArray();
-        this.writeLongArray(buf, array);
+        writeLongArray(buf, array);
     }
 
-    public LevelEvent readLevelEvent(ByteBuf buf) {
+    public static LevelEvent readLevelEvent(ByteBuf buf) {
         int id = buf.readInt();
         LevelEventType type = LevelEventType.from(id);
         if (type != null) {
@@ -987,55 +1100,55 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new UnknownLevelEvent(id);
     }
 
-    public void writeLevelEvent(ByteBuf buf, LevelEvent event) {
+    public static void writeLevelEvent(ByteBuf buf, LevelEvent event) {
         buf.writeInt(event.getId());
     }
 
-    public StatisticCategory readStatisticCategory(ByteBuf buf) {
-        return StatisticCategory.from(this.readVarInt(buf));
+    public static StatisticCategory readStatisticCategory(ByteBuf buf) {
+        return StatisticCategory.from(readVarInt(buf));
     }
 
-    public void writeStatisticCategory(ByteBuf buf, StatisticCategory category) {
-        this.writeEnum(buf, category);
+    public static void writeStatisticCategory(ByteBuf buf, StatisticCategory category) {
+        writeEnum(buf, category);
     }
 
-    public SoundCategory readSoundCategory(ByteBuf buf) {
-        return SoundCategory.from(this.readVarInt(buf));
+    public static SoundCategory readSoundCategory(ByteBuf buf) {
+        return SoundCategory.from(readVarInt(buf));
     }
 
-    public void writeSoundCategory(ByteBuf buf, SoundCategory category) {
-        this.writeEnum(buf, category);
+    public static void writeSoundCategory(ByteBuf buf, SoundCategory category) {
+        writeEnum(buf, category);
     }
 
-    public EntityEvent readEntityEvent(ByteBuf buf) {
+    public static EntityEvent readEntityEvent(ByteBuf buf) {
         return EntityEvent.from(buf.readByte());
     }
 
-    public void writeEntityEvent(ByteBuf buf, EntityEvent event) {
+    public static void writeEntityEvent(ByteBuf buf, EntityEvent event) {
         buf.writeByte(event.ordinal());
     }
 
-    public Ingredient readRecipeIngredient(ByteBuf buf) {
-        ItemStack[] options = new ItemStack[this.readVarInt(buf)];
+    public static Ingredient readRecipeIngredient(ByteBuf buf) {
+        ItemStack[] options = new ItemStack[readVarInt(buf)];
         for (int i = 0; i < options.length; i++) {
-            options[i] = this.readOptionalItemStack(buf);
+            options[i] = readOptionalItemStack(buf);
         }
 
         return new Ingredient(options);
     }
 
-    public void writeRecipeIngredient(ByteBuf buf, Ingredient ingredient) {
-        this.writeVarInt(buf, ingredient.getOptions().length);
+    public static void writeRecipeIngredient(ByteBuf buf, Ingredient ingredient) {
+        writeVarInt(buf, ingredient.getOptions().length);
         for (ItemStack option : ingredient.getOptions()) {
-            this.writeOptionalItemStack(buf, option);
+            writeOptionalItemStack(buf, option);
         }
     }
 
-    public DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType) {
+    public static DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType) {
         int bitsPerEntry = buf.readByte() & 0xFF;
         Palette palette = switch (paletteType) {
-            case CHUNK -> this.readChunkPalette(buf, bitsPerEntry);
-            case BIOME -> this.readBiomePalette(buf, bitsPerEntry);
+            case CHUNK -> readChunkPalette(buf, bitsPerEntry);
+            case BIOME -> readBiomePalette(buf, bitsPerEntry);
         };
         long[] data = readLongArray(buf);
         BitStorage storage;
@@ -1048,11 +1161,11 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return new DataPalette(palette, storage, paletteType);
     }
 
-    public void writeDataPalette(ByteBuf buf, DataPalette palette) {
+    public static void writeDataPalette(ByteBuf buf, DataPalette palette) {
         if (palette.getPalette() instanceof SingletonPalette) {
             buf.writeByte(0); // Bits per entry
-            this.writeVarInt(buf, palette.getPalette().idToState(0));
-            this.writeVarInt(buf, 0); // Data length
+            writeVarInt(buf, palette.getPalette().idToState(0));
+            writeVarInt(buf, 0); // Data length
             return;
         }
 
@@ -1060,49 +1173,49 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
 
         if (!(palette.getPalette() instanceof GlobalPalette)) {
             int paletteLength = palette.getPalette().size();
-            this.writeVarInt(buf, paletteLength);
+            writeVarInt(buf, paletteLength);
             for (int i = 0; i < paletteLength; i++) {
-                this.writeVarInt(buf, palette.getPalette().idToState(i));
+                writeVarInt(buf, palette.getPalette().idToState(i));
             }
         }
 
         long[] data = palette.getStorage().getData();
-        this.writeLongArray(buf, data);
+        writeLongArray(buf, data);
     }
 
-    private Palette readChunkPalette(ByteBuf buf, int bitsPerEntry) {
+    private static Palette readChunkPalette(ByteBuf buf, int bitsPerEntry) {
         return switch (bitsPerEntry) {
-            case 0 -> new SingletonPalette(buf, this);
-            case 1,2,3 -> new ListPalette(bitsPerEntry, buf, this);
-            case 4,5,6,7,8 -> new MapPalette(bitsPerEntry, buf, this);
+            case 0 -> new SingletonPalette(buf);
+            case 1,2,3 -> new ListPalette(bitsPerEntry, buf);
+            case 4,5,6,7,8 -> new MapPalette(bitsPerEntry, buf);
             default -> GlobalPalette.INSTANCE;
         };
     }
 
-    private Palette readBiomePalette(ByteBuf buf, int bitsPerEntry) {
+    private static Palette readBiomePalette(ByteBuf buf, int bitsPerEntry) {
         return switch (bitsPerEntry) {
-            case 0 -> new SingletonPalette(buf, this);
-            case 1,2,3 -> new ListPalette(bitsPerEntry, buf, this);
+            case 0 -> new SingletonPalette(buf);
+            case 1,2,3 -> new ListPalette(bitsPerEntry, buf);
             default -> GlobalPalette.INSTANCE;
         };
     }
 
-    public ChunkSection readChunkSection(ByteBuf buf) {
+    public static ChunkSection readChunkSection(ByteBuf buf) {
         int blockCount = buf.readShort();
 
-        DataPalette chunkPalette = this.readDataPalette(buf, PaletteType.CHUNK);
-        DataPalette biomePalette = this.readDataPalette(buf, PaletteType.BIOME);
+        DataPalette chunkPalette = readDataPalette(buf, PaletteType.CHUNK);
+        DataPalette biomePalette = readDataPalette(buf, PaletteType.BIOME);
         return new ChunkSection(blockCount, chunkPalette, biomePalette);
     }
 
-    public void writeChunkSection(ByteBuf buf, ChunkSection section) {
+    public static void writeChunkSection(ByteBuf buf, ChunkSection section) {
         buf.writeShort(section.getBlockCount());
-        this.writeDataPalette(buf, section.getChunkData());
-        this.writeDataPalette(buf, section.getBiomeData());
+        writeDataPalette(buf, section.getChunkData());
+        writeDataPalette(buf, section.getBiomeData());
     }
 
-    public <E extends Enum<E>> EnumSet<E> readEnumSet(ByteBuf buf, E[] values, Class<E> enumType) {
-        BitSet bitSet = this.readFixedBitSet(buf, values.length);
+    public static <E extends Enum<E>> EnumSet<E> readEnumSet(ByteBuf buf, E[] values, Class<E> enumType) {
+        BitSet bitSet = readFixedBitSet(buf, values.length);
         EnumSet<E> set = EnumSet.noneOf(enumType);
 
         for (int i = 0; i < values.length; i++) {
@@ -1114,23 +1227,23 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         return set;
     }
 
-    public <E extends Enum<E>> void writeEnumSet(ByteBuf buf, EnumSet<E> enumSet, E[] values) {
+    public static <E extends Enum<E>> void writeEnumSet(ByteBuf buf, EnumSet<E> enumSet, E[] values) {
         BitSet bitSet = new BitSet(values.length);
 
         for (int i = 0; i < values.length; i++) {
             bitSet.set(i, enumSet.contains(values[i]));
         }
 
-        this.writeFixedBitSet(buf, bitSet, values.length);
+        writeFixedBitSet(buf, bitSet, values.length);
     }
 
-    public BitSet readFixedBitSet(ByteBuf buf, int length) {
+    public static BitSet readFixedBitSet(ByteBuf buf, int length) {
         byte[] bytes = new byte[-Math.floorDiv(-length, 8)];
         buf.readBytes(bytes);
         return BitSet.valueOf(bytes);
     }
 
-    public void writeFixedBitSet(ByteBuf buf, BitSet bitSet, int length) {
+    public static void writeFixedBitSet(ByteBuf buf, BitSet bitSet, int length) {
         if (bitSet.length() > length) {
             throw new IllegalArgumentException("BitSet is larger than expected size (" + bitSet.length() + " > " + length + ")");
         } else {
@@ -1139,34 +1252,34 @@ public class MinecraftCodecHelper extends BasePacketCodecHelper {
         }
     }
 
-    public GameProfile.Property readProperty(ByteBuf buf) {
-        String name = this.readString(buf);
-        String value = this.readString(buf);
-        String signature = this.readNullable(buf, this::readString);
+    public static GameProfile.Property readProperty(ByteBuf buf) {
+        String name = readString(buf);
+        String value = readString(buf);
+        String signature = readNullable(buf, MinecraftTypes::readString);
         return new GameProfile.Property(name, value, signature);
     }
 
-    public void writeProperty(ByteBuf buf, GameProfile.Property property) {
-        this.writeString(buf, property.getName());
-        this.writeString(buf, property.getValue());
-        this.writeNullable(buf, property.getSignature(), this::writeString);
+    public static void writeProperty(ByteBuf buf, GameProfile.Property property) {
+        writeString(buf, property.getName());
+        writeString(buf, property.getValue());
+        writeNullable(buf, property.getSignature(), MinecraftTypes::writeString);
     }
 
-    public <T> T readById(ByteBuf buf, IntFunction<T> registry, Function<ByteBuf, T> custom) {
-        int id = this.readVarInt(buf);
+    public static <T> T readById(ByteBuf buf, IntFunction<T> registry, Function<ByteBuf, T> custom) {
+        int id = readVarInt(buf);
         if (id == 0) {
             return custom.apply(buf);
         }
         return registry.apply(id - 1);
     }
 
-    public CustomSound readSoundEvent(ByteBuf buf) {
-        String name = this.readString(buf);
+    public static CustomSound readSoundEvent(ByteBuf buf) {
+        String name = readString(buf);
         boolean isNewSystem = buf.readBoolean();
         return new CustomSound(name, isNewSystem, isNewSystem ? buf.readFloat() : 16.0F);
     }
 
-    public void writeSoundEvent(ByteBuf buf, Sound soundEvent) {
+    public static void writeSoundEvent(ByteBuf buf, Sound soundEvent) {
         writeString(buf, soundEvent.getName());
         buf.writeBoolean(soundEvent.isNewSystem());
         if (soundEvent.isNewSystem()) {

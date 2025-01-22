@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.UnlockRecipesAction;
 
 import java.util.Arrays;
@@ -76,8 +76,8 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         this.recipeIdsToInit = Arrays.copyOf(recipeIdsToInit, recipeIdsToInit.length);
     }
 
-    public ClientboundRecipePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.action = UnlockRecipesAction.from(helper.readVarInt(in));
+    public ClientboundRecipePacket(ByteBuf in) {
+        this.action = UnlockRecipesAction.from(MinecraftTypes.readVarInt(in));
 
         this.openCraftingBook = in.readBoolean();
         this.activateCraftingFiltering = in.readBoolean();
@@ -88,14 +88,14 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         this.openSmokingBook = in.readBoolean();
         this.activateSmokingFiltering = in.readBoolean();
 
-        this.recipeIdsToChange = new String[helper.readVarInt(in)];
+        this.recipeIdsToChange = new String[MinecraftTypes.readVarInt(in)];
         for (int i = 0; i < this.recipeIdsToChange.length; i++) {
-            this.recipeIdsToChange[i] = helper.readString(in);
+            this.recipeIdsToChange[i] = MinecraftTypes.readString(in);
         }
         if (this.action == UnlockRecipesAction.INIT) {
-            this.recipeIdsToInit = new String[helper.readVarInt(in)];
+            this.recipeIdsToInit = new String[MinecraftTypes.readVarInt(in)];
             for (int i = 0; i < this.recipeIdsToInit.length; i++) {
-                this.recipeIdsToInit[i] = helper.readString(in);
+                this.recipeIdsToInit[i] = MinecraftTypes.readString(in);
             }
         } else {
             this.recipeIdsToInit = null;
@@ -103,8 +103,8 @@ public class ClientboundRecipePacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.action.ordinal());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.action.ordinal());
 
         out.writeBoolean(this.openCraftingBook);
         out.writeBoolean(this.activateCraftingFiltering);
@@ -115,14 +115,14 @@ public class ClientboundRecipePacket implements MinecraftPacket {
         out.writeBoolean(this.openSmokingBook);
         out.writeBoolean(this.activateSmokingFiltering);
 
-        helper.writeVarInt(out, this.recipeIdsToChange.length);
+        MinecraftTypes.writeVarInt(out, this.recipeIdsToChange.length);
         for (String recipeId : this.recipeIdsToChange) {
-            helper.writeString(out, recipeId);
+            MinecraftTypes.writeString(out, recipeId);
         }
         if (this.action == UnlockRecipesAction.INIT) {
-            helper.writeVarInt(out, this.recipeIdsToInit.length);
+            MinecraftTypes.writeVarInt(out, this.recipeIdsToInit.length);
             for (String recipeId : this.recipeIdsToInit) {
-                helper.writeString(out, recipeId);
+                MinecraftTypes.writeString(out, recipeId);
             }
         }
     }

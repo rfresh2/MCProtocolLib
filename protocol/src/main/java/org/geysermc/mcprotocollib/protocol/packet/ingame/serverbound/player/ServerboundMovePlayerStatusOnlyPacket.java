@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
 @Data
@@ -13,12 +12,12 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 public class ServerboundMovePlayerStatusOnlyPacket implements MinecraftPacket {
     private final boolean onGround;
 
-    public ServerboundMovePlayerStatusOnlyPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ServerboundMovePlayerStatusOnlyPacket(ByteBuf in) {
         this.onGround = in.readBoolean();
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeBoolean(this.onGround);
     }
 }

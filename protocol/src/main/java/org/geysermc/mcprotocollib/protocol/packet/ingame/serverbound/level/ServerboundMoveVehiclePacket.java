@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
 @Data
@@ -17,7 +16,7 @@ public class ServerboundMoveVehiclePacket implements MinecraftPacket {
     private final float yaw;
     private final float pitch;
 
-    public ServerboundMoveVehiclePacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ServerboundMoveVehiclePacket(ByteBuf in) {
         this.x = in.readDouble();
         this.y = in.readDouble();
         this.z = in.readDouble();
@@ -26,7 +25,7 @@ public class ServerboundMoveVehiclePacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeDouble(this.x);
         out.writeDouble(this.y);
         out.writeDouble(this.z);

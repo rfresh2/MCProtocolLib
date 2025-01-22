@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
 import org.geysermc.mcprotocollib.network.ProxyInfo;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.slf4j.Logger;
@@ -38,7 +37,6 @@ public class TcpClientSession extends TcpSession {
     private final String bindAddress;
     private final int bindPort;
     private final ProxyInfo proxy;
-    private final PacketCodecHelper codecHelper;
     @Getter private final TcpConnectionManager tcpManager;
 
     public TcpClientSession(String host, int port, MinecraftProtocol protocol, TcpConnectionManager tcpManager) {
@@ -58,7 +56,6 @@ public class TcpClientSession extends TcpSession {
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
         this.proxy = proxy;
-        this.codecHelper = protocol.getHelper();
         this.tcpManager = tcpManager;
     }
 
@@ -103,11 +100,6 @@ public class TcpClientSession extends TcpSession {
         } catch(Throwable t) {
             exceptionCaught(null, t);
         }
-    }
-
-    @Override
-    public PacketCodecHelper getCodecHelper() {
-        return this.codecHelper;
     }
 
     private InetSocketAddress resolveAddress() {

@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 import org.cloudburstmc.math.vector.Vector3i;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.ExplosionInteraction;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
@@ -34,12 +34,12 @@ public class ClientboundExplodePacket implements MinecraftPacket {
     private final @NonNull ExplosionInteraction blockInteraction;
     private final @NonNull Sound explosionSound;
 
-    public ClientboundExplodePacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundExplodePacket(ByteBuf in) {
         this.x = in.readDouble();
         this.y = in.readDouble();
         this.z = in.readDouble();
         this.radius = in.readFloat();
-        int length = helper.readVarInt(in);
+        int length = MinecraftTypes.readVarInt(in);
         this.exploded = new ArrayList<>(length);
         for (int count = 0; count < length; count++) {
             this.exploded.add(Vector3i.from(in.readByte(), in.readByte(), in.readByte()));
@@ -48,19 +48,19 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         this.pushX = in.readFloat();
         this.pushY = in.readFloat();
         this.pushZ = in.readFloat();
-        this.blockInteraction = ExplosionInteraction.from(helper.readVarInt(in)); // different order than mojang fields
-        this.smallExplosionParticles = helper.readParticle(in);
-        this.largeExplosionParticles = helper.readParticle(in);
-        this.explosionSound = helper.readById(in, BuiltinSound::from, helper::readSoundEvent);
+        this.blockInteraction = ExplosionInteraction.from(MinecraftTypes.readVarInt(in)); // different order than mojang fields
+        this.smallExplosionParticles = MinecraftTypes.readParticle(in);
+        this.largeExplosionParticles = MinecraftTypes.readParticle(in);
+        this.explosionSound = MinecraftTypes.readById(in, BuiltinSound::from, MinecraftTypes::readSoundEvent);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeDouble(this.x);
         out.writeDouble(this.y);
         out.writeDouble(this.z);
         out.writeFloat(this.radius);
-        helper.writeVarInt(out, this.exploded.size());
+        MinecraftTypes.writeVarInt(out, this.exploded.size());
         for (int i = 0; i < this.exploded.size(); i++) {
             Vector3i record = this.exploded.get(i);
             out.writeByte(record.getX());
@@ -71,14 +71,14 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         out.writeFloat(this.pushX);
         out.writeFloat(this.pushY);
         out.writeFloat(this.pushZ);
-        helper.writeVarInt(out, this.blockInteraction.ordinal()); // different order than mojang fields
-        helper.writeParticle(out, this.smallExplosionParticles);
-        helper.writeParticle(out, this.largeExplosionParticles);
+        MinecraftTypes.writeVarInt(out, this.blockInteraction.ordinal()); // different order than mojang fields
+        MinecraftTypes.writeParticle(out, this.smallExplosionParticles);
+        MinecraftTypes.writeParticle(out, this.largeExplosionParticles);
         if (this.explosionSound instanceof CustomSound) {
-            helper.writeVarInt(out, 0);
-            helper.writeSoundEvent(out, this.explosionSound);
+            MinecraftTypes.writeVarInt(out, 0);
+            MinecraftTypes.writeSoundEvent(out, this.explosionSound);
         } else {
-            helper.writeVarInt(out, ((BuiltinSound) this.explosionSound).ordinal() + 1);
+            MinecraftTypes.writeVarInt(out, ((BuiltinSound) this.explosionSound).ordinal() + 1);
         }
     }
 }

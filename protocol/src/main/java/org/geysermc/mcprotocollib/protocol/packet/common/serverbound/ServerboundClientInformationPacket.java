@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility;
 import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart;
@@ -30,10 +30,10 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
      */
     private final boolean allowsListing;
 
-    public ServerboundClientInformationPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.locale = helper.readString(in);
+    public ServerboundClientInformationPacket(ByteBuf in) {
+        this.locale = MinecraftTypes.readString(in);
         this.renderDistance = in.readByte();
-        this.chatVisibility = ChatVisibility.from(helper.readVarInt(in));
+        this.chatVisibility = ChatVisibility.from(MinecraftTypes.readVarInt(in));
         this.useChatColors = in.readBoolean();
         this.visibleParts = new ArrayList<>(SkinPart.VALUES.length);
 
@@ -45,16 +45,16 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
             }
         }
 
-        this.mainHand = HandPreference.from(helper.readVarInt(in));
+        this.mainHand = HandPreference.from(MinecraftTypes.readVarInt(in));
         this.textFilteringEnabled = in.readBoolean();
         this.allowsListing = in.readBoolean();
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeString(out, this.locale);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeString(out, this.locale);
         out.writeByte(this.renderDistance);
-        helper.writeVarInt(out, this.chatVisibility.ordinal());
+        MinecraftTypes.writeVarInt(out, this.chatVisibility.ordinal());
         out.writeBoolean(this.useChatColors);
 
         int flags = 0;
@@ -64,7 +64,7 @@ public class ServerboundClientInformationPacket implements MinecraftPacket {
 
         out.writeByte(flags);
 
-        helper.writeVarInt(out, this.mainHand.ordinal());
+        MinecraftTypes.writeVarInt(out, this.mainHand.ordinal());
         out.writeBoolean(this.textFilteringEnabled);
         out.writeBoolean(allowsListing);
     }

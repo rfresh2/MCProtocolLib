@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 
 @Data
@@ -14,13 +13,13 @@ public class ClientboundSetTimePacket implements MinecraftPacket {
     private final long worldAge;
     private final long time;
 
-    public ClientboundSetTimePacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundSetTimePacket(ByteBuf in) {
         this.worldAge = in.readLong();
         this.time = in.readLong();
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeLong(this.worldAge);
         out.writeLong(this.time);
     }

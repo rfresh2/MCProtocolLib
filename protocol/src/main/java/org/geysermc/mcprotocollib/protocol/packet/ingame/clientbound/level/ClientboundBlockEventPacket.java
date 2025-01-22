@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.WobbleStyle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.value.BellValue;
@@ -53,14 +53,14 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     private final @NonNull BlockValue value;
     private final int blockId;
 
-    public ClientboundBlockEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundBlockEventPacket(ByteBuf in) {
         var position = in.readLong();
-        this.x = helper.decodePositionX(position);
-        this.y = helper.decodePositionY(position);
-        this.z = helper.decodePositionZ(position);
+        this.x = MinecraftTypes.decodePositionX(position);
+        this.y = MinecraftTypes.decodePositionY(position);
+        this.z = MinecraftTypes.decodePositionZ(position);
         int type = in.readUnsignedByte();
         int value = in.readUnsignedByte();
-        this.blockId = helper.readVarInt(in);
+        this.blockId = MinecraftTypes.readVarInt(in);
 
         // TODO: Handle this in MinecraftCodecHelper
         if (this.blockId == NOTE_BLOCK) {
@@ -92,7 +92,7 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         int val = 0;
         int type = 0;
         // TODO: Handle this in MinecraftCodecHelper
@@ -114,9 +114,9 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
             type = ((GenericBlockValueType) this.type).ordinal();
         }
 
-        helper.writePosition(out, this.x, this.y, this.z);
+        MinecraftTypes.writePosition(out, this.x, this.y, this.z);
         out.writeByte(type);
         out.writeByte(val);
-        helper.writeVarInt(out, this.blockId);
+        MinecraftTypes.writeVarInt(out, this.blockId);
     }
 }

@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.BitSet;
@@ -33,28 +33,28 @@ public class ServerboundChatPacket implements MinecraftPacket {
         this.acknowledgedMessages = BitSet.valueOf(new byte[20]);
     }
 
-    public ServerboundChatPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.message = helper.readString(in);
+    public ServerboundChatPacket(ByteBuf in) {
+        this.message = MinecraftTypes.readString(in);
         this.timeStamp = in.readLong();
         this.salt = in.readLong();
-        this.signature = helper.readNullable(in, buf -> {
+        this.signature = MinecraftTypes.readNullable(in, buf -> {
             byte[] signature = new byte[256];
             buf.readBytes(signature);
             return signature;
         });
 
-        this.offset = helper.readVarInt(in);
-        this.acknowledgedMessages = helper.readFixedBitSet(in, 20);
+        this.offset = MinecraftTypes.readVarInt(in);
+        this.acknowledgedMessages = MinecraftTypes.readFixedBitSet(in, 20);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeString(out, this.message);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeString(out, this.message);
         out.writeLong(this.timeStamp);
         out.writeLong(this.salt);
-        helper.writeNullable(out, this.signature, ByteBuf::writeBytes);
+        MinecraftTypes.writeNullable(out, this.signature, ByteBuf::writeBytes);
 
-        helper.writeVarInt(out, this.offset);
-        helper.writeFixedBitSet(out, this.acknowledgedMessages, 20);
+        MinecraftTypes.writeVarInt(out, this.offset);
+        MinecraftTypes.writeFixedBitSet(out, this.acknowledgedMessages, 20);
     }
 }

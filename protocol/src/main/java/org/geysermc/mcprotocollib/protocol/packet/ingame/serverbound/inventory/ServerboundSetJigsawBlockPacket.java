@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 import net.kyori.adventure.key.Key;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 @Data
 @With
@@ -24,29 +24,29 @@ public class ServerboundSetJigsawBlockPacket implements MinecraftPacket {
     private final int selectionPriority;
     private final int placementPriority;
 
-    public ServerboundSetJigsawBlockPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ServerboundSetJigsawBlockPacket(ByteBuf in) {
         var position = in.readLong();
-        this.x = helper.decodePositionX(position);
-        this.y = helper.decodePositionY(position);
-        this.z = helper.decodePositionZ(position);
-        this.name = helper.readResourceLocation(in);
-        this.target = helper.readResourceLocation(in);
-        this.pool = helper.readResourceLocation(in);
-        this.finalState = helper.readString(in);
-        this.jointType = helper.readString(in);
-        this.selectionPriority = helper.readVarInt(in);
-        this.placementPriority = helper.readVarInt(in);
+        this.x = MinecraftTypes.decodePositionX(position);
+        this.y = MinecraftTypes.decodePositionY(position);
+        this.z = MinecraftTypes.decodePositionZ(position);
+        this.name = MinecraftTypes.readResourceLocation(in);
+        this.target = MinecraftTypes.readResourceLocation(in);
+        this.pool = MinecraftTypes.readResourceLocation(in);
+        this.finalState = MinecraftTypes.readString(in);
+        this.jointType = MinecraftTypes.readString(in);
+        this.selectionPriority = MinecraftTypes.readVarInt(in);
+        this.placementPriority = MinecraftTypes.readVarInt(in);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writePosition(out, this.x, this.y, this.z);
-        helper.writeResourceLocation(out, this.name);
-        helper.writeResourceLocation(out, this.target);
-        helper.writeResourceLocation(out, this.pool);
-        helper.writeString(out, this.finalState);
-        helper.writeString(out, this.jointType);
-        helper.writeVarInt(out, this.selectionPriority);
-        helper.writeVarInt(out, this.placementPriority);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writePosition(out, this.x, this.y, this.z);
+        MinecraftTypes.writeResourceLocation(out, this.name);
+        MinecraftTypes.writeResourceLocation(out, this.target);
+        MinecraftTypes.writeResourceLocation(out, this.pool);
+        MinecraftTypes.writeString(out, this.finalState);
+        MinecraftTypes.writeString(out, this.jointType);
+        MinecraftTypes.writeVarInt(out, this.selectionPriority);
+        MinecraftTypes.writeVarInt(out, this.placementPriority);
     }
 }

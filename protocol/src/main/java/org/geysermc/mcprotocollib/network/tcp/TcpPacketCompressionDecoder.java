@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 import java.util.List;
 
@@ -15,17 +15,15 @@ import java.util.List;
  * Decompresses incoming packets
  */
 public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf> {
-    public static String ID = "compression-decoder";
+    public static final String ID = "compression-decoder";
     private static final int MAX_COMPRESSED_SIZE = 2097152;
 
     private final Session session;
-    private final PacketCodecHelper codecHelper;
     private final boolean validateDecompression;
     private final VelocityCompressor compressor;
 
     public TcpPacketCompressionDecoder(Session session, boolean validateDecompression, final VelocityCompressor compressor) {
         this.session = session;
-        this.codecHelper = session.getCodecHelper();
         this.validateDecompression = validateDecompression;
         this.compressor = compressor;
     }
@@ -34,7 +32,7 @@ public class TcpPacketCompressionDecoder extends MessageToMessageDecoder<ByteBuf
     protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) throws Exception {
         try {
             if(in.readableBytes() != 0) {
-                int size = codecHelper.readVarInt(in);
+                int size = MinecraftTypes.readVarInt(in);
                 if(size == 0) {
                     out.add(in.retain());
                 } else {

@@ -8,7 +8,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class TcpPacketSizeEncoder extends MessageToMessageEncoder<ByteBuf> {
                 ? ctx.alloc().heapBuffer(varIntBytesLen)
                 : ctx.alloc().directBuffer(varIntBytesLen);
 
-            MinecraftConstants.PACKET_HEADER.writeLength(lenBuf, MinecraftCodecHelper.INSTANCE, length);
+            MinecraftConstants.PACKET_HEADER.writeLength(lenBuf, length);
             list.add(lenBuf);
             list.add(buf.retain());
         } catch (final Exception e) {

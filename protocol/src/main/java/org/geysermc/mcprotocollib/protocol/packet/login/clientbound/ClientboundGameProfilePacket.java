@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.auth.GameProfile;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +19,12 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
     private final @NonNull GameProfile profile;
     private final boolean strictErrorHandling;
 
-    public ClientboundGameProfilePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        GameProfile profile = new GameProfile(helper.readUUID(in), helper.readString(in));
-        int properties = helper.readVarInt(in);
+    public ClientboundGameProfilePacket(ByteBuf in) {
+        GameProfile profile = new GameProfile(MinecraftTypes.readUUID(in), MinecraftTypes.readString(in));
+        int properties = MinecraftTypes.readVarInt(in);
         List<GameProfile.Property> propertyList = new ArrayList<>(properties);
         for (int index = 0; index < properties; index++) {
-            propertyList.add(helper.readProperty(in));
+            propertyList.add(MinecraftTypes.readProperty(in));
         }
         profile.setProperties(propertyList);
         this.profile = profile;
@@ -32,12 +32,12 @@ public class ClientboundGameProfilePacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeUUID(out, this.profile.getId());
-        helper.writeString(out, this.profile.getName());
-        helper.writeVarInt(out, this.profile.getProperties().size());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeUUID(out, this.profile.getId());
+        MinecraftTypes.writeString(out, this.profile.getName());
+        MinecraftTypes.writeVarInt(out, this.profile.getProperties().size());
         for (GameProfile.Property property : this.profile.getProperties()) {
-            helper.writeProperty(out, property);
+            MinecraftTypes.writeProperty(out, property);
         }
         out.writeBoolean(this.strictErrorHandling);
     }

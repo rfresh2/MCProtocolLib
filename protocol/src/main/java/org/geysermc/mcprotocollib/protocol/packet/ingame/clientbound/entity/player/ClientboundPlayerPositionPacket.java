@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PositionElement;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
         this(x, y, z, yaw, pitch, teleportId, Arrays.asList(relative != null ? relative : new PositionElement[0]));
     }
 
-    public ClientboundPlayerPositionPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundPlayerPositionPacket(ByteBuf in) {
         this.x = in.readDouble();
         this.y = in.readDouble();
         this.z = in.readDouble();
@@ -45,11 +45,11 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
             }
         }
 
-        this.teleportId = helper.readVarInt(in);
+        this.teleportId = MinecraftTypes.readVarInt(in);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeDouble(this.x);
         out.writeDouble(this.y);
         out.writeDouble(this.z);
@@ -63,6 +63,6 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
 
         out.writeByte(flags);
 
-        helper.writeVarInt(out, this.teleportId);
+        MinecraftTypes.writeVarInt(out, this.teleportId);
     }
 }
