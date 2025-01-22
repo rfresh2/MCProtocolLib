@@ -14,7 +14,7 @@ import static io.netty.util.ByteProcessor.FIND_NON_NUL;
  * Incoming packet size decoder
  */
 public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
-    public static String ID = "size-decoder";
+    public static final String ID = "size-decoder";
 
     public TcpPacketSizeDecoder() { }
 

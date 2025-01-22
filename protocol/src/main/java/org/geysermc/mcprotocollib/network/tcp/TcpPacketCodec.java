@@ -12,7 +12,7 @@ import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import java.util.List;
 
 public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
-    public static String ID = "codec";
+    public static final String ID = "codec";
     private final Session session;
     private final OutboundPacketIdEncoder outboundPacketIdEncoder;
     private final OutboundPacketDefinitionSupplier outboundPacketDefinitionSupplier;
