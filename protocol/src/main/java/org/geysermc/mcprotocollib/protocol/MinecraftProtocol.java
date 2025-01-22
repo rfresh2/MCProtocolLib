@@ -14,7 +14,6 @@ import org.geysermc.mcprotocollib.network.packet.PacketHeader;
 import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import org.geysermc.mcprotocollib.network.packet.PacketRegistry;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodec;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.PacketCodec;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
 import org.slf4j.Logger;
@@ -164,11 +163,6 @@ public class MinecraftProtocol extends PacketProtocol {
     @Override
     public PacketHeader getPacketHeader() {
         return MinecraftConstants.PACKET_HEADER;
-    }
-
-    @Override
-    public MinecraftCodecHelper getHelper() {
-        return this.codec.getHelper();
     }
 
     @Override

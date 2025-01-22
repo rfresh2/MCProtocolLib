@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 @Data
 @With
@@ -13,12 +13,12 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 public class ServerboundRecipeBookSeenRecipePacket implements MinecraftPacket {
     private final int recipe;
 
-    public ServerboundRecipeBookSeenRecipePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.recipe = helper.readVarInt(in);
+    public ServerboundRecipeBookSeenRecipePacket(ByteBuf in) {
+        this.recipe = MinecraftTypes.readVarInt(in);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.recipe);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.recipe);
     }
 }

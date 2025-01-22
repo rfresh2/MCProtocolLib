@@ -3,8 +3,8 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 @Data
 @AllArgsConstructor
@@ -18,11 +18,11 @@ public class ClientboundDamageEventPacket implements MinecraftPacket {
     private final double sourcePosY;
     private final double sourcePosZ;
 
-    public ClientboundDamageEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.entityId = helper.readVarInt(in);
-        this.sourceTypeId = helper.readVarInt(in);
-        this.sourceCauseId = helper.readVarInt(in) - 1;
-        this.sourceDirectId = helper.readVarInt(in) - 1;
+    public ClientboundDamageEventPacket(ByteBuf in) {
+        this.entityId = MinecraftTypes.readVarInt(in);
+        this.sourceTypeId = MinecraftTypes.readVarInt(in);
+        this.sourceCauseId = MinecraftTypes.readVarInt(in) - 1;
+        this.sourceDirectId = MinecraftTypes.readVarInt(in) - 1;
         this.hasSourcePos = in.readBoolean();
         if (this.hasSourcePos) {
             this.sourcePosX = in.readDouble();
@@ -36,11 +36,11 @@ public class ClientboundDamageEventPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.entityId);
-        helper.writeVarInt(out, this.sourceTypeId);
-        helper.writeVarInt(out, this.sourceCauseId + 1);
-        helper.writeVarInt(out, this.sourceDirectId + 1);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.entityId);
+        MinecraftTypes.writeVarInt(out, this.sourceTypeId);
+        MinecraftTypes.writeVarInt(out, this.sourceCauseId + 1);
+        MinecraftTypes.writeVarInt(out, this.sourceDirectId + 1);
 
         if (this.hasSourcePos) {
             out.writeBoolean(true);

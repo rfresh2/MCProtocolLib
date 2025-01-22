@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
@@ -15,14 +14,12 @@ import java.util.List;
 public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
     public static String ID = "codec";
     private final Session session;
-    private final PacketCodecHelper codecHelper;
     private final OutboundPacketIdEncoder outboundPacketIdEncoder;
     private final OutboundPacketDefinitionSupplier outboundPacketDefinitionSupplier;
     private final InboundPacketFactory inboundPacketFactory;
 
     public TcpPacketCodec(Session session, boolean client) {
         this.session = session;
-        this.codecHelper = session.getCodecHelper();
         PacketProtocol packetProtocol = session.getPacketProtocol();
         this.outboundPacketIdEncoder = client
             ? (packet) -> packetProtocol.getOutboundPacketRegistry().getServerboundId(packet)
@@ -31,8 +28,8 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
             ? (id) -> packetProtocol.getOutboundPacketRegistry().getServerboundDefinition(id)
             : (id) -> packetProtocol.getOutboundPacketRegistry().getClientboundDefinition(id);
         this.inboundPacketFactory = client
-            ? (id, buf, codecHelper) -> packetProtocol.getInboundPacketRegistry().createClientboundPacket(id, buf, codecHelper)
-            : (id, buf, codecHelper) -> packetProtocol.getInboundPacketRegistry().createServerboundPacket(id, buf, codecHelper);
+            ? (id, buf) -> packetProtocol.getInboundPacketRegistry().createClientboundPacket(id, buf)
+            : (id, buf) -> packetProtocol.getInboundPacketRegistry().createServerboundPacket(id, buf);
     }
 
     @FunctionalInterface
@@ -48,7 +45,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
 
     @FunctionalInterface
     private interface InboundPacketFactory {
-        Packet get(int id, ByteBuf buf, PacketCodecHelper codecHelper);
+        Packet get(int id, ByteBuf buf);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -58,10 +55,10 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
 
         try {
             final int packetId = outboundPacketIdEncoder.get(packet);
-            MinecraftConstants.PACKET_HEADER.writePacketId(buf, codecHelper, packetId);
+            MinecraftConstants.PACKET_HEADER.writePacketId(buf, packetId);
 
             final PacketDefinition definition = outboundPacketDefinitionSupplier.get(packetId);
-            definition.getSerializer().serialize(buf, codecHelper, packet);
+            definition.getSerializer().serialize(buf, packet);
         } catch (Throwable t) {
             // Reset writer index to make sure incomplete data is not written out.
             buf.writerIndex(initial);
@@ -82,13 +79,13 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
         int initial = buf.readerIndex();
 
         try {
-            int id = MinecraftConstants.PACKET_HEADER.readPacketId(buf, codecHelper);
+            int id = MinecraftConstants.PACKET_HEADER.readPacketId(buf);
             if (id == -1) {
                 buf.readerIndex(initial);
                 return;
             }
 
-            Packet packet = inboundPacketFactory.get(id, buf, codecHelper);
+            Packet packet = inboundPacketFactory.get(id, buf);
 
             if (buf.readableBytes() > 0) {
                 throw new IllegalStateException("Packet \"" + packet.getClass().getSimpleName() + "\" not fully read.");

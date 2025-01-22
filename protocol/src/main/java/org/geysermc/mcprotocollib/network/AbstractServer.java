@@ -62,15 +62,10 @@ public abstract class AbstractServer implements Server {
     }
 
     @Override
-    public <T> T getGlobalFlag(Flag<T> flag) {
-        return this.getGlobalFlag(flag, null);
-    }
-
-    @Override
-    public <T> T getGlobalFlag(Flag<T> flag, T def) {
+    public <T> T getGlobalFlagSupplied(Flag<T> flag, Supplier<T> defSupplier) {
         Object value = this.flags.get(flag.key());
         if (value == null) {
-            return def;
+            return defSupplier.get();
         }
 
         try {

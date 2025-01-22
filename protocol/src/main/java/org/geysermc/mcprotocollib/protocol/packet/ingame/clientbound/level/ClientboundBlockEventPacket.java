@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.WobbleStyle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.value.BellValue;
@@ -52,22 +52,22 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     private final int rawValue;
     private final int blockId;
 
-    public ClientboundBlockEventPacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundBlockEventPacket(ByteBuf in) {
         var position = in.readLong();
-        this.x = helper.decodePositionX(position);
-        this.y = helper.decodePositionY(position);
-        this.z = helper.decodePositionZ(position);
+        this.x = MinecraftTypes.decodePositionX(position);
+        this.y = MinecraftTypes.decodePositionY(position);
+        this.z = MinecraftTypes.decodePositionZ(position);
         this.rawType = in.readUnsignedByte();
         this.rawValue = in.readUnsignedByte();
-        this.blockId = helper.readVarInt(in);
+        this.blockId = MinecraftTypes.readVarInt(in);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writePosition(out, this.x, this.y, this.z);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writePosition(out, this.x, this.y, this.z);
         out.writeByte(rawType);
         out.writeByte(rawValue);
-        helper.writeVarInt(out, this.blockId);
+        MinecraftTypes.writeVarInt(out, this.blockId);
     }
 
     public BlockValueType getType() {

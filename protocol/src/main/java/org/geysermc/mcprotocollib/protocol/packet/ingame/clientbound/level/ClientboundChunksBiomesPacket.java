@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkBiomeData;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
@@ -18,18 +18,18 @@ import java.util.List;
 public class ClientboundChunksBiomesPacket implements MinecraftPacket {
     private final List<ChunkBiomeData> chunkBiomeData;
 
-    public ClientboundChunksBiomesPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        int length = helper.readVarInt(in);
+    public ClientboundChunksBiomesPacket(ByteBuf in) {
+        int length = MinecraftTypes.readVarInt(in);
         this.chunkBiomeData = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             long position = in.readLong();
             int x = (int)position;
             int z = (int)(position >> 32);
-            var dataLen = helper.readVarInt(in); // unused
+            var dataLen = MinecraftTypes.readVarInt(in); // unused
             var sectionCount = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER.getSectionCount();
             var palettes = new DataPalette[sectionCount]; // indexed to corresponding chunk section
             for (int j = 0; j < sectionCount; j++) {
-                palettes[j] = helper.readDataPalette(in, PaletteType.BIOME);
+                palettes[j] = MinecraftTypes.readDataPalette(in, PaletteType.BIOME);
             }
 
             this.chunkBiomeData.add(new ChunkBiomeData(x, z, palettes));
@@ -37,8 +37,8 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.chunkBiomeData.size());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.chunkBiomeData.size());
         for (int i = 0; i < this.chunkBiomeData.size(); i++) {
             ChunkBiomeData entry = this.chunkBiomeData.get(i);
             long position = (long)entry.getX() & 0xFFFFFFFFL | ((long)entry.getZ() & 0xFFFFFFFFL) << 32;
@@ -49,7 +49,7 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
             var sectionCount = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER.getSectionCount();
             var palettes = entry.getPalettes();
             for (int j = 0; j < sectionCount; j++) {
-                helper.writeDataPalette(out, palettes[j]);
+                MinecraftTypes.writeDataPalette(out, palettes[j]);
             }
             var end = out.writerIndex();
             var len = end - start;

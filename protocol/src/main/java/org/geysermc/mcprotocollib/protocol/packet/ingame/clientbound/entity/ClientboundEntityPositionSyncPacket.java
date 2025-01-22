@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 @Data
 @With
@@ -22,8 +22,8 @@ public class ClientboundEntityPositionSyncPacket implements MinecraftPacket {
     private final float pitch;
     private final boolean onGround;
 
-    public ClientboundEntityPositionSyncPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.id = helper.readVarInt(in);
+    public ClientboundEntityPositionSyncPacket(ByteBuf in) {
+        this.id = MinecraftTypes.readVarInt(in);
         this.x = in.readDouble();
         this.y = in.readDouble();
         this.z = in.readDouble();
@@ -36,8 +36,8 @@ public class ClientboundEntityPositionSyncPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.id);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.id);
         out.writeDouble(this.x);
         out.writeDouble(this.y);
         out.writeDouble(this.z);

@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,30 +19,30 @@ public class ServerboundEditBookPacket implements MinecraftPacket {
     private final List<String> pages;
     private final @Nullable String title;
 
-    public ServerboundEditBookPacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.slot = helper.readVarInt(in);
-        int pagesSize = helper.readVarInt(in);
+    public ServerboundEditBookPacket(ByteBuf in) {
+        this.slot = MinecraftTypes.readVarInt(in);
+        int pagesSize = MinecraftTypes.readVarInt(in);
         this.pages = new ArrayList<>(pagesSize);
         for (int i = 0; i < pagesSize; i++) {
-            this.pages.add(helper.readString(in));
+            this.pages.add(MinecraftTypes.readString(in));
         }
         if (in.readBoolean()) {
-            this.title = helper.readString(in);
+            this.title = MinecraftTypes.readString(in);
         } else {
             this.title = null;
         }
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, slot);
-        helper.writeVarInt(out, this.pages.size());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, slot);
+        MinecraftTypes.writeVarInt(out, this.pages.size());
         for (int i = 0; i < this.pages.size(); i++) {
-            helper.writeString(out, this.pages.get(i));
+            MinecraftTypes.writeString(out, this.pages.get(i));
         }
         out.writeBoolean(this.title != null);
         if (this.title != null) {
-            helper.writeString(out, title);
+            MinecraftTypes.writeString(out, title);
         }
     }
 }

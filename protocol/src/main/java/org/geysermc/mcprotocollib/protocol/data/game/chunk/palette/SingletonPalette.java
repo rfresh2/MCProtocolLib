@@ -3,7 +3,7 @@ package org.geysermc.mcprotocollib.protocol.data.game.chunk.palette;
 import io.netty.buffer.ByteBuf;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 /**
  * A palette containing one state.
@@ -13,8 +13,8 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 public class SingletonPalette implements Palette {
     private final int state;
 
-    public SingletonPalette(ByteBuf in, MinecraftCodecHelper helper) {
-        this.state = helper.readVarInt(in);
+    public SingletonPalette(ByteBuf in) {
+        this.state = MinecraftTypes.readVarInt(in);
     }
 
     @Override

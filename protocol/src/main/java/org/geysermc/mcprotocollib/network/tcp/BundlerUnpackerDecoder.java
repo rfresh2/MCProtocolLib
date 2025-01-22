@@ -9,7 +9,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import java.util.ArrayList;
 import java.util.List;
 
-public class TcpBundlerUnpacker extends MessageToMessageDecoder<MinecraftPacket> {
+public class BundlerUnpackerDecoder extends MessageToMessageDecoder<MinecraftPacket> {
     private List<MinecraftPacket> currentPackets;
 
     @Override

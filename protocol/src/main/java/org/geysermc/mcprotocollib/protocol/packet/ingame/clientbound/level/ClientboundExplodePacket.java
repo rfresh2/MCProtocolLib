@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
@@ -26,7 +26,7 @@ public class ClientboundExplodePacket implements MinecraftPacket {
     private final @NonNull Particle explosionParticle;
     private final @NonNull Sound explosionSound;
 
-    public ClientboundExplodePacket(ByteBuf in, MinecraftCodecHelper helper) {
+    public ClientboundExplodePacket(ByteBuf in) {
         this.centerX = in.readDouble();
         this.centerY = in.readDouble();
         this.centerZ = in.readDouble();
@@ -40,12 +40,12 @@ public class ClientboundExplodePacket implements MinecraftPacket {
             this.playerKnockbackY = 0.0;
             this.playerKnockbackZ = 0.0;
         }
-        this.explosionParticle = helper.readParticle(in);
-        this.explosionSound = helper.readById(in, BuiltinSound::from, helper::readSoundEvent);
+        this.explosionParticle = MinecraftTypes.readParticle(in);
+        this.explosionSound = MinecraftTypes.readById(in, BuiltinSound::from, MinecraftTypes::readSoundEvent);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
+    public void serialize(ByteBuf out) {
         out.writeDouble(this.centerX);
         out.writeDouble(this.centerY);
         out.writeDouble(this.centerZ);
@@ -55,12 +55,12 @@ public class ClientboundExplodePacket implements MinecraftPacket {
             out.writeDouble(this.playerKnockbackY);
             out.writeDouble(this.playerKnockbackZ);
         }
-        helper.writeParticle(out, this.explosionParticle);
+        MinecraftTypes.writeParticle(out, this.explosionParticle);
         if (this.explosionSound instanceof CustomSound) {
-            helper.writeVarInt(out, 0);
-            helper.writeSoundEvent(out, this.explosionSound);
+            MinecraftTypes.writeVarInt(out, 0);
+            MinecraftTypes.writeSoundEvent(out, this.explosionSound);
         } else {
-            helper.writeVarInt(out, ((BuiltinSound) this.explosionSound).ordinal() + 1);
+            MinecraftTypes.writeVarInt(out, ((BuiltinSound) this.explosionSound).ordinal() + 1);
         }
     }
 }

@@ -62,7 +62,16 @@ public interface Server {
      * @return Value of the flag.
      * @throws IllegalStateException If the flag's value isn't of the required type.
      */
-    <T> T getGlobalFlag(Flag<T> flag);
+    default <T> T getGlobalFlag(Flag<T> flag) {
+        return getGlobalFlagSupplied(flag, () -> null);
+    }
+
+    /**
+     * @see #getGlobalFlagSupplied(Flag, Supplier)
+     */
+    default <T> T getGlobalFlag(Flag<T> flag, T def) {
+        return getGlobalFlagSupplied(flag, () -> def);
+    }
 
     /**
      * Gets the value of the given flag as an instance of the given type.
@@ -70,11 +79,11 @@ public interface Server {
      *
      * @param <T> Type of the flag.
      * @param flag Flag to check for.
-     * @param def Default value of the flag.
+     * @param defSupplier Default value supplier.
      * @return Value of the flag.
      * @throws IllegalStateException If the flag's value isn't of the required type.
      */
-    <T> T getGlobalFlag(Flag<T> flag, T def);
+    <T> T getGlobalFlagSupplied(Flag<T> flag, Supplier<T> defSupplier);
 
     /**
      * Sets the value of a flag. The flag will be used in sessions if a session does

@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 @Data
 @With
@@ -15,16 +15,16 @@ public class ServerboundPlaceRecipePacket implements MinecraftPacket {
     private final int recipe;
     private final boolean useMaxItems;
 
-    public ServerboundPlaceRecipePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        this.containerId = helper.readVarInt(in);
-        this.recipe = helper.readVarInt(in);
+    public ServerboundPlaceRecipePacket(ByteBuf in) {
+        this.containerId = MinecraftTypes.readVarInt(in);
+        this.recipe = MinecraftTypes.readVarInt(in);
         this.useMaxItems = in.readBoolean();
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeVarInt(out, this.containerId);
-        helper.writeVarInt(out, this.recipe);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeVarInt(out, this.containerId);
+        MinecraftTypes.writeVarInt(out, this.recipe);
         out.writeBoolean(this.useMaxItems);
     }
 }

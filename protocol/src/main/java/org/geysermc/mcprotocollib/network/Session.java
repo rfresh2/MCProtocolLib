@@ -6,7 +6,6 @@ import io.netty.channel.ChannelFutureListener;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 import org.geysermc.mcprotocollib.network.event.session.SessionListener;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.tcp.FlushHandler;
@@ -79,13 +78,6 @@ public interface Session {
      * @return The session's packet protocol.
      */
     MinecraftProtocol getPacketProtocol();
-
-    /**
-     * Gets the session's {@link PacketCodecHelper}.
-     *
-     * @return The session's packet codec helper.
-     */
-    PacketCodecHelper getCodecHelper();
 
     /**
      * Gets this session's set flags. If this session belongs to a server, the server's

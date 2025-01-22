@@ -11,8 +11,8 @@ import lombok.NonNull;
 import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
-import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodecHelper;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
+import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.status.PlayerInfo;
 import org.geysermc.mcprotocollib.protocol.data.status.ServerStatusInfo;
@@ -38,13 +38,13 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
         this(toJson(info));
     }
 
-    public ClientboundStatusResponsePacket(ByteBuf in, MinecraftCodecHelper helper) {
-        data = GSON.fromJson(helper.readString(in), JsonObject.class);
+    public ClientboundStatusResponsePacket(ByteBuf in) {
+        data = GSON.fromJson(MinecraftTypes.readString(in), JsonObject.class);
     }
 
     @Override
-    public void serialize(ByteBuf out, MinecraftCodecHelper helper) {
-        helper.writeString(out, data.toString());
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeString(out, data.toString());
     }
 
     public ServerStatusInfo parseInfo() {

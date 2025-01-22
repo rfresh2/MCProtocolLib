@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.network.packet;
 import io.netty.buffer.ByteBuf;
 import org.geysermc.mcprotocollib.network.Server;
 import org.geysermc.mcprotocollib.network.Session;
-import org.geysermc.mcprotocollib.network.codec.PacketCodecHelper;
 
 /**
  * A protocol for packet sending and receiving.
@@ -23,13 +22,6 @@ public abstract class PacketProtocol {
      * @return The protocol's packet header.
      */
     public abstract PacketHeader getPacketHeader();
-
-    /**
-     * Gets the packet codec helper for this protocol.
-     *
-     * @return A new {@link PacketCodecHelper}.
-     */
-    public abstract PacketCodecHelper getHelper();
 
     /**
      * Called when a client session is created with this protocol.
