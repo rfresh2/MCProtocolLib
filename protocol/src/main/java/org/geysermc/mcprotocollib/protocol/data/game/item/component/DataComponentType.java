@@ -28,9 +28,7 @@ public class DataComponentType<T> {
     public static final DataComponentType<Unbreakable> UNBREAKABLE = new DataComponentType<>("unbreakable", ItemTypes::readUnbreakable, ItemTypes::writeUnbreakable, ObjectDataComponent::new);
     public static final DataComponentType<Component> CUSTOM_NAME = new DataComponentType<>("custom_name", MinecraftTypes::readComponent, MinecraftTypes::writeComponent, ObjectDataComponent::new);
     public static final DataComponentType<Component> ITEM_NAME = new DataComponentType<>("item_name", MinecraftTypes::readComponent, MinecraftTypes::writeComponent, ObjectDataComponent::new);
-    public static final DataComponentType<String> ITEM_MODEL = new DataComponentType<>("item_model", MinecraftTypes::readResourceLocationString, MinecraftTypes::writeResourceLocation, ObjectDataComponent::new);
-    public static final DataComponentType<List<Component>> LORE = new DataComponentType<>("lore", listReader(
-        MinecraftTypes::readComponent), listWriter(MinecraftTypes::writeComponent), ObjectDataComponent::new);
+    public static final DataComponentType<List<Component>> LORE = new DataComponentType<>("lore", listReader(MinecraftTypes::readComponent), listWriter(MinecraftTypes::writeComponent), ObjectDataComponent::new);
     public static final IntComponentType RARITY = new IntComponentType("rarity", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<ItemEnchantments> ENCHANTMENTS = new DataComponentType<>("enchantments", ItemTypes::readItemEnchantments, ItemTypes::writeItemEnchantments, ObjectDataComponent::new);
     public static final DataComponentType<AdventureModePredicate> CAN_PLACE_ON = new DataComponentType<>("can_place_on", ItemTypes::readAdventureModePredicate, ItemTypes::writeAdventureModePredicate, ObjectDataComponent::new);
@@ -52,10 +50,8 @@ public class DataComponentType<T> {
     public static final IntComponentType MAP_ID = new IntComponentType("map_id", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new);
     public static final DataComponentType<MNBT> MAP_DECORATIONS = new DataComponentType<>("map_decorations", MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectDataComponent::new);
     public static final IntComponentType MAP_POST_PROCESSING = new IntComponentType("map_post_processing", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new);
-    public static final DataComponentType<List<ItemStack>> CHARGED_PROJECTILES = new DataComponentType<>("charged_projectiles", listReader(
-        MinecraftTypes::readItemStack), listWriter(MinecraftTypes::writeItemStack), ObjectDataComponent::new);
-    public static final DataComponentType<List<ItemStack>> BUNDLE_CONTENTS = new DataComponentType<>("bundle_contents", listReader(
-        MinecraftTypes::readItemStack), listWriter(MinecraftTypes::writeItemStack), ObjectDataComponent::new);
+    public static final DataComponentType<List<ItemStack>> CHARGED_PROJECTILES = new DataComponentType<>("charged_projectiles", listReader(MinecraftTypes::readItemStack), listWriter(MinecraftTypes::writeItemStack), ObjectDataComponent::new);
+    public static final DataComponentType<List<ItemStack>> BUNDLE_CONTENTS = new DataComponentType<>("bundle_contents", listReader(MinecraftTypes::readItemStack), listWriter(MinecraftTypes::writeItemStack), ObjectDataComponent::new);
     public static final DataComponentType<PotionContents> POTION_CONTENTS = new DataComponentType<>("potion_contents", ItemTypes::readPotionContents, ItemTypes::writePotionContents, ObjectDataComponent::new);
     public static final DataComponentType<List<SuspiciousStewEffect>> SUSPICIOUS_STEW_EFFECTS = new DataComponentType<>("suspicious_stew_effects", listReader(ItemTypes::readStewEffect), listWriter(ItemTypes::writeStewEffect), ObjectDataComponent::new);
     public static final DataComponentType<WritableBookContent> WRITABLE_BOOK_CONTENT = new DataComponentType<>("writable_book_content", ItemTypes::readWritableBookContent, ItemTypes::writeWritableBookContent, ObjectDataComponent::new);
@@ -76,10 +72,8 @@ public class DataComponentType<T> {
     public static final DataComponentType<String> NOTE_BLOCK_SOUND = new DataComponentType<>("note_block_sound", MinecraftTypes::readResourceLocationString, MinecraftTypes::writeResourceLocation, ObjectDataComponent::new);
     public static final DataComponentType<List<BannerPatternLayer>> BANNER_PATTERNS = new DataComponentType<>("banner_patterns", listReader(ItemTypes::readBannerPatternLayer), listWriter(ItemTypes::writeBannerPatternLayer), ObjectDataComponent::new);
     public static final IntComponentType BASE_COLOR = new IntComponentType("base_color", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new);
-    public static final DataComponentType<List<Integer>> POT_DECORATIONS = new DataComponentType<>("pot_decorations", listReader(
-        MinecraftTypes::readVarInt), listWriter(MinecraftTypes::writeVarInt), ObjectDataComponent::new);
-    public static final DataComponentType<List<ItemStack>> CONTAINER = new DataComponentType<>("container", listReader(
-        MinecraftTypes::readOptionalItemStack), listWriter(MinecraftTypes::writeOptionalItemStack), ObjectDataComponent::new);
+    public static final DataComponentType<List<Integer>> POT_DECORATIONS = new DataComponentType<>("pot_decorations", listReader(MinecraftTypes::readVarInt), listWriter(MinecraftTypes::writeVarInt), ObjectDataComponent::new);
+    public static final DataComponentType<List<ItemStack>> CONTAINER = new DataComponentType<>("container", listReader(MinecraftTypes::readOptionalItemStack), listWriter(MinecraftTypes::writeOptionalItemStack), ObjectDataComponent::new);
     public static final DataComponentType<BlockStateProperties> BLOCK_STATE = new DataComponentType<>("block_state", ItemTypes::readBlockStateProperties, ItemTypes::writeBlockStateProperties, ObjectDataComponent::new);
     public static final DataComponentType<List<BeehiveOccupant>> BEES = new DataComponentType<>("bees", listReader(ItemTypes::readBeehiveOccupant), listWriter(ItemTypes::writeBeehiveOccupant), ObjectDataComponent::new);
     public static final DataComponentType<MNBT> LOCK = new DataComponentType<>("lock", MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectDataComponent::new);
