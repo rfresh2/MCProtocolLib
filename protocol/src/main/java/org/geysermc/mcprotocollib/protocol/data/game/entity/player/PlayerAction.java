@@ -1,13 +1,13 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.player;
 
 public enum PlayerAction {
-    START_DIGGING,
-    CANCEL_DIGGING,
-    FINISH_DIGGING,
-    DROP_ITEM_STACK,
+    START_DESTROY_BLOCK,
+    ABORT_DESTROY_BLOCK,
+    STOP_DESTROY_BLOCK,
+    DROP_ALL_ITEMS,
     DROP_ITEM,
     RELEASE_USE_ITEM,
-    SWAP_HANDS;
+    SWAP_ITEM_WITH_OFFHAND;
 
     private static final PlayerAction[] VALUES = values();
 
