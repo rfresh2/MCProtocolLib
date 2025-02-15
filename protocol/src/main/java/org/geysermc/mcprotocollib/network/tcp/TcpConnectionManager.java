@@ -6,6 +6,10 @@ import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.kqueue.KQueueDatagramChannel;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.ServerSocketChannel;
@@ -57,6 +61,13 @@ public class TcpConnectionManager implements Closeable {
                 this.channelClass = NioSocketChannel.class;
                 this.datagramChannelClass = NioDatagramChannel.class;
                 this.serverSocketChannelClass = NioServerSocketChannel.class;
+                break;
+            case KQUEUE:
+                this.bossGroup = new KQueueEventLoopGroup(threads);
+                this.workerGroup = new KQueueEventLoopGroup(threads);
+                this.channelClass = KQueueSocketChannel.class;
+                this.datagramChannelClass = KQueueDatagramChannel.class;
+                this.serverSocketChannelClass = KQueueServerSocketChannel.class;
                 break;
             default:
                 throw new IllegalStateException("Unknown transport method: " + this.transportMethod);
