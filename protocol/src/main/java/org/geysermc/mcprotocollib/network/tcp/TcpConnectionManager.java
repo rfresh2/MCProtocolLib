@@ -37,29 +37,28 @@ public class TcpConnectionManager implements Closeable {
     public TcpConnectionManager(int threads) {
         this.transportMethod = TransportHelper.determineTransportMethod();
         switch (this.transportMethod) {
-            case IO_URING:
+            case IO_URING -> {
                 this.bossGroup = new IOUringEventLoopGroup(threads);
                 this.workerGroup = new IOUringEventLoopGroup(threads);
                 this.channelClass = IOUringSocketChannel.class;
                 this.datagramChannelClass = IOUringDatagramChannel.class;
                 this.serverSocketChannelClass = IOUringServerSocketChannel.class;
-                break;
-            case EPOLL:
+            }
+            case EPOLL -> {
                 this.bossGroup = new EpollEventLoopGroup(threads);
                 this.workerGroup = new EpollEventLoopGroup(threads);
                 this.channelClass = EpollSocketChannel.class;
                 this.datagramChannelClass = EpollDatagramChannel.class;
                 this.serverSocketChannelClass = EpollServerSocketChannel.class;
-                break;
-            case NIO:
+            }
+            case NIO -> {
                 this.bossGroup = new NioEventLoopGroup(threads);
                 this.workerGroup = new NioEventLoopGroup(threads);
                 this.channelClass = NioSocketChannel.class;
                 this.datagramChannelClass = NioDatagramChannel.class;
                 this.serverSocketChannelClass = NioServerSocketChannel.class;
-                break;
-            default:
-                throw new IllegalStateException("Unknown transport method: " + this.transportMethod);
+            }
+            default -> throw new IllegalStateException("Unknown transport method: " + this.transportMethod);
         }
     }
 
