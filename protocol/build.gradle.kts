@@ -30,7 +30,7 @@ repositories {
     mavenLocal()
 }
 
-val adventureVersion = "4.18.0"
+val adventureVersion = "4.19.0"
 val fastutilVersion = "8.5.15"
 
 dependencies {
