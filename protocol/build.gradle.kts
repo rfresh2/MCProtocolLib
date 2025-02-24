@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.12.1"
+    id("io.freefair.lombok") version "8.12.2"
     `maven-publish`
     `java-library`
 }
@@ -61,7 +61,7 @@ dependencies {
 
     api("org.checkerframework:checker-qual:3.49.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
 }
 
 lombok {
