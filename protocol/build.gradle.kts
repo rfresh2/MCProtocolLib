@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.12.1"
+    id("io.freefair.lombok") version "8.12.2"
     `maven-publish`
     `java-library`
 }
@@ -34,7 +34,7 @@ val adventureVersion = "4.19.0"
 val fastutilVersion = "8.5.15"
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.16")
+    api("org.slf4j:slf4j-api:2.0.17")
 
     api("com.github.rfresh2:OpenNBT:3.0.5")
 
@@ -54,14 +54,16 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.118.Final")
+    api("io.netty:netty-all:4.1.119.Final")
     compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.49.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation(platform("org.junit:junit-bom:5.12.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 lombok {
