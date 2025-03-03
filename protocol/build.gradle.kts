@@ -61,7 +61,9 @@ dependencies {
 
     api("org.checkerframework:checker-qual:3.49.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
+    testImplementation(platform("org.junit:junit-bom:5.12.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 lombok {
