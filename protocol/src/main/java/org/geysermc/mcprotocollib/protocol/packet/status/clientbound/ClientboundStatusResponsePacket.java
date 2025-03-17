@@ -57,7 +57,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
             List<GameProfile> profiles = new ArrayList<>();
             if (plrs.has("sample")) {
                 JsonArray prof = plrs.get("sample").getAsJsonArray();
-            if (!prof.isEmpty()) {
+                if (!prof.isEmpty()) {
                     for (int index = 0; index < prof.size(); index++) {
                         JsonObject o = prof.get(index).getAsJsonObject();
                         profiles.add(new GameProfile(o.get("id").getAsString(), o.get("name").getAsString()));

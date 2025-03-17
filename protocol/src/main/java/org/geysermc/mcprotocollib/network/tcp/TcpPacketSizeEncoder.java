@@ -13,7 +13,7 @@ import java.util.List;
 
 @ChannelHandler.Sharable
 public class TcpPacketSizeEncoder extends MessageToMessageEncoder<ByteBuf> {
-    public static String ID = "size-encoder";
+    public static final String ID = "size-encoder";
 
     public static final boolean USE_HEAP_BUF = Natives.cipher.get() == JavaVelocityCipher.FACTORY;
     private final Session session;

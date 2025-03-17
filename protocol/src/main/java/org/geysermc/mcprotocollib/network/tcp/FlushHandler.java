@@ -10,7 +10,7 @@ import io.netty.channel.ChannelPromise;
  * This logic is similar to the Minecraft UnconfiguredPipelineHandler.OutboundConfigurationTask.
  */
 public class FlushHandler extends ChannelOutboundHandlerAdapter {
-    public static String ID = "flush";
+    public static final String ID = "flush";
     public static final FlushPacket FLUSH_PACKET = new FlushPacket();
 
     @Override

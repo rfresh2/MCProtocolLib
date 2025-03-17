@@ -11,6 +11,7 @@ import io.netty.handler.flow.FlowControlHandler;
  * This will halt all decoding until the channel is ready to process more packets.
  */
 public class AutoReadFlowControlHandler extends FlowControlHandler {
+    public static final String ID = "auto-read-flow-control";
     @Override
     public void read(ChannelHandlerContext ctx) throws Exception {
         if (ctx.channel().config().isAutoRead()) {

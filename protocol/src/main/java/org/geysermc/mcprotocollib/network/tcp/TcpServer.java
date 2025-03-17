@@ -5,7 +5,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import org.geysermc.mcprotocollib.network.AbstractServer;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.slf4j.Logger;
@@ -21,13 +20,13 @@ public class TcpServer extends AbstractServer {
     private final TcpConnectionManager tcpManager;
     private final TcpServerSessionBuilder sessionBuilder;
 
-    public TcpServer(String host, int port, Supplier<? extends PacketProtocol> protocol, TcpConnectionManager tcpManager) {
+    public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol, TcpConnectionManager tcpManager) {
         super(host, port, protocol);
         this.tcpManager = tcpManager;
         this.sessionBuilder = defaultSessionBuilder();
     }
 
-    public TcpServer(String host, int port, Supplier<? extends PacketProtocol> protocol, TcpConnectionManager tcpManager, TcpServerSessionBuilder sessionBuilder) {
+    public TcpServer(String host, int port, Supplier<? extends MinecraftProtocol> protocol, TcpConnectionManager tcpManager, TcpServerSessionBuilder sessionBuilder) {
         super(host, port, protocol);
         this.tcpManager = tcpManager;
         this.sessionBuilder = sessionBuilder;
@@ -43,7 +42,7 @@ public class TcpServer extends AbstractServer {
     }
 
     private TcpServerSessionBuilder defaultSessionBuilder() {
-        return address -> new TcpServerSession(address.getHostName(), address.getPort(), (MinecraftProtocol) createPacketProtocol(), null);
+        return address -> new TcpServerSession(address.getHostName(), address.getPort(), createPacketProtocol(), null);
     }
 
     @Override

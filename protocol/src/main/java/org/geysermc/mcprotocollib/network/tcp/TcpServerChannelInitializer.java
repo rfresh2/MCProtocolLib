@@ -41,6 +41,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
         pipeline
             .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder())
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(session))
+            .addLast(AutoReadFlowControlHandler.ID, new AutoReadFlowControlHandler())
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(session, false))
             .addLast(FlushHandler.ID, new FlushHandler())
             .addLast(TcpSession.ID, session);
