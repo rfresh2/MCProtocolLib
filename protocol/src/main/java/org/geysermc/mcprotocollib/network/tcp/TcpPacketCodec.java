@@ -6,8 +6,8 @@ import io.netty.handler.codec.ByteToMessageCodec;
 import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.packet.Packet;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
 
     public TcpPacketCodec(Session session, boolean client) {
         this.session = session;
-        PacketProtocol packetProtocol = session.getPacketProtocol();
+        MinecraftProtocol packetProtocol = session.getPacketProtocol();
         this.outboundPacketIdEncoder = client
             ? (packet) -> packetProtocol.getOutboundPacketRegistry().getServerboundId(packet)
             : (packet) -> packetProtocol.getOutboundPacketRegistry().getClientboundId(packet);

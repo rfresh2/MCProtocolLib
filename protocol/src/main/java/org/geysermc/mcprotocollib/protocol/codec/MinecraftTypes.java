@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.cloudburstmc.math.imaginary.Quaternionf;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
-import org.cloudburstmc.math.vector.Vector4f;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
@@ -43,6 +43,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.ArmadilloSt
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.GlobalPos;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.MetadataType;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.MetadataTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.PaintingVariant;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.Pose;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.SnifferState;
@@ -55,6 +56,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerSpawnIn
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponent;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
@@ -483,13 +485,13 @@ public class MinecraftTypes {
 
         Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(nonNullComponents + nullComponents);
         for (int k = 0; k < nonNullComponents; k++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
+            DataComponentType<?> dataComponentType = DataComponentTypes.from(readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
             dataComponents.put(dataComponentType, dataComponent);
         }
 
         for (int k = 0; k < nullComponents; k++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
+            DataComponentType<?> dataComponentType = DataComponentTypes.from(readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readNullDataComponent();
             dataComponents.put(dataComponentType, dataComponent);
         }
@@ -538,7 +540,7 @@ public class MinecraftTypes {
 
         Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(componentsLength);
         for (int i = 0; i < componentsLength; i++) {
-            DataComponentType<?> dataComponentType = DataComponentType.from(readVarInt(buf));
+            DataComponentType<?> dataComponentType = DataComponentTypes.from(readVarInt(buf));
             DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
             dataComponents.put(dataComponentType, dataComponent);
         }
@@ -615,16 +617,16 @@ public class MinecraftTypes {
         buf.writeFloat(rot.getZ());
     }
 
-    public static Vector4f readQuaternion(ByteBuf buf) {
+    public static Quaternionf readQuaternion(ByteBuf buf) {
         float x = buf.readFloat();
         float y = buf.readFloat();
         float z = buf.readFloat();
         float w = buf.readFloat();
 
-        return Vector4f.from(x, y, z, w);
+        return Quaternionf.from(x, y, z, w);
     }
 
-    public static void writeQuaternion(ByteBuf buf, Vector4f vec4) {
+    public static void writeQuaternion(ByteBuf buf, Quaternionf vec4) {
         buf.writeFloat(vec4.getX());
         buf.writeFloat(vec4.getY());
         buf.writeFloat(vec4.getZ());
@@ -774,11 +776,11 @@ public class MinecraftTypes {
 
     public static MetadataType<?> readMetadataType(ByteBuf buf) {
         int id = readVarInt(buf);
-        if (id >= MetadataType.size()) {
-            throw new IllegalArgumentException("Received id " + id + " for MetadataType when the maximum was " + MetadataType.size() + "!");
+        if (id >= MetadataTypes.size()) {
+            throw new IllegalArgumentException("Received id " + id + " for MetadataType when the maximum was " + MetadataTypes.size() + "!");
         }
 
-        return MetadataType.from(id);
+        return MetadataTypes.from(id);
     }
 
     public static void writeMetadataType(ByteBuf buf, MetadataType<?> type) {

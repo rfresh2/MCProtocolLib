@@ -16,7 +16,7 @@ import io.netty.handler.proxy.HttpProxyHandler;
 import io.netty.handler.proxy.Socks4ProxyHandler;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
@@ -41,7 +41,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
 
     @Override
     protected void initChannel(final Channel channel) throws Exception {
-        PacketProtocol protocol = client.getPacketProtocol();
+        MinecraftProtocol protocol = client.getPacketProtocol();
         protocol.newClientSession(client, transferring);
 
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);
@@ -61,6 +61,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         pipeline
             .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder())
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(client))
+            .addLast(AutoReadFlowControlHandler.ID, new AutoReadFlowControlHandler())
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(client, true))
             .addLast(FlushHandler.ID, new FlushHandler())
             .addLast(TcpSession.ID, client);

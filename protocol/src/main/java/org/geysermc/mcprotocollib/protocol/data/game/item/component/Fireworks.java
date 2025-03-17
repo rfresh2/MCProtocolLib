@@ -1,18 +1,18 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Fireworks {
     private final int flightDuration;
     private final List<FireworkExplosion> explosions;
 
     @Data
-    @AllArgsConstructor
+    @Builder(toBuilder = true)
     public static class FireworkExplosion {
         private final int shapeId;
         private final int[] colors;

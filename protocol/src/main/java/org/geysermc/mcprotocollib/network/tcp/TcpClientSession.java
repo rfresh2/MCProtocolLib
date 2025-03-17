@@ -17,6 +17,7 @@ import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
 import org.geysermc.mcprotocollib.network.ProxyInfo;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
@@ -94,7 +95,7 @@ public class TcpClientSession extends TcpSession {
 
             future.addListener((futureListener) -> {
                 if (!futureListener.isSuccess()) {
-                    exceptionCaught(null, futureListener.cause());
+                    disconnect(Component.text("Internal Exception: " + futureListener.cause().getMessage()), futureListener.cause());
                 }
             });
         } catch(Throwable t) {

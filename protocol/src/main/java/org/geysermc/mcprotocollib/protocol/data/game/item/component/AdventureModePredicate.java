@@ -2,19 +2,20 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.viaversion.nbt.mini.MNBT;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
+@Builder(toBuilder = true)
 public class AdventureModePredicate {
     private final List<BlockPredicate> predicates;
     private final boolean showInTooltip;
 
     @Data
-    @AllArgsConstructor
+    @Builder(toBuilder = true)
     public static class BlockPredicate {
         private final @Nullable HolderSet blocks;
         private final @Nullable List<PropertyMatcher> properties;
@@ -22,6 +23,7 @@ public class AdventureModePredicate {
     }
 
     @Data
+    @Builder(toBuilder = true)
     @AllArgsConstructor
     public static class PropertyMatcher {
         private final String name;

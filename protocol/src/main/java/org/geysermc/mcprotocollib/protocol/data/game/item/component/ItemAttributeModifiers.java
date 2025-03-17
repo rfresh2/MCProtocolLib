@@ -1,19 +1,19 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
+@Builder(toBuilder = true)
 public class ItemAttributeModifiers {
     private final List<Entry> modifiers;
     private final boolean showInTooltip;
 
     @Data
-    @AllArgsConstructor
+    @Builder(toBuilder = true)
     public static class Entry {
         private final int attribute;
         private final AttributeModifier modifier;
@@ -21,7 +21,7 @@ public class ItemAttributeModifiers {
     }
 
     @Data
-    @AllArgsConstructor
+    @Builder(toBuilder = true)
     public static class AttributeModifier {
         private final String id;
         private final double amount;

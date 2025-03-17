@@ -1,7 +1,7 @@
 package org.geysermc.mcprotocollib.network;
 
 import org.geysermc.mcprotocollib.network.event.server.ServerListener;
-import org.geysermc.mcprotocollib.network.packet.PacketProtocol;
+import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,7 @@ public interface Server {
      *
      * @return The server's packet protocol.
      */
-    Supplier<? extends PacketProtocol> getPacketProtocol();
+    Supplier<? extends MinecraftProtocol> getPacketProtocol();
 
     /**
      * Returns true if the listener is listening.
