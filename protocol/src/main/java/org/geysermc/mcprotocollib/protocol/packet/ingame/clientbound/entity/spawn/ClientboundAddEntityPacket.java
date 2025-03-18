@@ -39,18 +39,18 @@ public class ClientboundAddEntityPacket implements MinecraftPacket {
     private final double motionZ;
 
     public ClientboundAddEntityPacket(int entityId, @NonNull UUID uuid, @NonNull EntityType type,
-                                      double x, double y, double z, float yaw, float pitch, float headYaw) {
+                                      double x, double y, double z, float yaw, float headYaw, float pitch) {
         this(entityId, uuid, type, EMPTY_DATA, x, y, z, yaw, headYaw, pitch, 0, 0, 0);
     }
 
     public ClientboundAddEntityPacket(int entityId, @NonNull UUID uuid, @NonNull EntityType type, @NonNull ObjectData data,
-                                      double x, double y, double z, float yaw, float pitch, float headYaw) {
+                                      double x, double y, double z, float yaw, float headYaw, float pitch) {
         this(entityId, uuid, type, data, x, y, z, yaw, headYaw, pitch, 0, 0, 0);
     }
 
     public ClientboundAddEntityPacket(int entityId, @NonNull UUID uuid, @NonNull EntityType type,
-                                      double x, double y, double z, float yaw, float pitch,
-                                      float headYaw, double motionX, double motionY, double motionZ) {
+                                      double x, double y, double z, float yaw, float headYaw, float pitch,
+                                      double motionX, double motionY, double motionZ) {
         this(entityId, uuid, type, EMPTY_DATA, x, y, z, yaw, headYaw, pitch, motionX, motionY, motionZ);
     }
 
