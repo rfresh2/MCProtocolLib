@@ -36,7 +36,7 @@ val fastutilVersion = "8.5.15"
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
-    api("com.github.rfresh2:OpenNBT:3.0.5")
+    api("com.github.rfresh2:OpenNBT:3.0.7")
 
     // MinecraftAuth for authentication
     api("net.raphimc:MinecraftAuth:4.1.1")
