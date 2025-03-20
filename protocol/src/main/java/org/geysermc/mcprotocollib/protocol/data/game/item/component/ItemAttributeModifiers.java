@@ -10,7 +10,6 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class ItemAttributeModifiers {
     private final List<Entry> modifiers;
-    private final boolean showInTooltip;
 
     @Data
     @Builder(toBuilder = true)

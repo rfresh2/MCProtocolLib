@@ -32,6 +32,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
     private final @NonNull Advancement[] advancements;
     private final @NonNull String[] removedAdvancements;
     private final @NonNull Map<String, Map<String, Long>> progress;
+    private final boolean showAdvancements;
 
     public Map<String, Long> getProgress(@NonNull String advancementId) {
         return this.progress.get(advancementId);
@@ -107,6 +108,8 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
 
             this.progress.put(advancementId, advancementProgress);
         }
+
+        this.showAdvancements = in.readBoolean();
     }
 
     @Override
@@ -190,5 +193,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 }
             }
         }
+
+        out.writeBoolean(this.showAdvancements);
     }
 }

@@ -20,6 +20,7 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
     private static final int FLAG_IGNORE_ENTITIES = 0x01;
     private static final int FLAG_SHOW_AIR = 0x02;
     private static final int FLAG_SHOW_BOUNDING_BOX = 0x04;
+    private static final int FLAG_STRICT = 0x08;
 
     private final int x;
     private final int y;
@@ -37,6 +38,7 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
     private final boolean ignoreEntities;
     private final boolean showAir;
     private final boolean showBoundingBox;
+    private final boolean strict;
 
     public ServerboundSetStructureBlockPacket(ByteBuf in) {
         var position = in.readLong();
@@ -58,6 +60,7 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
         this.ignoreEntities = (flags & FLAG_IGNORE_ENTITIES) != 0;
         this.showAir = (flags & FLAG_SHOW_AIR) != 0;
         this.showBoundingBox = (flags & FLAG_SHOW_BOUNDING_BOX) != 0;
+        this.strict = (flags & FLAG_STRICT) != 0;
     }
 
     @Override
@@ -89,6 +92,10 @@ public class ServerboundSetStructureBlockPacket implements MinecraftPacket {
 
         if (this.showBoundingBox) {
             flags |= FLAG_SHOW_BOUNDING_BOX;
+        }
+
+        if (this.strict) {
+            flags |= FLAG_STRICT;
         }
 
         out.writeByte(flags);

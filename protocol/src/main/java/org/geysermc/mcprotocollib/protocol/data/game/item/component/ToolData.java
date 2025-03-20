@@ -13,6 +13,7 @@ public class ToolData {
     private final List<Rule> rules;
     private final float defaultMiningSpeed;
     private final int damagePerBlock;
+    private final boolean canDestroyBlocksInCreative;
 
     @Data
     @Builder(toBuilder = true)

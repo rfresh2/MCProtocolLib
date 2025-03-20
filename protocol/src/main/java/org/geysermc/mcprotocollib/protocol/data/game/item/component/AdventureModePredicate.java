@@ -12,7 +12,6 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class AdventureModePredicate {
     private final List<BlockPredicate> predicates;
-    private final boolean showInTooltip;
 
     @Data
     @Builder(toBuilder = true)
