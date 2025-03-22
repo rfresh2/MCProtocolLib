@@ -56,18 +56,17 @@ public class BinaryNbtComponentSerializer {
     }
 
     public static void serializeComponent(MNBTWriter writer, Component component) {
-        if (component instanceof TextComponent textComponent) {
-            serializeTextComponent(writer, textComponent);
-        } else if (component instanceof TranslatableComponent translatableComponent) {
-            serializeTranslatableComponent(writer, translatableComponent);
-        } else if (component instanceof KeybindComponent keybindComponent) {
-            serializeKeybindComponent(writer, keybindComponent);
-        } else if (component instanceof ScoreComponent scoreComponent) {
-            serializeScoreComponent(writer, scoreComponent);
-        } else if (component instanceof SelectorComponent selectorComponent) {
-            serializeSelectorComponent(writer, selectorComponent);
-        } else {
-            LOGGER.error("BinaryNbtComponentSerializer: Unknown component type: {}", component.getClass().getName());
+        switch (component) {
+            case TextComponent textComponent -> serializeTextComponent(writer, textComponent);
+            case TranslatableComponent translatableComponent -> serializeTranslatableComponent(writer, translatableComponent);
+            case KeybindComponent keybindComponent -> serializeKeybindComponent(writer, keybindComponent);
+            case ScoreComponent scoreComponent -> serializeScoreComponent(writer, scoreComponent);
+            case SelectorComponent selectorComponent -> serializeSelectorComponent(writer, selectorComponent);
+            case null -> {
+                LOGGER.error("BinaryNbtComponentSerializer: Null component type");
+                return;
+            }
+            default -> LOGGER.error("BinaryNbtComponentSerializer: Unknown component type: {}", component.getClass().getName());
         }
         if (!component.style().isEmpty()) {
             serializeStyle(writer, component.style());
@@ -98,49 +97,58 @@ public class BinaryNbtComponentSerializer {
         List<TranslationArgument> arguments = component.arguments();
         if (!arguments.isEmpty()) {
             if (arguments.size() == 1) {
-                var arg = arguments.get(0);
+                var arg = arguments.getFirst();
                 var argValue = arg.value();
                 if (argValue instanceof Component) {
                     writer.writeListTag("with", 10, 1);
                     serializeComponent(writer, (Component) argValue);
                     writer.writeEndTag();
                 } else {
-                    if (argValue instanceof LazilyParsedNumber lazy) {
-                        if (lazy.toString().contains(".")) {
-                            writer.writeListTag("with", 6, 1);
-                            writer.writeDoubleTag(lazy.doubleValue());
-                        }
-                        else {
-                            var longVal = lazy.longValue();
-                            if (longVal <= Integer.MAX_VALUE && longVal >= Integer.MIN_VALUE) {
-                                writer.writeListTag("with", 3, 1);
-                                writer.writeIntTag(lazy.intValue());
+                    switch (argValue) {
+                        case LazilyParsedNumber lazy -> {
+                            if (lazy.toString().contains(".")) {
+                                writer.writeListTag("with", 6, 1);
+                                writer.writeDoubleTag(lazy.doubleValue());
                             } else {
-                                writer.writeListTag("with", 4, 1);
-                                writer.writeLongTag(longVal);
+                                var longVal = lazy.longValue();
+                                if (longVal <= Integer.MAX_VALUE && longVal >= Integer.MIN_VALUE) {
+                                    writer.writeListTag("with", 3, 1);
+                                    writer.writeIntTag(lazy.intValue());
+                                } else {
+                                    writer.writeListTag("with", 4, 1);
+                                    writer.writeLongTag(longVal);
+                                }
                             }
                         }
-                    } else if (argValue instanceof String) {
-                        writer.writeListTag("with", 8, 1);
-                        writer.writeStringTag((String) argValue);
-                    } else if (argValue instanceof Boolean) {
-                        writer.writeListTag("with", 1, 1);
-                        writer.writeByteTag((Boolean) argValue ? (byte) 1 : (byte) 0);
-                    } else if (argValue instanceof Short) {
-                        writer.writeListTag("with", 2, 1);
-                        writer.writeShortTag((Short) argValue);
-                    } else if (argValue instanceof Integer) {
-                        writer.writeListTag("with", 3, 1);
-                        writer.writeIntTag((Integer) argValue);
-                    } else if (argValue instanceof Long) {
-                        writer.writeListTag("with", 4, 1);
-                        writer.writeLongTag((Long) argValue);
-                    } else if (argValue instanceof Float) {
-                        writer.writeListTag("with", 5, 1);
-                        writer.writeFloatTag((Float) argValue);
-                    } else if (argValue instanceof Double) {
-                        writer.writeListTag("with", 6, 1);
-                        writer.writeDoubleTag((Double) argValue);
+                        case final String str -> {
+                            writer.writeListTag("with", 8, 1);
+                            writer.writeStringTag(str);
+                        }
+                        case final Boolean b -> {
+                            writer.writeListTag("with", 1, 1);
+                            writer.writeByteTag(b ? (byte) 1 : (byte) 0);
+                        }
+                        case final Short sh -> {
+                            writer.writeListTag("with", 2, 1);
+                            writer.writeShortTag(sh);
+                        }
+                        case final Integer i -> {
+                            writer.writeListTag("with", 3, 1);
+                            writer.writeIntTag(i);
+                        }
+                        case final Long l -> {
+                            writer.writeListTag("with", 4, 1);
+                            writer.writeLongTag(l);
+                        }
+                        case final Float f -> {
+                            writer.writeListTag("with", 5, 1);
+                            writer.writeFloatTag(f);
+                        }
+                        case final Double d -> {
+                            writer.writeListTag("with", 6, 1);
+                            writer.writeDoubleTag(d);
+                        }
+                        default -> {}
                     }
                 }
             } else {
@@ -148,8 +156,8 @@ public class BinaryNbtComponentSerializer {
                 for (int i = 0; i < arguments.size(); i++) {
                     var arg = arguments.get(i);
                     var argValue = arg.value();
-                    if (argValue instanceof Component) {
-                        serializeComponent(writer, (Component) argValue);
+                    if (argValue instanceof final Component compArg) {
+                        serializeComponent(writer, compArg);
                     } else {
                         if (argValue instanceof final LazilyParsedNumber lazy) {
                             if (lazy.toString().contains(".")) writer.writeFloatTag(lazy.floatValue());
@@ -161,13 +169,13 @@ public class BinaryNbtComponentSerializer {
                                     writer.writeLongTag("", longVal);
                             }
                         }
-                        if (argValue instanceof Boolean) writer.writeByteTag("", (Boolean) argValue ? (byte) 1 : (byte) 0);
-                        else if (argValue instanceof String) writer.writeStringTag("", (String) argValue);
-                        else if (argValue instanceof Integer) writer.writeIntTag("", (Integer) argValue);
-                        else if (argValue instanceof Short) writer.writeShortTag("", (Short) argValue);
-                        else if (argValue instanceof Long) writer.writeLongTag("", (Long) argValue);
-                        else if (argValue instanceof Float) writer.writeFloatTag("", (Float) argValue);
-                        else if (argValue instanceof Double) writer.writeDoubleTag("", (Double) argValue);
+                        if (argValue instanceof final Boolean b) writer.writeByteTag("", b ? (byte) 1 : (byte) 0);
+                        else if (argValue instanceof final String s) writer.writeStringTag("", s);
+                        else if (argValue instanceof final Integer i2) writer.writeIntTag("", i2);
+                        else if (argValue instanceof final Short sh) writer.writeShortTag("", sh);
+                        else if (argValue instanceof final Long l) writer.writeLongTag("", l);
+                        else if (argValue instanceof final Float f) writer.writeFloatTag("", f);
+                        else if (argValue instanceof final Double d) writer.writeDoubleTag("", d);
                     }
                     writer.writeEndTag();
                 }
@@ -227,9 +235,7 @@ public class BinaryNbtComponentSerializer {
     public static void serializeHoverEvent(MNBTWriter writer, HoverEvent<?> hoverEvent) {
         var value = hoverEvent.value();
         HoverEvent.Action<?> action = hoverEvent.action();
-        if (action != HoverEvent.Action.SHOW_TEXT && action != HoverEvent.Action.SHOW_ITEM && action != HoverEvent.Action.SHOW_ENTITY) {
-            return;
-        }
+        if (action != HoverEvent.Action.SHOW_TEXT && action != HoverEvent.Action.SHOW_ITEM && action != HoverEvent.Action.SHOW_ENTITY) return;
         writer.writeCompoundTag("hoverEvent");
         writer.writeStringTag("action", action.toString());
         writer.writeCompoundTag("contents");
@@ -306,12 +312,11 @@ public class BinaryNbtComponentSerializer {
             serializeComponent(writer, separator);
             writer.writeEndTag();
         }
-        if (nbtComponent instanceof BlockNBTComponent blockNBTComponent) {
-            writer.writeStringTag("block", blockNBTComponent.pos().asString());
-        } else if (nbtComponent instanceof EntityNBTComponent entityNBTComponent) {
-            writer.writeStringTag("entity", entityNBTComponent.selector());
-        } else if (nbtComponent instanceof StorageNBTComponent storageNBTComponent) {
-            writer.writeStringTag("storage", storageNBTComponent.storage().asString());
+        switch (nbtComponent) {
+            case BlockNBTComponent blockNBTComponent -> writer.writeStringTag("block", blockNBTComponent.pos().asString());
+            case EntityNBTComponent entityNBTComponent -> writer.writeStringTag("entity", entityNBTComponent.selector());
+            case StorageNBTComponent storageNBTComponent -> writer.writeStringTag("storage", storageNBTComponent.storage().asString());
+            default -> {}
         }
     }
 }
