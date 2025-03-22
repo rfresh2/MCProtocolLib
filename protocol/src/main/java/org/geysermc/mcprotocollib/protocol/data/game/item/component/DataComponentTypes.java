@@ -82,6 +82,7 @@ public class DataComponentTypes {
     public static final DataComponentType<ProvidesTrimMaterial> PROVIDES_TRIM_MATERIAL = register(id -> new DataComponentType<>(id, "provides_trim_material", ItemTypes::readProvidesTrimMaterial, ItemTypes::writeProvidesTrimMaterial, ObjectDataComponent::new));
     public static final IntComponentType OMINOUS_BOTTLE_AMPLIFIER = register(id -> new IntComponentType(id, "ominous_bottle_amplifier", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register(id -> new DataComponentType<>(id, "jukebox_playable", ItemTypes::readJukeboxPlayable, ItemTypes::writeJukeboxPlayable, ObjectDataComponent::new));
+    public static final DataComponentType<Key> PROVIDES_BANNER_PATTERNS = register(id -> new DataComponentType<>(id, "provides_banner_patterns", MinecraftTypes::readResourceLocation, MinecraftTypes::writeResourceLocation, ObjectDataComponent::new));
     public static final DataComponentType<ListTag> RECIPES = register(id -> new DataComponentType<>(id, "recipes", ItemTypes::readRecipes, ItemTypes::writeRecipes, ObjectDataComponent::new));
     public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register(id -> new DataComponentType<>(id, "lodestone_tracker", ItemTypes::readLodestoneTarget, ItemTypes::writeLodestoneTarget, ObjectDataComponent::new));
     public static final DataComponentType<Fireworks.FireworkExplosion> FIREWORK_EXPLOSION = register(id -> new DataComponentType<>(id, "firework_explosion", ItemTypes::readFireworkExplosion, ItemTypes::writeFireworkExplosion, ObjectDataComponent::new));
@@ -110,6 +111,7 @@ public class DataComponentTypes {
     public static final IntComponentType RABBIT_VARIANT = register(id -> new IntComponentType(id, "rabbit/variant", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<Holder<PigVariant>> PIG_VARIANT = register(id -> new DataComponentType<>(id, "pig/variant", MinecraftTypes::readPigVariant, MinecraftTypes::writePigVariant, ObjectDataComponent::new));
     public static final IntComponentType COW_VARIANT = register(id -> new IntComponentType(id, "cow/variant", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
+    public static final DataComponentType<Holder<Key>> CHICKEN_VARIANT = register(id -> new DataComponentType<>(id, "chicken/variant", MinecraftTypes::readChickenVariant, MinecraftTypes::writeChickenVariant, ObjectDataComponent::new));
     public static final IntComponentType FROG_VARIANT = register(id -> new IntComponentType(id, "frog/variant", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final IntComponentType HORSE_VARIANT = register(id -> new IntComponentType(id, "horse/variant", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<Holder<PaintingVariant>> PAINTING_VARIANT = register(id -> new DataComponentType<>(id, "painting/variant", MinecraftTypes::readPaintingVariant, MinecraftTypes::writePaintingVariant, ObjectDataComponent::new));
@@ -119,9 +121,6 @@ public class DataComponentTypes {
     public static final IntComponentType CAT_COLLAR = register(id -> new IntComponentType(id, "cat/collar", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final IntComponentType SHEEP_COLOR = register(id -> new IntComponentType(id, "sheep/color", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final IntComponentType SHULKER_COLOR = register(id -> new IntComponentType(id, "shulker/color", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
-
-//    public static final DataComponentType<Unit> HIDE_ADDITIONAL_TOOLTIP = register(id -> new DataComponentType<>(id, "hide_additional_tooltip", unitReader(), unitWriter(), ObjectDataComponent::new));
-//    public static final DataComponentType<Unit> HIDE_TOOLTIP = register(id -> new DataComponentType<>(id, "hide_tooltip", unitReader(), unitWriter(), ObjectDataComponent::new));
 
     public static <T extends DataComponentType<?>> T register(Int2ObjectFunction<T> factory) {
         T value = factory.apply(VALUES.size());

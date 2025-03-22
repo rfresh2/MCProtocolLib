@@ -72,6 +72,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticl
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustColorTransitionParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ItemParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData;
@@ -764,6 +765,24 @@ public class MinecraftTypes {
             MinecraftTypes.writeResourceLocation(buf, variant.texture());
             MinecraftTypes.writeNullable(buf, variant.biomes(), MinecraftTypes::writeHolderSet);
         });
+    }
+
+    public static Holder<Key> readChickenVariant(ByteBuf buf) {
+        if (buf.readBoolean()) {
+            return Holder.ofId(MinecraftTypes.readVarInt(buf));
+        } else {
+            return Holder.ofCustom(MinecraftTypes.readResourceLocation(buf));
+        }
+    }
+
+    public static void writeChickenVariant(ByteBuf buf, Holder<Key> variant) {
+        if (variant.isId()) {
+            buf.writeBoolean(true);
+            MinecraftTypes.writeVarInt(buf, variant.id());
+        } else {
+            buf.writeBoolean(false);
+            MinecraftTypes.writeResourceLocation(buf, variant.custom());
+        }
     }
 
     public static Holder<PaintingVariant> readPaintingVariant(ByteBuf buf) {
