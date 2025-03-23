@@ -11,9 +11,13 @@ import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
+import org.geysermc.mcprotocollib.protocol.data.game.level.HeightmapTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityInfo;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 @Data
 @With
@@ -23,14 +27,20 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     private final int x;
     private final int z;
     private @NonNull ChunkSection[] sections;
-    private final @NonNull MNBT heightMaps;
+    private final @NonNull Map<HeightmapTypes, long[]> heightMaps;
     private final @NonNull BlockEntityInfo[] blockEntities;
     private final @NonNull LightUpdateData lightData;
 
     public ClientboundLevelChunkWithLightPacket(ByteBuf in) {
         this.x = in.readInt();
         this.z = in.readInt();
-        this.heightMaps = MinecraftTypes.readMNBT(in);
+
+        this.heightMaps = new EnumMap<>(HeightmapTypes.class);
+        int length = MinecraftTypes.readVarInt(in);
+        for (int i = 0; i < length; i++) {
+            this.heightMaps.put(HeightmapTypes.from(MinecraftTypes.readVarInt(in)), MinecraftTypes.readLongArray(in));
+        }
+
         var dataLen = MinecraftTypes.readVarInt(in); // unused
         var sectionCountProvider = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER;
         if (sectionCountProvider == null) throw new RuntimeException("Chunk section count provider is null.");
@@ -59,7 +69,12 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     public void serialize(ByteBuf out) {
         out.writeInt(this.x);
         out.writeInt(this.z);
-        MinecraftTypes.writeMNBT(out, this.heightMaps);
+
+        MinecraftTypes.writeVarInt(out, this.heightMaps.size());
+        for (Map.Entry<HeightmapTypes, long[]> entry : this.heightMaps.entrySet()) {
+            MinecraftTypes.writeVarInt(out, entry.getKey().ordinal());
+            MinecraftTypes.writeLongArray(out, entry.getValue());
+        }
 
         out.markWriterIndex();
         out.writeMedium(0); // Dummy chunk data length varint

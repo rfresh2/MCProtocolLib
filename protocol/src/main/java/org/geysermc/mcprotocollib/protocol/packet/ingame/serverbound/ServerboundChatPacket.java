@@ -21,7 +21,7 @@ public class ServerboundChatPacket implements MinecraftPacket {
     private byte @Nullable [] signature;
     private int offset;
     private BitSet acknowledgedMessages;
-
+    private int checksum;
 
     // default unsigned chat packet
     public ServerboundChatPacket(final String message) {
@@ -31,6 +31,7 @@ public class ServerboundChatPacket implements MinecraftPacket {
         this.signature = null;
         this.offset = 0;
         this.acknowledgedMessages = BitSet.valueOf(new byte[20]);
+        this.checksum = 0;
     }
 
     public ServerboundChatPacket(ByteBuf in) {
@@ -45,6 +46,7 @@ public class ServerboundChatPacket implements MinecraftPacket {
 
         this.offset = MinecraftTypes.readVarInt(in);
         this.acknowledgedMessages = MinecraftTypes.readFixedBitSet(in, 20);
+        this.checksum = in.readByte();
     }
 
     @Override
@@ -56,5 +58,6 @@ public class ServerboundChatPacket implements MinecraftPacket {
 
         MinecraftTypes.writeVarInt(out, this.offset);
         MinecraftTypes.writeFixedBitSet(out, this.acknowledgedMessages, 20);
+        out.writeByte(this.checksum);
     }
 }
