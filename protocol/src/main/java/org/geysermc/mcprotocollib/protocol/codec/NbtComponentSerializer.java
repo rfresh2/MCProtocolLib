@@ -131,9 +131,10 @@ public class NbtComponentSerializer {
 
         // Generally, modern vanilla-esque serializers should not produce this format, so it should be rare
         // Lists are only used for lists of components ("extra" and "with")
-        final ListTag<CompoundTag> processedListTag = new ListTag(CompoundTag.class);
+        final ListTag<CompoundTag> processedListTag = new ListTag<>(CompoundTag.class);
         for (final JsonElement entry : array) {
             final Tag convertedTag = convertToTag(entry);
+            if (convertedTag == null) continue;
             if (convertedTag instanceof CompoundTag compoundTag) {
                 processedListTag.add(compoundTag);
                 continue;

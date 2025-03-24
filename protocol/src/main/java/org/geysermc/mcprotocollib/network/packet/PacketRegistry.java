@@ -3,22 +3,26 @@ package org.geysermc.mcprotocollib.network.packet;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.codec.PacketSerializer;
-
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /**
  * A protocol for packet sending and receiving.
  * All implementations must have a constructor that takes in a {@link ByteBuf}.
  */
 public class PacketRegistry {
-    private final Int2ObjectMap<PacketDefinition<? extends Packet>> serverbound = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectMap<PacketDefinition<? extends Packet>> clientbound = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<PacketDefinition<? extends Packet>> clientbound = new Int2ObjectOpenHashMap<>(200, 0.5f);
+    private final Int2ObjectMap<PacketDefinition<? extends Packet>> serverbound = new Int2ObjectOpenHashMap<>(100, 0.5f);
 
-    private final Map<Class<? extends Packet>, Integer> clientboundIds = new IdentityHashMap<>();
-    private final Map<Class<? extends Packet>, Integer> serverboundIds = new IdentityHashMap<>();
+    private final Reference2IntMap<Class<? extends Packet>> clientboundIds = new Reference2IntOpenHashMap<>(200, 0.5f);
+    private final Reference2IntMap<Class<? extends Packet>> serverboundIds = new Reference2IntOpenHashMap<>(100, 0.5f);
+
+    public PacketRegistry() {
+        this.clientboundIds.defaultReturnValue(-1);
+        this.serverboundIds.defaultReturnValue(-1);
+    }
 
     /**
      * Clears all currently registered packets.
@@ -123,8 +127,8 @@ public class PacketRegistry {
      * @throws IllegalArgumentException If the packet is not registered.
      */
     public int getClientboundId(Class<? extends Packet> packetClass) {
-        Integer packetId = this.clientboundIds.get(packetClass);
-        if (packetId == null) {
+        int packetId = this.clientboundIds.getInt(packetClass);
+        if (packetId == this.clientboundIds.defaultReturnValue()) {
             throw new IllegalArgumentException("Unregistered clientbound packet class: " + packetClass.getName());
         }
 
@@ -184,8 +188,8 @@ public class PacketRegistry {
      * @throws IllegalArgumentException If the packet is not registered.
      */
     public int getServerboundId(Class<? extends Packet> packetClass) {
-        Integer packetId = this.serverboundIds.get(packetClass);
-        if (packetId == null) {
+        int packetId = this.serverboundIds.getInt(packetClass);
+        if (packetId == this.serverboundIds.defaultReturnValue()) {
             throw new IllegalArgumentException("Unregistered serverbound packet class: " + packetClass.getName());
         }
 
