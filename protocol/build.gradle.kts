@@ -35,7 +35,7 @@ repositories {
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
-    api("com.github.rfresh2:OpenNBT:3.0.7")
+    api("com.github.rfresh2:OpenNBT:3.0.8")
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 

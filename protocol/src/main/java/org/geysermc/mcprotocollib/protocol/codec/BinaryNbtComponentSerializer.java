@@ -3,6 +3,7 @@ package org.geysermc.mcprotocollib.protocol.codec;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.mini.MNBTWriter;
+import com.viaversion.nbt.tag.Tag;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.BlockNBTComponent;
@@ -21,6 +22,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
 import org.slf4j.Logger;
 
 import java.io.DataOutputStream;
@@ -252,6 +254,7 @@ public class BinaryNbtComponentSerializer {
             }
             Map<Key, DataComponentValue> dataComponents = item.dataComponents();
             if (!dataComponents.isEmpty()) {
+                writer.writeCompoundTag("components");
                 for (var entry : dataComponents.entrySet()) {
                     DataComponentValue dataComponentValue = entry.getValue();
                     if (dataComponentValue instanceof DataComponentValue.TagSerializable tagSerializable) {
@@ -259,8 +262,14 @@ public class BinaryNbtComponentSerializer {
                         // todo: not confident this will work
                         //  need to convert this holder into actual nbt somehow
                         writer.writeStringTag(entry.getKey().asString(), binaryTag.string());
+                    } else if (dataComponentValue instanceof GsonDataComponentValue gsonComponentValue) {
+                        // todo: custom adventure data component nbt serializer
+                        //  current implementations are only in platform-specific modules like paper
+                        Tag tag = NbtComponentSerializer.jsonComponentToTag(gsonComponentValue.element());
+                        writer.writeTag(entry.getKey().asString(), tag);
                     }
                 }
+                writer.writeEndTag(); // end components
             }
         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
             HoverEvent.ShowEntity entity = (HoverEvent.ShowEntity) value;
