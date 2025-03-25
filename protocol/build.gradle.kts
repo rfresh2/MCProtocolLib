@@ -6,6 +6,7 @@ plugins {
 
 version = "1.21.5"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
+val javaVersion = JavaLanguageVersion.of(21)
 
 repositories {
     maven("https://repo.opencollab.dev/maven-releases/") {
@@ -30,17 +31,15 @@ repositories {
     mavenLocal()
 }
 
-val adventureVersion = "4.19.0"
-val fastutilVersion = "8.5.15"
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
-    api("com.github.rfresh2:OpenNBT:3.0.7")
+    api("com.github.rfresh2:OpenNBT:3.0.8")
 
-    // MinecraftAuth for authentication
     api("net.raphimc:MinecraftAuth:4.1.1")
 
+    val adventureVersion = "4.19.0"
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
@@ -50,9 +49,11 @@ dependencies {
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
 
+    val fastutilVersion = "8.5.15"
     api("com.github.rfresh2.fastutil.maps:object-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
+    api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
     api("io.netty:netty-all:4.1.119.Final")
     compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final")
@@ -67,7 +68,7 @@ dependencies {
 }
 
 lombok {
-    version = "1.18.34"
+    version = "1.18.36"
 }
 
 tasks {
@@ -90,6 +91,7 @@ tasks {
 java {
     withJavadocJar()
     withSourcesJar()
+    toolchain { languageVersion = javaVersion }
 }
 
 publishing {
