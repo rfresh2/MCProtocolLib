@@ -1392,7 +1392,6 @@ public class MinecraftTypes {
         BitStorage storage;
         if (palette instanceof SingletonPalette) {
             storage = null;
-            readLongArray(buf);
         } else {
             storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize());
             readFixedSizeLongArray(buf, storage.getData());
@@ -1405,7 +1404,6 @@ public class MinecraftTypes {
         if (palette.getPalette() instanceof SingletonPalette) {
             buf.writeByte(0); // Bits per entry
             writeVarInt(buf, palette.getPalette().idToState(0));
-            writeVarInt(buf, 0); // Data length
             return;
         }
 
