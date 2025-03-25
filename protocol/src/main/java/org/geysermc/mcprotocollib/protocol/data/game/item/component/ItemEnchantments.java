@@ -8,5 +8,4 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class ItemEnchantments {
     private final Int2IntMap enchantments;
-    private final boolean showInTooltip;
 }

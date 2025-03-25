@@ -72,7 +72,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticl
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustColorTransitionParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ItemParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData;
@@ -388,7 +387,11 @@ public class MinecraftTypes {
         }
 
         long[] l = new long[length];
-        for (int index = 0; index < length; index++) {
+        return readFixedSizeLongArray(buf, l);
+    }
+
+    public static long[] readFixedSizeLongArray(ByteBuf buf, long[] l) {
+        for (int index = 0; index < l.length; index++) {
             l[index] = buf.readLong();
         }
 
@@ -401,8 +404,12 @@ public class MinecraftTypes {
 
     public static void writeLongArray(ByteBuf buf, long[] l, ObjIntConsumer<ByteBuf> writer) {
         writer.accept(buf, l.length);
-        for (long value : l) {
-            buf.writeLong(value);
+        MinecraftTypes.writeFixedSizeLongArray(buf, l);
+    }
+
+    public static void writeFixedSizeLongArray(ByteBuf buf, long[] l) {
+        for (int i = 0; i < l.length; i++) {
+            buf.writeLong(l[i]);
         }
     }
 
@@ -958,7 +965,7 @@ public class MinecraftTypes {
                 yield new DustColorTransitionParticleData(color, scale, newColor);
             }
             case ENTITY_EFFECT, TINTED_LEAVES -> new ColorParticleData(buf.readInt());
-            case ITEM -> new ItemParticleData(MinecraftTypes.readOptionalItemStack(buf));
+            case ITEM -> new ItemParticleData(MinecraftTypes.readItemStack(buf));
             case SCULK_CHARGE -> new SculkChargeParticleData(buf.readFloat());
             case SHRIEK -> new ShriekParticleData(MinecraftTypes.readVarInt(buf));
             case TRAIL -> new TrailParticleData(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readInt(), MinecraftTypes.readVarInt(buf));
@@ -990,7 +997,7 @@ public class MinecraftTypes {
             }
             case ITEM -> {
                 ItemParticleData itemData = (ItemParticleData) data;
-                MinecraftTypes.writeOptionalItemStack(buf, itemData.getItemStack());
+                MinecraftTypes.writeItemStack(buf, itemData.getItemStack());
             }
             case SCULK_CHARGE -> {
                 SculkChargeParticleData sculkData = (SculkChargeParticleData) data;
@@ -1382,12 +1389,13 @@ public class MinecraftTypes {
             case CHUNK -> readChunkPalette(buf, bitsPerEntry);
             case BIOME -> readBiomePalette(buf, bitsPerEntry);
         };
-        long[] data = readLongArray(buf);
         BitStorage storage;
         if (palette instanceof SingletonPalette) {
             storage = null;
+            readLongArray(buf);
         } else {
-            storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize(), data);
+            storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize());
+            readFixedSizeLongArray(buf, storage.getData());
         }
 
         return new DataPalette(palette, storage, paletteType);
@@ -1412,7 +1420,7 @@ public class MinecraftTypes {
         }
 
         long[] data = palette.getStorage().getData();
-        writeLongArray(buf, data);
+        MinecraftTypes.writeFixedSizeLongArray(buf, data);
     }
 
     private static Palette readChunkPalette(ByteBuf buf, int bitsPerEntry) {

@@ -19,6 +19,7 @@ public class AdventureModePredicate {
         private final @Nullable HolderSet blocks;
         private final @Nullable List<PropertyMatcher> properties;
         private final @Nullable MNBT nbt;
+        private final DataComponentMatchers components;
     }
 
     @Data
