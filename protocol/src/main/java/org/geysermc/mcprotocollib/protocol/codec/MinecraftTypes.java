@@ -655,7 +655,7 @@ public class MinecraftTypes {
     }
 
     public static TestInstanceBlockEntity readTestBlockEntity(ByteBuf buf) {
-        Key test = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
+        String test = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocationString);
         Vector3i size = MinecraftTypes.readVec3i(buf);
         int rotation = MinecraftTypes.readVarInt(buf);
         boolean ignoreEntities = buf.readBoolean();
@@ -770,15 +770,15 @@ public class MinecraftTypes {
         MinecraftTypes.writeEnum(buf, pose);
     }
 
-    public static Holder<Key> readChickenVariant(ByteBuf buf) {
+    public static Holder<String> readChickenVariant(ByteBuf buf) {
         if (buf.readBoolean()) {
             return Holder.ofId(MinecraftTypes.readVarInt(buf));
         } else {
-            return Holder.ofCustom(MinecraftTypes.readResourceLocation(buf));
+            return Holder.ofCustom(MinecraftTypes.readResourceLocationString(buf));
         }
     }
 
-    public static void writeChickenVariant(ByteBuf buf, Holder<Key> variant) {
+    public static void writeChickenVariant(ByteBuf buf, Holder<String> variant) {
         if (variant.isId()) {
             buf.writeBoolean(true);
             MinecraftTypes.writeVarInt(buf, variant.id());
@@ -1348,7 +1348,7 @@ public class MinecraftTypes {
             case ANY_FUEL -> display = new AnyFuelSlotDisplay();
             case ITEM -> display = new ItemSlotDisplay(MinecraftTypes.readVarInt(buf));
             case ITEM_STACK -> display = new ItemStackSlotDisplay(MinecraftTypes.readItemStack(buf));
-            case TAG -> display = new TagSlotDisplay(MinecraftTypes.readResourceLocation(buf));
+            case TAG -> display = new TagSlotDisplay(MinecraftTypes.readResourceLocationString(buf));
             case SMITHING_TRIM -> {
                 display = new SmithingTrimDemoSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf),
                     MinecraftTypes.readHolder(buf, ItemTypes::readTrimPattern));

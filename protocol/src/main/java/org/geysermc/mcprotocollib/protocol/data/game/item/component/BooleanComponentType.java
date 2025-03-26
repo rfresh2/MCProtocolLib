@@ -66,6 +66,6 @@ public class BooleanComponentType extends DataComponentType<Boolean> {
 
     @Override
     public String toString() {
-        return "BooleanComponentType(id=" + id + " , key=" + key.asString() + ")";
+        return "BooleanComponentType(id=" + id + " , key=" + key + ")";
     }
 }

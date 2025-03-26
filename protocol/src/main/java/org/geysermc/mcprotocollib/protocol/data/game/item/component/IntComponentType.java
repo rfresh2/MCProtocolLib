@@ -66,6 +66,6 @@ public class IntComponentType extends DataComponentType<Integer> {
 
     @Override
     public String toString() {
-        return "IntComponentType(id=" + id + " , key=" + key.asString() + ")";
+        return "IntComponentType(id=" + id + " , key=" + key + ")";
     }
 }

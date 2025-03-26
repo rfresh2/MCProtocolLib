@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import lombok.NoArgsConstructor;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -14,8 +13,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.Holder;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.EquipmentSlot;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
-import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
-import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 
 import java.util.ArrayList;
@@ -180,8 +177,8 @@ public class ItemTypes {
     public static Equippable readEquippable(ByteBuf buf) {
         EquipmentSlot slot = EquipmentSlot.from(MinecraftTypes.readVarInt(buf));
         Sound equipSound = MinecraftTypes.readSound(buf);
-        Key model = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
-        Key cameraOverlay = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
+        String model = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocationString);
+        String cameraOverlay = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocationString);
         HolderSet allowedEntities = MinecraftTypes.readNullable(buf, MinecraftTypes::readHolderSet);
         boolean dispensable = buf.readBoolean();
         boolean swappable = buf.readBoolean();
@@ -215,7 +212,7 @@ public class ItemTypes {
         });
 
         BlocksAttacks.ItemDamageFunction itemDamage = new BlocksAttacks.ItemDamageFunction(buf.readFloat(), buf.readFloat(), buf.readFloat());
-        Key bypassedBy = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
+        String bypassedBy = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocationString);
         Sound blockSound = MinecraftTypes.readNullable(buf, MinecraftTypes::readSound);
         Sound disableSound = MinecraftTypes.readNullable(buf, MinecraftTypes::readSound);
         return new BlocksAttacks(blockDelaySeconds, disableCooldownScale, damageReductions, itemDamage, bypassedBy, blockSound, disableSound);
@@ -382,7 +379,7 @@ public class ItemTypes {
     }
 
     public static UseCooldown readUseCooldown(ByteBuf buf) {
-        return new UseCooldown(buf.readFloat(), MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation));
+        return new UseCooldown(buf.readFloat(), MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocationString));
     }
 
     public static void writeUseCooldown(ByteBuf buf, UseCooldown useCooldown) {
@@ -508,11 +505,11 @@ public class ItemTypes {
 
     public static InstrumentComponent readInstrumentComponent(ByteBuf buf) {
         Holder<InstrumentComponent.Instrument> instrumentHolder = null;
-        Key instrumentLocation = null;
+        String instrumentLocation = null;
         if (buf.readBoolean()) {
             instrumentHolder = MinecraftTypes.readHolder(buf, ItemTypes::readInstrument);
         } else {
-            instrumentLocation = MinecraftTypes.readResourceLocation(buf);
+            instrumentLocation = MinecraftTypes.readResourceLocationString(buf);
         }
         return new InstrumentComponent(instrumentHolder, instrumentLocation);
     }
@@ -543,11 +540,11 @@ public class ItemTypes {
 
     public static ProvidesTrimMaterial readProvidesTrimMaterial(ByteBuf buf) {
         Holder<ArmorTrim.TrimMaterial> instrumentHolder = null;
-        Key instrumentLocation = null;
+        String instrumentLocation = null;
         if (buf.readBoolean()) {
             instrumentHolder = MinecraftTypes.readHolder(buf, ItemTypes::readTrimMaterial);
         } else {
-            instrumentLocation = MinecraftTypes.readResourceLocation(buf);
+            instrumentLocation = MinecraftTypes.readResourceLocationString(buf);
         }
         return new ProvidesTrimMaterial(instrumentHolder, instrumentLocation);
     }
