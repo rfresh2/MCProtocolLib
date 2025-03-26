@@ -41,7 +41,8 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
             this.heightMaps.put(HeightmapTypes.from(MinecraftTypes.readVarInt(in)), MinecraftTypes.readLongArray(in));
         }
 
-        var dataLen = MinecraftTypes.readVarInt(in); // unused
+        var dataLen = MinecraftTypes.readVarInt(in);
+        int afterSectionDataIndex = in.readerIndex() + dataLen;
         var sectionCountProvider = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER;
         if (sectionCountProvider == null) throw new RuntimeException("Chunk section count provider is null.");
         var sectionCount = sectionCountProvider.getSectionCount();
@@ -49,6 +50,11 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
         for (int i = 0; i < sectionCount; i++) {
             this.sections[i] = MinecraftTypes.readChunkSection(in);
         }
+        // Skip remaining bytes in the chunk data buf, seems like MC is not calculating serialized chunk size perfectly
+        if (in.readerIndex() >= afterSectionDataIndex) {
+            throw new IllegalStateException("Read too many bytes from chunk data sections. Expected reader index: " + afterSectionDataIndex + " actual: " + in.readerIndex());
+        }
+        in.readerIndex(afterSectionDataIndex);
 
         var blockEntityCount = MinecraftTypes.readVarInt(in);
         this.blockEntities = new BlockEntityInfo[blockEntityCount];
