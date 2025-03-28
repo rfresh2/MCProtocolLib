@@ -108,12 +108,7 @@ public class ItemTypes {
     }
 
     public static DataComponentMatchers readDataComponentMatchers(ByteBuf buf) {
-        Map<DataComponentType<?>, DataComponent<?, ?>> exactMatchers = new HashMap<>();
-        int exactCount = MinecraftTypes.readVarInt(buf);
-        for (int i = 0; i < exactCount; i++) {
-            DataComponentType<?> type = DataComponentTypes.from(MinecraftTypes.readVarInt(buf));
-            exactMatchers.put(type, type.readDataComponent(buf));
-        }
+        Map<DataComponentType<?>, DataComponent<?, ?>> exactMatchers = MinecraftTypes.readExactComponentMatcher(buf);
 
         int[] partialMatchers = new int[MinecraftTypes.readVarInt(buf)];
         for (int i = 0; i < partialMatchers.length; i++) {
@@ -124,11 +119,7 @@ public class ItemTypes {
     }
 
     public static void writeDataComponentMatchers(ByteBuf buf, DataComponentMatchers matchers) {
-        MinecraftTypes.writeVarInt(buf, matchers.exactMatchers().size());
-        for (Map.Entry<DataComponentType<?>, DataComponent<?, ?>> entry : matchers.exactMatchers().entrySet()) {
-            MinecraftTypes.writeVarInt(buf, entry.getKey().getId());
-            entry.getValue().write(buf);
-        }
+        MinecraftTypes.writeExactComponentMatcher(buf, matchers.exactMatchers());
 
         MinecraftTypes.writeVarInt(buf, matchers.partialMatchers().length);
         for (int id : matchers.partialMatchers()) {
