@@ -3,6 +3,8 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.cloudburstmc.math.vector.Vector3d;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
@@ -13,26 +15,14 @@ public class ClientboundDamageEventPacket implements MinecraftPacket {
     private final int sourceTypeId;
     private final int sourceCauseId;
     private final int sourceDirectId;
-    private final boolean hasSourcePos;
-    private final double sourcePosX;
-    private final double sourcePosY;
-    private final double sourcePosZ;
+    private final @Nullable Vector3d sourcePosition;
 
     public ClientboundDamageEventPacket(ByteBuf in) {
         this.entityId = MinecraftTypes.readVarInt(in);
         this.sourceTypeId = MinecraftTypes.readVarInt(in);
         this.sourceCauseId = MinecraftTypes.readVarInt(in) - 1;
         this.sourceDirectId = MinecraftTypes.readVarInt(in) - 1;
-        this.hasSourcePos = in.readBoolean();
-        if (this.hasSourcePos) {
-            this.sourcePosX = in.readDouble();
-            this.sourcePosY = in.readDouble();
-            this.sourcePosZ = in.readDouble();
-        } else {
-            this.sourcePosX = 0;
-            this.sourcePosY = 0;
-            this.sourcePosZ = 0;
-        }
+        this.sourcePosition = in.readBoolean() ? Vector3d.from(in.readDouble(), in.readDouble(), in.readDouble()) : null;
     }
 
     @Override
@@ -42,11 +32,11 @@ public class ClientboundDamageEventPacket implements MinecraftPacket {
         MinecraftTypes.writeVarInt(out, this.sourceCauseId + 1);
         MinecraftTypes.writeVarInt(out, this.sourceDirectId + 1);
 
-        if (this.hasSourcePos) {
+        if (this.sourcePosition != null) {
             out.writeBoolean(true);
-            out.writeDouble(this.sourcePosX);
-            out.writeDouble(this.sourcePosY);
-            out.writeDouble(this.sourcePosZ);
+            out.writeDouble(this.sourcePosition.getX());
+            out.writeDouble(this.sourcePosition.getY());
+            out.writeDouble(this.sourcePosition.getZ());
         } else {
             out.writeBoolean(false);
         }
