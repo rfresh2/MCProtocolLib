@@ -39,7 +39,7 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    val adventureVersion = "4.19.0"
+    val adventureVersion = "4.20.0"
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
