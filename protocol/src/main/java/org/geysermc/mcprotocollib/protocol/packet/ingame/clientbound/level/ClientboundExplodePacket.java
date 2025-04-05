@@ -39,10 +39,17 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         this.y = in.readDouble();
         this.z = in.readDouble();
         this.radius = in.readFloat();
+        int dx = floorI(this.x);
+        int dy = floorI(this.y);
+        int dz = floorI(this.z);
         int length = MinecraftTypes.readVarInt(in);
         this.exploded = new ArrayList<>(length);
         for (int count = 0; count < length; count++) {
-            this.exploded.add(Vector3i.from(in.readByte(), in.readByte(), in.readByte()));
+            this.exploded.add(Vector3i.from(
+                in.readByte() + dx,
+                in.readByte() + dy,
+                in.readByte() + dz
+            ));
         }
 
         this.pushX = in.readFloat();
@@ -60,12 +67,15 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         out.writeDouble(this.y);
         out.writeDouble(this.z);
         out.writeFloat(this.radius);
+        int dx = floorI(this.x);
+        int dy = floorI(this.y);
+        int dz = floorI(this.z);
         MinecraftTypes.writeVarInt(out, this.exploded.size());
         for (int i = 0; i < this.exploded.size(); i++) {
             Vector3i record = this.exploded.get(i);
-            out.writeByte(record.getX());
-            out.writeByte(record.getY());
-            out.writeByte(record.getZ());
+            out.writeByte(record.getX() - dx);
+            out.writeByte(record.getY() - dy);
+            out.writeByte(record.getZ() - dz);
         }
 
         out.writeFloat(this.pushX);
@@ -80,5 +90,10 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         } else {
             MinecraftTypes.writeVarInt(out, ((BuiltinSound) this.explosionSound).ordinal() + 1);
         }
+    }
+
+    public int floorI(double value) {
+        int i = (int)value;
+        return value < (double)i ? i - 1 : i;
     }
 }
