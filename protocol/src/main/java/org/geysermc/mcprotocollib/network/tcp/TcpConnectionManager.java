@@ -2,20 +2,20 @@ package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.IoHandlerFactory;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.epoll.EpollDatagramChannel;
-import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.incubator.channel.uring.IOUringDatagramChannel;
-import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
-import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
-import io.netty.incubator.channel.uring.IOUringSocketChannel;
+import io.netty.channel.uring.IoUringDatagramChannel;
+import io.netty.channel.uring.IoUringIoHandler;
+import io.netty.channel.uring.IoUringServerSocketChannel;
+import io.netty.channel.uring.IoUringSocketChannel;
 import lombok.Data;
 import org.geysermc.mcprotocollib.network.helper.TransportHelper;
 
@@ -36,30 +36,28 @@ public class TcpConnectionManager implements Closeable {
 
     public TcpConnectionManager(int threads) {
         this.transportMethod = TransportHelper.determineTransportMethod();
+        IoHandlerFactory ioHandlerFactory = null;
         switch (this.transportMethod) {
             case IO_URING -> {
-                this.bossGroup = new IOUringEventLoopGroup(threads);
-                this.workerGroup = new IOUringEventLoopGroup(threads);
-                this.channelClass = IOUringSocketChannel.class;
-                this.datagramChannelClass = IOUringDatagramChannel.class;
-                this.serverSocketChannelClass = IOUringServerSocketChannel.class;
+                ioHandlerFactory = IoUringIoHandler.newFactory();
+                this.channelClass = IoUringSocketChannel.class;
+                this.datagramChannelClass = IoUringDatagramChannel.class;
+                this.serverSocketChannelClass = IoUringServerSocketChannel.class;
             }
             case EPOLL -> {
-                this.bossGroup = new EpollEventLoopGroup(threads);
-                this.workerGroup = new EpollEventLoopGroup(threads);
                 this.channelClass = EpollSocketChannel.class;
                 this.datagramChannelClass = EpollDatagramChannel.class;
                 this.serverSocketChannelClass = EpollServerSocketChannel.class;
             }
             case NIO -> {
-                this.bossGroup = new NioEventLoopGroup(threads);
-                this.workerGroup = new NioEventLoopGroup(threads);
                 this.channelClass = NioSocketChannel.class;
                 this.datagramChannelClass = NioDatagramChannel.class;
                 this.serverSocketChannelClass = NioServerSocketChannel.class;
             }
             default -> throw new IllegalStateException("Unknown transport method: " + this.transportMethod);
         }
+        this.bossGroup = new MultiThreadIoEventLoopGroup(threads, ioHandlerFactory);
+        this.workerGroup = new MultiThreadIoEventLoopGroup(threads, ioHandlerFactory);
     }
 
     @Override

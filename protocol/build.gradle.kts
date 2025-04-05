@@ -55,8 +55,7 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.119.Final")
-    compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final")
+    api("io.netty:netty-all:4.2.0.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
@@ -68,7 +67,7 @@ dependencies {
 }
 
 lombok {
-    version = "1.18.36"
+    version = "1.18.38"
 }
 
 tasks {
