@@ -25,7 +25,8 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
             long position = in.readLong();
             int x = (int)position;
             int z = (int)(position >> 32);
-            var dataLen = MinecraftTypes.readVarInt(in); // unused
+            var dataLen = MinecraftTypes.readVarInt(in);
+            int afterSectionDataIndex = in.readerIndex() + dataLen;
             var sectionCount = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER.getSectionCount();
             var palettes = new DataPalette[sectionCount]; // indexed to corresponding chunk section
             for (int j = 0; j < sectionCount; j++) {
@@ -33,6 +34,11 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
             }
 
             this.chunkBiomeData.add(new ChunkBiomeData(x, z, palettes));
+            // Skip remaining bytes in the biome data buf, server does not always calculate it correctly before writing data
+            if (in.readerIndex() > afterSectionDataIndex) {
+                throw new IllegalStateException("Read too many bytes from biome data sections. Expected reader index: " + afterSectionDataIndex + " actual: " + in.readerIndex());
+            }
+            in.readerIndex(afterSectionDataIndex);
         }
     }
 
