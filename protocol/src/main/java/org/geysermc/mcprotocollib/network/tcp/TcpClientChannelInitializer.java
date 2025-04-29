@@ -16,6 +16,7 @@ import io.netty.handler.proxy.HttpProxyHandler;
 import io.netty.handler.proxy.Socks4ProxyHandler;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
+import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
 import java.net.Inet4Address;
@@ -44,6 +45,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         MinecraftProtocol protocol = client.getPacketProtocol();
         protocol.newClientSession(client, transferring);
 
+        channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
