@@ -46,6 +46,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         protocol.newClientSession(client, transferring);
 
         channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
+        channel.config().setOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
