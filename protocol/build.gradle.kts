@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.13"
+    id("io.freefair.lombok") version "8.13.1"
     `maven-publish`
     `java-library`
 }
@@ -39,7 +39,7 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    val adventureVersion = "4.19.0"
+    val adventureVersion = "4.21.0"
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
@@ -55,20 +55,19 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.1.119.Final")
-    compileOnly("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final")
+    api("io.netty:netty-all:4.2.0.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.49.1")
+    api("org.checkerframework:checker-qual:3.49.2")
 
-    testImplementation(platform("org.junit:junit-bom:5.12.1"))
+    testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 lombok {
-    version = "1.18.36"
+    version = "1.18.38"
 }
 
 tasks {

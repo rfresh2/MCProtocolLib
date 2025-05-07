@@ -1,5 +1,6 @@
 package org.geysermc.mcprotocollib.protocol;
 
+import io.netty.channel.WriteBufferWaterMark;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.auth.SessionService;
 import org.geysermc.mcprotocollib.network.Flag;
@@ -134,6 +135,8 @@ public final class MinecraftConstants {
      */
     public static final String SRV_RECORD_PREFIX = "_minecraft";
     public static final String SERVER_CLOSING_MESSAGE = "Server closed.";
+
+    public static final WriteBufferWaterMark WRITE_BUFFER_WATER_MARK = new WriteBufferWaterMark(128 * 1024, 512 * 1024);
 
 
     private MinecraftConstants() {
