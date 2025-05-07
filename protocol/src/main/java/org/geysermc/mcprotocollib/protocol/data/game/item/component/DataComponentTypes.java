@@ -1,6 +1,7 @@
 package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.viaversion.nbt.mini.MNBT;
+import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.ListTag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -158,13 +159,13 @@ public class DataComponentTypes {
 
     private static DataComponentType.Reader<Unit> emptyNbtReader() {
         return (input) -> {
-            MinecraftTypes.readAnyTag(input);
+            MinecraftTypes.readMNBT(input);
             return Unit.INSTANCE;
         };
     }
 
     private static DataComponentType.Writer<Unit> emptyNbtWriter() {
-        return (output, value) -> MinecraftTypes.writeAnyTag(output, NbtMap.EMPTY);
+        return (output, value) -> MinecraftTypes.writeTag(output, new CompoundTag());
     }
 
     public static DataComponentType<?> read(ByteBuf in) {
