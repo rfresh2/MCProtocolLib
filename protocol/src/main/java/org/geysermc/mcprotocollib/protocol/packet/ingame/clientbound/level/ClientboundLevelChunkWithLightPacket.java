@@ -50,7 +50,7 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
         for (int i = 0; i < sectionCount; i++) {
             this.sections[i] = MinecraftTypes.readChunkSection(in);
         }
-        // Skip remaining bytes in the chunk data buf, seems like MC is not calculating serialized chunk size perfectly
+        // Skip remaining bytes in the chunk data buf, server does not always calculate it correctly before writing data
         if (in.readerIndex() > afterSectionDataIndex) {
             throw new IllegalStateException("Read too many bytes from chunk data sections. Expected reader index: " + afterSectionDataIndex + " actual: " + in.readerIndex());
         }

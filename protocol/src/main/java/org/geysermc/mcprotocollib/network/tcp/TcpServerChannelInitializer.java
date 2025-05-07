@@ -5,6 +5,7 @@ import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 
 import java.net.InetSocketAddress;
 
@@ -27,6 +28,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
         TcpSession session = server.createSession(address);
         session.getPacketProtocol().newServerSession(server, session);
 
+        channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
         channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);

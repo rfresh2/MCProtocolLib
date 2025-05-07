@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.network.helper;
 
 import io.netty.channel.epoll.Epoll;
-import io.netty.incubator.channel.uring.IOUring;
 
 public class TransportHelper {
     public enum TransportMethod {
@@ -9,7 +8,8 @@ public class TransportHelper {
     }
 
     public static TransportMethod determineTransportMethod() {
-        if (isClassAvailable("io.netty.incubator.channel.uring.IOUring") && IOUring.isAvailable()) return TransportMethod.IO_URING;
+        // iouring disabled as i dont think it gives better performance for small scale traffic
+//        if (isClassAvailable("io.netty.channel.uring.IoUring") && IoUring.isAvailable()) return TransportMethod.IO_URING;
         if (isClassAvailable("io.netty.channel.epoll.Epoll") && Epoll.isAvailable()) return TransportMethod.EPOLL;
         return TransportMethod.NIO;
     }

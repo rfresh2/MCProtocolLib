@@ -5,12 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.With;
+import org.cloudburstmc.math.vector.Vector3d;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.BuiltinSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.CustomSound;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
+import org.jetbrains.annotations.Nullable;
 
 @Data
 @With
@@ -19,10 +21,7 @@ public class ClientboundExplodePacket implements MinecraftPacket {
     private final double centerX;
     private final double centerY;
     private final double centerZ;
-    private final boolean hasKnockback;
-    private final double playerKnockbackX;
-    private final double playerKnockbackY;
-    private final double playerKnockbackZ;
+    private final @Nullable Vector3d playerKnockback;
     private final @NonNull Particle explosionParticle;
     private final @NonNull Sound explosionSound;
 
@@ -30,16 +29,7 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         this.centerX = in.readDouble();
         this.centerY = in.readDouble();
         this.centerZ = in.readDouble();
-        this.hasKnockback = in.readBoolean();
-        if (this.hasKnockback) {
-            this.playerKnockbackX = in.readDouble();
-            this.playerKnockbackY = in.readDouble();
-            this.playerKnockbackZ = in.readDouble();
-        } else {
-            this.playerKnockbackX = 0.0;
-            this.playerKnockbackY = 0.0;
-            this.playerKnockbackZ = 0.0;
-        }
+        this.playerKnockback = MinecraftTypes.readNullable(in, (input) -> Vector3d.from(in.readDouble(), in.readDouble(), in.readDouble()));
         this.explosionParticle = MinecraftTypes.readParticle(in);
         this.explosionSound = MinecraftTypes.readById(in, BuiltinSound::from, MinecraftTypes::readSoundEvent);
     }
@@ -49,12 +39,11 @@ public class ClientboundExplodePacket implements MinecraftPacket {
         out.writeDouble(this.centerX);
         out.writeDouble(this.centerY);
         out.writeDouble(this.centerZ);
-        out.writeBoolean(this.hasKnockback);
-        if (this.hasKnockback) {
-            out.writeDouble(this.playerKnockbackX);
-            out.writeDouble(this.playerKnockbackY);
-            out.writeDouble(this.playerKnockbackZ);
-        }
+        MinecraftTypes.writeNullable(out, this.playerKnockback, (output, vector) -> {
+            out.writeDouble(vector.getX());
+            out.writeDouble(vector.getY());
+            out.writeDouble(vector.getZ());
+        });
         MinecraftTypes.writeParticle(out, this.explosionParticle);
         if (this.explosionSound instanceof CustomSound) {
             MinecraftTypes.writeVarInt(out, 0);
