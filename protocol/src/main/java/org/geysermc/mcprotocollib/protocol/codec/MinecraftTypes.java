@@ -523,7 +523,13 @@ public class MinecraftTypes {
         }
 
         int item = MinecraftTypes.readVarInt(buf);
-        return new ItemStack(item, count, MinecraftTypes.readDataComponentPatch(buf, untrusted));
+        DataComponents components;
+        try {
+            components = MinecraftTypes.readDataComponentPatch(buf, untrusted);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Exception while reading components for item " + item, e);
+        }
+        return new ItemStack(item, count, components);
     }
 
     public static void writeOptionalItemStack(ByteBuf buf, ItemStack item, boolean untrusted) {
@@ -555,21 +561,21 @@ public class MinecraftTypes {
         Map<DataComponentType<?>, DataComponent<?, ?>> dataComponents = new HashMap<>(nonNullComponents + nullComponents);
         if (untrusted) {
             for (int k = 0; k < nonNullComponents; k++) {
-                DataComponentType<?> dataComponentType = DataComponentTypes.from(MinecraftTypes.readVarInt(buf));
+                DataComponentType<?> dataComponentType = DataComponentTypes.read(buf);
                 MinecraftTypes.readVarInt(buf);
                 DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
                 dataComponents.put(dataComponentType, dataComponent);
             }
         } else {
             for (int k = 0; k < nonNullComponents; k++) {
-                DataComponentType<?> dataComponentType = DataComponentTypes.from(MinecraftTypes.readVarInt(buf));
+                DataComponentType<?> dataComponentType = DataComponentTypes.read(buf);
                 DataComponent<?, ?> dataComponent = dataComponentType.readDataComponent(buf);
                 dataComponents.put(dataComponentType, dataComponent);
             }
         }
 
         for (int k = 0; k < nullComponents; k++) {
-            DataComponentType<?> dataComponentType = DataComponentTypes.from(readVarInt(buf));
+            DataComponentType<?> dataComponentType = DataComponentTypes.read(buf);
             DataComponent<?, ?> dataComponent = dataComponentType.readNullDataComponent();
             dataComponents.put(dataComponentType, dataComponent);
         }
