@@ -8,7 +8,7 @@ public final class DefaultComponentSerializer {
     private static GsonComponentSerializer serializer = GsonComponentSerializer.builder()
         .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.get())
         // From net.minecraft.SharedConstants.WORLD_VERSION
-        .options(JSONOptions.byDataVersion().at(3955))
+        .options(JSONOptions.byDataVersion().at(4189))
         .build();
 
     public static GsonComponentSerializer get() {
