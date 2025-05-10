@@ -6,6 +6,7 @@ import com.viaversion.nbt.tag.ListTag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import lombok.Getter;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;

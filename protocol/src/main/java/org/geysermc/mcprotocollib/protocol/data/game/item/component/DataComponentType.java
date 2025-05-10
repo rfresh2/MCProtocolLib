@@ -2,19 +2,20 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.KeyPattern;
 
 @Getter
 public class DataComponentType<T> {
     protected final int id;
-    protected final String key;
+    protected final Key key;
     protected final Reader<T> reader;
     protected final Writer<T> writer;
     protected final DataComponentFactory<T> dataComponentFactory;
 
     protected DataComponentType(int id, @KeyPattern String key, Reader<T> reader, Writer<T> writer, DataComponentFactory<T> dataComponentFactory) {
         this.id = id;
-        this.key = key;
+        this.key = Key.key(key);
         this.reader = reader;
         this.writer = writer;
         this.dataComponentFactory = dataComponentFactory;
@@ -59,6 +60,6 @@ public class DataComponentType<T> {
 
     @Override
     public String toString() {
-        return "DataComponentType(id=" + id + " , key=" + key + ")";
+        return "DataComponentType(id=" + id + " , key=" + key.asString() + ")";
     }
 }
