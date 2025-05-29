@@ -22,6 +22,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.commons.ComponentTreeConstants;
 import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
 import org.slf4j.Logger;
 
@@ -223,9 +224,30 @@ public class BinaryNbtComponentSerializer {
         }
         var clickEvent = style.clickEvent();
         if (clickEvent != null) {
-            writer.writeCompoundTag("clickEvent");
+            writer.writeCompoundTag("click_event");
             writer.writeStringTag("action", clickEvent.action().toString());
-            writer.writeStringTag("value", clickEvent.value());
+            String valueId = switch (clickEvent.action()) {
+                case OPEN_URL -> ComponentTreeConstants.CLICK_EVENT_URL;
+                case OPEN_FILE -> ComponentTreeConstants.CLICK_EVENT_PATH;
+                case RUN_COMMAND, SUGGEST_COMMAND -> ComponentTreeConstants.CLICK_EVENT_COMMAND;
+                case CHANGE_PAGE -> ComponentTreeConstants.CLICK_EVENT_PAGE;
+                default -> ComponentTreeConstants.CLICK_EVENT_VALUE;
+            };
+            switch (clickEvent.action()) {
+                case CHANGE_PAGE -> {
+                    writer.writeIntTag(valueId, Integer.parseInt(clickEvent.value()));
+                }
+                case OPEN_URL -> {
+                    if (clickEvent.value().startsWith("http://") || clickEvent.value().startsWith("https://")) {
+                        writer.writeStringTag(valueId, clickEvent.value());
+                    } else {
+                        writer.writeStringTag(valueId, "https://" + clickEvent.value());
+                    }
+                }
+                default -> {
+                    writer.writeStringTag(valueId, clickEvent.value());
+                }
+            }
             writer.writeEndTag();
         }
         var hoverEvent = style.hoverEvent();
@@ -238,11 +260,12 @@ public class BinaryNbtComponentSerializer {
         var value = hoverEvent.value();
         HoverEvent.Action<?> action = hoverEvent.action();
         if (action != HoverEvent.Action.SHOW_TEXT && action != HoverEvent.Action.SHOW_ITEM && action != HoverEvent.Action.SHOW_ENTITY) return;
-        writer.writeCompoundTag("hoverEvent");
+        writer.writeCompoundTag("hover_event");
         writer.writeStringTag("action", action.toString());
-        writer.writeCompoundTag("contents");
         if (action == HoverEvent.Action.SHOW_TEXT) {
+            writer.writeCompoundTag("value");
             serializeComponent(writer, (Component) value);
+            writer.writeEndTag();
         } else if (action == HoverEvent.Action.SHOW_ITEM) {
             HoverEvent.ShowItem item = (HoverEvent.ShowItem) value;
             writer.writeStringTag("id", item.item().asString());
@@ -273,9 +296,9 @@ public class BinaryNbtComponentSerializer {
             }
         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
             HoverEvent.ShowEntity entity = (HoverEvent.ShowEntity) value;
-            writer.writeStringTag("type", entity.type().asString());
+            writer.writeStringTag("id", entity.type().asString());
             var uuid = entity.id();
-            writer.writeIntArrayTag("id", new int[]{
+            writer.writeIntArrayTag("uuid", new int[]{
                 (int) (uuid.getMostSignificantBits() >> 32),
                 (int) uuid.getMostSignificantBits(),
                 (int) (uuid.getLeastSignificantBits() >> 32),
@@ -288,7 +311,6 @@ public class BinaryNbtComponentSerializer {
                 writer.writeEndTag(); // close name
             }
         }
-        writer.writeEndTag(); // close contents
         writer.writeEndTag(); // close hoverEvent
     }
 

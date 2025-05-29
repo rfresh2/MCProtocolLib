@@ -45,6 +45,7 @@ dependencies {
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
     api("net.kyori:adventure-text-minimessage:$adventureVersion")
+    api("net.kyori:adventure-text-serializer-commons:${adventureVersion}")
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
