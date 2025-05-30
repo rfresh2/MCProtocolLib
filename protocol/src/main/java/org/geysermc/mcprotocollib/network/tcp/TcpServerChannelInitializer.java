@@ -6,11 +6,14 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
 public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
     public static final Factory DEFAULT_FACTORY = TcpServerChannelInitializer::new;
+    private static final Logger LOGGER = LoggerFactory.getLogger("Proxy");
 
     private final TcpServer server;
 
@@ -28,11 +31,12 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
         TcpSession session = server.createSession(address);
         session.getPacketProtocol().newServerSession(server, session);
 
-        channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
-        channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {
+            channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
+            channel.config().setOption(ChannelOption.IP_TOS, 0x18);
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-        } catch (ChannelException ignored) {
+        } catch (ChannelException e) {
+            LOGGER.debug("Failed setting server channel options", e);
         }
 
         ChannelPipeline pipeline = channel.pipeline();
