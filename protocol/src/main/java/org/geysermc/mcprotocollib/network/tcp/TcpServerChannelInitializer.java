@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -35,7 +34,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
             channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
             channel.config().setOption(ChannelOption.IP_TOS, 0x18);
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-        } catch (ChannelException e) {
+        } catch (Throwable e) {
             LOGGER.debug("Failed setting server channel options", e);
         }
 

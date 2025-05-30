@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.network.tcp;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -53,7 +52,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
             channel.config().setOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
             channel.config().setOption(ChannelOption.IP_TOS, 0x18);
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
-        } catch (ChannelException e) {
+        } catch (Throwable e) {
             LOGGER.debug("Failed setting client channel options", e);
         }
 
