@@ -18,6 +18,8 @@ import io.netty.handler.proxy.Socks5ProxyHandler;
 import org.geysermc.mcprotocollib.network.BuiltinFlags;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
@@ -29,6 +31,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
     public static final Factory DEFAULT_FACTORY = TcpClientChannelInitializer::new;
     private final TcpClientSession client;
     private final boolean transferring;
+    private static final Logger LOGGER = LoggerFactory.getLogger("Proxy");
 
     public TcpClientChannelInitializer(TcpClientSession client, boolean transferring) {
         this.client = client;
@@ -45,13 +48,13 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         MinecraftProtocol protocol = client.getPacketProtocol();
         protocol.newClientSession(client, transferring);
 
-        channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
-        channel.config().setOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
-        channel.config().setOption(ChannelOption.IP_TOS, 0x18);
         try {
+            channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, MinecraftConstants.WRITE_BUFFER_WATER_MARK);
+            channel.config().setOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000);
+            channel.config().setOption(ChannelOption.IP_TOS, 0x18);
             channel.config().setOption(ChannelOption.TCP_NODELAY, true);
         } catch (ChannelException e) {
-            // fall through
+            LOGGER.debug("Failed setting client channel options", e);
         }
 
         ChannelPipeline pipeline = channel.pipeline();
