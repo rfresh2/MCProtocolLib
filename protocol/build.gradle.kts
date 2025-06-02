@@ -59,9 +59,9 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.49.2")
+    api("org.checkerframework:checker-qual:3.49.3")
 
-    testImplementation(platform("org.junit:junit-bom:5.12.2"))
+    testImplementation(platform("org.junit:junit-bom:5.13.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
