@@ -20,8 +20,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.inventory.ShiftClickItemAct
 import org.geysermc.mcprotocollib.protocol.data.game.inventory.SpreadItemAction;
 import org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack;
 
-import java.util.Map;
-
 @Data
 @With
 public class ServerboundContainerClickPacket implements MinecraftPacket {
@@ -35,36 +33,27 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
     private final @Nullable HashedStack carriedItem;
     private final @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots;
 
-    public ServerboundContainerClickPacket(int containerId, int stateId, int slot,
-                                           @NonNull ContainerActionType action, @NonNull ContainerAction param,
-                                           @Nullable HashedStack carriedItem, @NonNull Map<Integer, @Nullable HashedStack> changedSlots) {
-        this(containerId, stateId, slot, action, param, carriedItem, new Int2ObjectOpenHashMap<>(changedSlots));
+    public ServerboundContainerClickPacket(
+        int containerId, int stateId, int slot,
+        @NonNull ContainerActionType action, @NonNull ContainerAction param,
+        @Nullable HashedStack carriedItem, @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots
+    ) {
+        this(containerId, stateId, slot, paramToByte(param, action), (byte) action.ordinal(), carriedItem, changedSlots);
     }
 
-    public ServerboundContainerClickPacket(int containerId, int stateId, int slot,
-                                           @NonNull ContainerActionType action, @NonNull ContainerAction param,
-                                           @Nullable HashedStack carriedItem, @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots) {
-        if ((param == DropItemAction.LEFT_CLICK_OUTSIDE_NOT_HOLDING || param == DropItemAction.RIGHT_CLICK_OUTSIDE_NOT_HOLDING)
-            && slot != -CLICK_OUTSIDE_NOT_HOLDING_SLOT) {
-            throw new IllegalArgumentException("Slot must be " + CLICK_OUTSIDE_NOT_HOLDING_SLOT
-                                                   + " with param LEFT_CLICK_OUTSIDE_NOT_HOLDING or RIGHT_CLICK_OUTSIDE_NOT_HOLDING");
-        }
+    private static byte paramToByte(ContainerAction param, ContainerActionType action) {
         int paramId = param.getId();
         if (action == ContainerActionType.DROP_ITEM) {
             paramId %= 2;
         }
-        byte paramByte = (byte) paramId;
-        byte actionByte = (byte) action.ordinal();
-        this.containerId = containerId;
-        this.stateId = stateId;
-        this.slot = slot;
-        this.param = paramByte;
-        this.actionType = actionByte;
-        this.carriedItem = carriedItem;
-        this.changedSlots = changedSlots;
+        return (byte) paramId;
     }
 
-    public ServerboundContainerClickPacket(final int containerId, final int stateId, final int slot, final byte param, final byte actionType, final @Nullable HashedStack carriedItem, final @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots) {
+    public ServerboundContainerClickPacket(
+        int containerId, int stateId, int slot,
+        byte param, byte actionType, @Nullable HashedStack carriedItem,
+        @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots
+    ) {
         this.containerId = containerId;
         this.stateId = stateId;
         this.slot = slot;
