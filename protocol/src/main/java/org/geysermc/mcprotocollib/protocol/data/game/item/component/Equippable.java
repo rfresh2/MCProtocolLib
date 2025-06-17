@@ -6,5 +6,5 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 
 public record Equippable(EquipmentSlot slot, Sound equipSound, @Nullable String model, @Nullable String cameraOverlay,
                          @Nullable HolderSet allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt,
-                         boolean equipOnInteract) {
+                         boolean equipOnInteract, boolean canBeSheared, Sound shearingSound) {
 }

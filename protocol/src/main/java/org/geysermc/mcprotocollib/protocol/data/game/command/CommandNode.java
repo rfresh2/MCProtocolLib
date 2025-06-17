@@ -21,6 +21,11 @@ public class CommandNode {
     private final boolean executable;
 
     /**
+     * Whether restricted commands are allowed.
+     */
+    private final boolean allowsRestricted;
+
+    /**
      * Child node indices.
      */
     private final int @NonNull [] childIndices;
