@@ -9,25 +9,8 @@ description = "MCProtocolLib is a simple library for communicating with Minecraf
 val javaVersion = JavaLanguageVersion.of(21)
 
 repositories {
-    maven("https://repo.opencollab.dev/maven-releases/") {
-        name = "opencollab-releases"
-        content { includeGroupByRegex("org.cloudburstmc.*") }
-    }
-    maven("https://repo.papermc.io/repository/maven-public/") {
-        name = "papermc"
-        content { includeGroup("com.velocitypowered") }
-    }
-    maven("https://maven.2b2t.vc/releases") {
-        content { includeGroupByRegex("com.github.rfresh2.*") }
-    }
-    maven("https://maven.lenni0451.net/releases") {
-        name = "Lenni0451"
-        content {
-            includeGroup("net.raphimc")
-            includeGroup("net.lenni0451")
-        }
-    }
-    mavenCentral()
+    maven("https://maven.2b2t.vc/releases")
+    maven("https://maven.2b2t.vc/remote")
     mavenLocal()
 }
 
@@ -39,12 +22,13 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    val adventureVersion = "4.21.0"
+    val adventureVersion = "4.23.0"
     api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
     api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
     api("net.kyori:adventure-text-minimessage:$adventureVersion")
+    api("net.kyori:adventure-text-serializer-commons:${adventureVersion}")
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
