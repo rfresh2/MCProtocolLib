@@ -301,8 +301,8 @@ public class MinecraftTypes {
     }
 
     public static <T> void writeLengthPrefixed(ByteBuf buf, int maxLength, T value, BiConsumer<ByteBuf, T> writer) {
-        buf.writeMedium(0);
         buf.markWriterIndex();
+        buf.writeMedium(0);
         int start = buf.writerIndex();
         writer.accept(buf, value);
         int end = buf.writerIndex();
