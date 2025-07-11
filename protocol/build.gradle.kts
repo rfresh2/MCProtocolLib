@@ -14,7 +14,6 @@ repositories {
     mavenLocal()
 }
 
-
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
@@ -22,13 +21,13 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    val adventureVersion = "4.23.0"
-    api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
-    api("net.kyori:adventure-text-minimessage:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-commons:${adventureVersion}")
+    api(platform("net.kyori:adventure-bom:4.23.0"))
+    api("net.kyori:adventure-text-serializer-gson")
+    api("net.kyori:adventure-text-serializer-json-legacy-impl")
+    api("net.kyori:adventure-text-serializer-legacy")
+    api("net.kyori:adventure-text-serializer-ansi")
+    api("net.kyori:adventure-text-minimessage")
+    api("net.kyori:adventure-text-serializer-commons")
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
