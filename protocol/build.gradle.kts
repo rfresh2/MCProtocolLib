@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.13.1"
+    id("io.freefair.lombok") version "8.14"
     `maven-publish`
     `java-library`
 }
@@ -14,7 +14,6 @@ repositories {
     mavenLocal()
 }
 
-
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
@@ -22,13 +21,13 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    val adventureVersion = "4.23.0"
-    api("net.kyori:adventure-text-serializer-gson:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-json-legacy-impl:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-ansi:$adventureVersion")
-    api("net.kyori:adventure-text-minimessage:$adventureVersion")
-    api("net.kyori:adventure-text-serializer-commons:${adventureVersion}")
+    api(platform("net.kyori:adventure-bom:4.23.0"))
+    api("net.kyori:adventure-text-serializer-gson")
+    api("net.kyori:adventure-text-serializer-json-legacy-impl")
+    api("net.kyori:adventure-text-serializer-legacy")
+    api("net.kyori:adventure-text-serializer-ansi")
+    api("net.kyori:adventure-text-minimessage")
+    api("net.kyori:adventure-text-serializer-commons")
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
@@ -43,9 +42,9 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.49.4")
+    api("org.checkerframework:checker-qual:3.49.5")
 
-    testImplementation(platform("org.junit:junit-bom:5.13.0"))
+    testImplementation(platform("org.junit:junit-bom:5.13.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
