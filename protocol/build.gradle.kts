@@ -38,13 +38,13 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.2.Final")
+    api("io.netty:netty-all:4.2.3.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.49.5")
 
-    testImplementation(platform("org.junit:junit-bom:5.13.3"))
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
