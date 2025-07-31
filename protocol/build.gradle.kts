@@ -21,7 +21,7 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:4.1.1")
 
-    api(platform("net.kyori:adventure-bom:4.23.0"))
+    api(platform("net.kyori:adventure-bom:4.24.0"))
     api("net.kyori:adventure-text-serializer-gson")
     api("net.kyori:adventure-text-serializer-json-legacy-impl")
     api("net.kyori:adventure-text-serializer-legacy")
@@ -32,19 +32,19 @@ dependencies {
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
 
-    val fastutilVersion = "8.5.15"
+    val fastutilVersion = "8.5.16"
     api("com.github.rfresh2.fastutil.maps:object-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.2.Final")
+    api("io.netty:netty-all:4.2.3.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:3.49.5")
 
-    testImplementation(platform("org.junit:junit-bom:5.13.3"))
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
