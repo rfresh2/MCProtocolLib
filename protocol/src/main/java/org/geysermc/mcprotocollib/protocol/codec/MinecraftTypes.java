@@ -234,7 +234,7 @@ public class MinecraftTypes {
         if (length > maxLength * 3) {
             throw new IllegalArgumentException("String buffer is longer than maximum allowed length");
         }
-        String string = (String) buf.readCharSequence(length, StandardCharsets.UTF_8);
+        String string = buf.readString(length, StandardCharsets.UTF_8);
         if (string.length() > maxLength) {
             throw new IllegalArgumentException("String is longer than maximum allowed length");
         }
