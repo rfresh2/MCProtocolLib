@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "8.14"
+    id("io.freefair.lombok") version "8.14.2"
     `maven-publish`
     `java-library`
 }
@@ -19,7 +19,7 @@ dependencies {
 
     api("com.github.rfresh2:OpenNBT:3.0.8")
 
-    api("net.raphimc:MinecraftAuth:4.1.1")
+    api("net.raphimc:MinecraftAuth:4.1.2")
 
     api(platform("net.kyori:adventure-bom:4.24.0"))
     api("net.kyori:adventure-text-serializer-gson")
@@ -38,7 +38,7 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.3.Final")
+    api("io.netty:netty-all:4.2.4.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
