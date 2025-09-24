@@ -1,9 +1,9 @@
-name: MCProtocolLib 1.21.8 Publish
+name: MCProtocolLib 1.21.9 Publish
 
 on:
     push:
         branches:
-            - "1.21.8"
+            - "1.21.9"
 
 jobs:
     build:
@@ -29,5 +29,5 @@ jobs:
               env:
                   MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
                   MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-                  PUBLISH_VERSION: "1.21.8.${{ github.run_number }}"
+                  PUBLISH_VERSION: "1.21.9.${{ github.run_number }}"
               run: ./gradlew build publishMavenPublicationToVcRepository
