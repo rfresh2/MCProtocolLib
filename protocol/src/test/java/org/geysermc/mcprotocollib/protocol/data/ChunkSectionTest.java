@@ -1,16 +1,18 @@
 package org.geysermc.mcprotocollib.protocol.data;
 
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ChunkSectionTest {
     // warning: modded servers with custom blocks can be even higher which WILL break a global palette
     private static final int MAX_BLOCK_STATE_ID_1_21 = 26684;
+    PalettedWorldState paletteConfig = new PalettedWorldState(0, MAX_BLOCK_STATE_ID_1_21 + 1, 0, 256, 0);
 
     @Test
     public void testLargeBlockStateId() {
-        final ChunkSection section = new ChunkSection();
+        final ChunkSection section = new ChunkSection(paletteConfig);
         writeNewBlockStates(section, 0, MAX_BLOCK_STATE_ID_1_21);
         // we now have a global palette
 
@@ -24,7 +26,7 @@ public class ChunkSectionTest {
 
     @Test
     public void testMutation() {
-        final ChunkSection section = new ChunkSection();
+        final ChunkSection section = new ChunkSection(paletteConfig);
         int nextBlockStateId = 0;
 
         try {

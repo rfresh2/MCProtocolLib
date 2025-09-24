@@ -20,29 +20,30 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPale
 @ToString
 public class DataPalette {
 
-    public static int GLOBAL_PALETTE_BITS_PER_ENTRY = 15;
-
     private @NonNull Palette palette;
     private BitStorage storage;
     private final PaletteType paletteType;
+    private final PalettedWorldState palettedWorldState;
 
     public DataPalette(DataPalette original) {
-        this(original.palette.copy(), original.storage == null ? null : new BitStorage(original.storage), original.paletteType);
+        this(original.palette.copy(), original.storage == null ? null : new BitStorage(original.storage), original.paletteType, original.palettedWorldState);
     }
 
-    public static DataPalette createForChunk() {
-        return createEmpty(PaletteType.CHUNK);
+    public static DataPalette createForChunk(PalettedWorldState palettedWorldState) {
+        return createEmpty(PaletteType.BLOCK_STATE, palettedWorldState);
     }
 
-    public static DataPalette createForBiome() {
-        return createEmpty(PaletteType.BIOME);
+    public static DataPalette createForBiome(PalettedWorldState palettedWorldState) {
+        return createEmpty(PaletteType.BIOME, palettedWorldState);
     }
 
-    public static DataPalette createEmpty(PaletteType paletteType) {
+    public static DataPalette createEmpty(PaletteType paletteType, PalettedWorldState palettedWorldState) {
         return new DataPalette(
-            createEmptyPalette(paletteType.getMinBitsPerEntry()),
+            createEmptyPalette(paletteType.getMinBitsPerEntry(), paletteType, palettedWorldState),
             new BitStorage(paletteType.getMinBitsPerEntry(), paletteType.getStorageSize()),
-            paletteType);
+            paletteType,
+            palettedWorldState
+        );
     }
 
     public int get(int x, int y, int z) {
@@ -80,7 +81,7 @@ public class DataPalette {
         if (bitsPerEntry <= this.paletteType.getMaxBitsPerEntry()) {
             return Math.max(this.paletteType.getMinBitsPerEntry(), bitsPerEntry);
         } else {
-            return GLOBAL_PALETTE_BITS_PER_ENTRY;
+            return bitsPerEntry;
         }
     }
 
@@ -89,7 +90,7 @@ public class DataPalette {
         BitStorage oldData = this.storage;
 
         int bitsPerEntry = sanitizeBitsPerEntry(oldPalette instanceof SingletonPalette ? 1 : oldData.getBitsPerEntry() + 1);
-        this.palette = createEmptyPalette(bitsPerEntry);
+        this.palette = createEmptyPalette(bitsPerEntry, paletteType, palettedWorldState);
         this.storage = new BitStorage(bitsPerEntry, paletteType.getStorageSize());
 
         if (oldPalette instanceof SingletonPalette) {
@@ -101,9 +102,9 @@ public class DataPalette {
         }
     }
 
-    private static Palette createEmptyPalette(int bitsPerEntry) {
+    private static Palette createEmptyPalette(int bitsPerEntry, PaletteType paletteType, PalettedWorldState palettedWorldState) {
         return switch (bitsPerEntry) {
-            case 0 -> new SingletonPalette(0);
+            case 0 -> new SingletonPalette(paletteType.defaultStateId(palettedWorldState));
             case 1,2,3 -> new ListPalette(bitsPerEntry);
             case 4,5,6,7,8 -> new MapPalette(bitsPerEntry);
             default -> GlobalPalette.INSTANCE;
