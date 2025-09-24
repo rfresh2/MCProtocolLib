@@ -18,8 +18,8 @@ public class ChunkSection {
     private @NonNull DataPalette chunkData;
     private @NonNull DataPalette biomeData;
 
-    public ChunkSection() {
-        this(0, DataPalette.createForChunk(), DataPalette.createForBiome());
+    public ChunkSection(PalettedWorldState palettedWorldState) {
+        this(0, DataPalette.createForChunk(palettedWorldState), DataPalette.createForBiome(palettedWorldState));
     }
 
     public ChunkSection(ChunkSection original) {

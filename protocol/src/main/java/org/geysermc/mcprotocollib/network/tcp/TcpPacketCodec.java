@@ -28,8 +28,8 @@ public class TcpPacketCodec extends ByteToMessageCodec<Packet> {
             ? (id) -> packetProtocol.getOutboundPacketRegistry().getServerboundDefinition(id)
             : (id) -> packetProtocol.getOutboundPacketRegistry().getClientboundDefinition(id);
         this.inboundPacketFactory = client
-            ? (id, buf) -> packetProtocol.getInboundPacketRegistry().createClientboundPacket(id, buf)
-            : (id, buf) -> packetProtocol.getInboundPacketRegistry().createServerboundPacket(id, buf);
+            ? (id, buf) -> packetProtocol.getInboundPacketRegistry().createClientboundPacket(id, buf, session)
+            : (id, buf) -> packetProtocol.getInboundPacketRegistry().createServerboundPacket(id, buf, session);
     }
 
     @FunctionalInterface

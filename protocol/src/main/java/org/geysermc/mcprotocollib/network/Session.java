@@ -11,6 +11,7 @@ import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.network.tcp.FlushHandler;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
@@ -356,6 +357,13 @@ public interface Session {
      * @return The netty channel
      */
     Channel getChannel();
+
+    /**
+     * Configuration required for correctly handling chunk and biome packets
+     */
+    default PalettedWorldState getPalettedWorldState() {
+        throw new UnsupportedOperationException("You must override and implement this method in your Session subclass");
+    }
 
     /**
      * Changes the inbound state of the session and then re-enables auto read.

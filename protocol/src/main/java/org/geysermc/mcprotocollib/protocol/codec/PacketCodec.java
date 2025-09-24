@@ -17,6 +17,7 @@ public class PacketCodec {
     @Getter
     private final String minecraftVersion;
 
+    @Getter
     private final EnumMap<ProtocolState, PacketRegistry> stateProtocols;
 
     public PacketRegistry getCodec(ProtocolState protocolState) {

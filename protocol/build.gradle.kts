@@ -17,7 +17,7 @@ repositories {
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
-    api("com.github.rfresh2:OpenNBT:3.0.8")
+    api("com.github.rfresh2:OpenNBT:3.0.10")
 
     api("net.raphimc:MinecraftAuth:4.1.2")
 
@@ -38,7 +38,7 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.4.Final")
+    api("io.netty:netty-all:4.2.6.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 
@@ -50,7 +50,7 @@ dependencies {
 }
 
 lombok {
-    version = "1.18.38"
+    version = "1.18.42"
 }
 
 tasks {

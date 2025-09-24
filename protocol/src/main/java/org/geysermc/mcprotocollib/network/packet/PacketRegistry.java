@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.codec.PacketSerializer;
 
@@ -110,13 +111,13 @@ public class PacketRegistry {
      * @throws IllegalArgumentException If the packet ID is not registered.
      */
     @SuppressWarnings("unchecked")
-    public Packet createClientboundPacket(int id, ByteBuf buf) {
+    public Packet createClientboundPacket(int id, ByteBuf buf, Session session) {
         PacketDefinition<?> definition = (PacketDefinition<?>) this.clientbound.get(id);
         if (definition == null) {
             throw new IllegalArgumentException("Invalid packet id: " + id);
         }
 
-        return definition.newInstance(buf);
+        return definition.newInstance(buf, session);
     }
 
     /**
@@ -171,13 +172,13 @@ public class PacketRegistry {
      * @throws IllegalArgumentException If the packet ID is not registered.
      */
     @SuppressWarnings("unchecked")
-    public Packet createServerboundPacket(int id, ByteBuf buf) {
+    public Packet createServerboundPacket(int id, ByteBuf buf, Session session) {
         PacketDefinition<?> definition = (PacketDefinition<?>) this.serverbound.get(id);
         if (definition == null) {
             throw new IllegalArgumentException("Invalid packet id: " + id);
         }
 
-        return definition.newInstance(buf);
+        return definition.newInstance(buf, session);
     }
 
     /**

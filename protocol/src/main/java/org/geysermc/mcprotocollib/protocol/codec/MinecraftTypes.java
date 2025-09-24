@@ -30,6 +30,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.chat.numbers.StyledFormat;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.BitStorage;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.GlobalPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.ListPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.MapPalette;
@@ -1445,10 +1446,10 @@ public class MinecraftTypes {
         }
     }
 
-    public static DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType) {
+    public static DataPalette readDataPalette(ByteBuf buf, PaletteType paletteType, PalettedWorldState palettedWorldState) {
         int bitsPerEntry = buf.readByte() & 0xFF;
         Palette palette = switch (paletteType) {
-            case CHUNK -> readChunkPalette(buf, bitsPerEntry);
+            case BLOCK_STATE -> readChunkPalette(buf, bitsPerEntry);
             case BIOME -> readBiomePalette(buf, bitsPerEntry);
         };
         BitStorage storage;
@@ -1459,7 +1460,7 @@ public class MinecraftTypes {
             readFixedSizeLongArray(buf, storage.getData());
         }
 
-        return new DataPalette(palette, storage, paletteType);
+        return new DataPalette(palette, storage, paletteType, palettedWorldState);
     }
 
     public static void writeDataPalette(ByteBuf buf, DataPalette palette) {
@@ -1500,11 +1501,11 @@ public class MinecraftTypes {
         };
     }
 
-    public static ChunkSection readChunkSection(ByteBuf buf) {
+    public static ChunkSection readChunkSection(ByteBuf buf, PalettedWorldState palettedWorldState) {
         int blockCount = buf.readShort();
 
-        DataPalette chunkPalette = MinecraftTypes.readDataPalette(buf, PaletteType.CHUNK);
-        DataPalette biomePalette = MinecraftTypes.readDataPalette(buf, PaletteType.BIOME);
+        DataPalette chunkPalette = MinecraftTypes.readDataPalette(buf, PaletteType.BLOCK_STATE, palettedWorldState);
+        DataPalette biomePalette = MinecraftTypes.readDataPalette(buf, PaletteType.BIOME, palettedWorldState);
         return new ChunkSection(blockCount, chunkPalette, biomePalette);
     }
 

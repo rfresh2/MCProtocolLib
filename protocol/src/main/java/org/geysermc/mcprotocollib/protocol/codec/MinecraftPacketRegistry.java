@@ -22,8 +22,20 @@ public class MinecraftPacketRegistry {
         return this;
     }
 
+    public <T extends MinecraftPacket> MinecraftPacketRegistry registerClientboundPacketS(Class<T> packetClass, SessionPacketFactory<T> factory) {
+        this.clientboundPackets.put(nextClientboundId, new PacketDefinition<>(nextClientboundId, packetClass, new SessionMinecraftPacketSerializer<>(factory)));
+        this.nextClientboundId++;
+        return this;
+    }
+
     public <T extends MinecraftPacket> MinecraftPacketRegistry registerServerboundPacket(Class<T> packetClass, PacketFactory<T> factory) {
         this.serverboundPackets.put(nextServerboundId, new PacketDefinition<>(nextServerboundId, packetClass, new MinecraftPacketSerializer<>(factory)));
+        this.nextServerboundId++;
+        return this;
+    }
+
+    public <T extends MinecraftPacket> MinecraftPacketRegistry registerServerboundPacketS(Class<T> packetClass, SessionPacketFactory<T> factory) {
+        this.serverboundPackets.put(nextServerboundId, new PacketDefinition<>(nextServerboundId, packetClass, new SessionMinecraftPacketSerializer<>(factory)));
         this.nextServerboundId++;
         return this;
     }

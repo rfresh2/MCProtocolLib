@@ -3,11 +3,12 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkBiomeData;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
 
 import java.util.ArrayList;
@@ -18,7 +19,11 @@ import java.util.List;
 public class ClientboundChunksBiomesPacket implements MinecraftPacket {
     private final List<ChunkBiomeData> chunkBiomeData;
 
-    public ClientboundChunksBiomesPacket(ByteBuf in) {
+    public ClientboundChunksBiomesPacket(ByteBuf in, Session session) {
+        this(in, session.getPalettedWorldState());
+    }
+
+    public ClientboundChunksBiomesPacket(ByteBuf in, PalettedWorldState palettedWorldState) {
         int length = MinecraftTypes.readVarInt(in);
         this.chunkBiomeData = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
@@ -27,10 +32,10 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
             int z = (int)(position >> 32);
             var dataLen = MinecraftTypes.readVarInt(in);
             int afterSectionDataIndex = in.readerIndex() + dataLen;
-            var sectionCount = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER.getSectionCount();
+            var sectionCount = palettedWorldState.getChunkSectionCount();
             var palettes = new DataPalette[sectionCount]; // indexed to corresponding chunk section
             for (int j = 0; j < sectionCount; j++) {
-                palettes[j] = MinecraftTypes.readDataPalette(in, PaletteType.BIOME);
+                palettes[j] = MinecraftTypes.readDataPalette(in, PaletteType.BIOME, palettedWorldState);
             }
 
             this.chunkBiomeData.add(new ChunkBiomeData(x, z, palettes));
@@ -52,8 +57,8 @@ public class ClientboundChunksBiomesPacket implements MinecraftPacket {
             out.markWriterIndex();
             out.writeMedium(0);
             var start = out.writerIndex();
-            var sectionCount = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER.getSectionCount();
             var palettes = entry.getPalettes();
+            var sectionCount = palettes.length;
             for (int j = 0; j < sectionCount; j++) {
                 MinecraftTypes.writeDataPalette(out, palettes[j]);
             }

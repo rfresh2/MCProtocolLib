@@ -1,6 +1,7 @@
 package org.geysermc.mcprotocollib.network.codec;
 
 import io.netty.buffer.ByteBuf;
+import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 
 /**
@@ -48,7 +49,10 @@ public class PacketDefinition<T extends Packet> {
         return this.serializer;
     }
 
-    public T newInstance(ByteBuf buf) {
+    public T newInstance(ByteBuf buf, Session session) {
+        if (this.serializer instanceof SessionPacketSerializer<T> sessionPacketSerializer) {
+            return sessionPacketSerializer.deserialize(buf, this, session);
+        }
         return this.serializer.deserialize(buf, this);
     }
 }

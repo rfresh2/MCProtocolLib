@@ -6,6 +6,7 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.BitStorage;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.DataPalette;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.Palette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPalette;
@@ -22,18 +23,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ChunkTest {
     private static final Logger log = LoggerFactory.getLogger(ChunkTest.class);
     private final List<ChunkSection> chunkSectionsToTest = new ArrayList<>();
+    PalettedWorldState paletteConfig = new PalettedWorldState(0, 30000, 0, 256, 0);
 
     @BeforeEach
     public void setup() {
-        chunkSectionsToTest.add(new ChunkSection());
+        chunkSectionsToTest.add(new ChunkSection(paletteConfig));
 
-        ChunkSection section = new ChunkSection();
+        ChunkSection section = new ChunkSection(paletteConfig);
         section.setBlock(0, 0, 0, 10);
         chunkSectionsToTest.add(section);
 
         SingletonPalette singletonPalette = new SingletonPalette(20);
-        DataPalette dataPalette = new DataPalette(singletonPalette, null, PaletteType.CHUNK);
-        DataPalette biomePalette = new DataPalette(singletonPalette, null, PaletteType.BIOME);
+        DataPalette dataPalette = new DataPalette(singletonPalette, null, PaletteType.BLOCK_STATE, paletteConfig);
+        DataPalette biomePalette = new DataPalette(singletonPalette, null, PaletteType.BIOME, paletteConfig);
         section = new ChunkSection(4096, dataPalette, biomePalette);
         chunkSectionsToTest.add(section);
     }
@@ -45,7 +47,7 @@ public class ChunkTest {
             MinecraftTypes.writeChunkSection(buf, section);
             ChunkSection decoded;
             try {
-                decoded = MinecraftTypes.readChunkSection(buf);
+                decoded = MinecraftTypes.readChunkSection(buf, paletteConfig);
             } catch (Exception e) {
                 log.error(section.toString(), e);
                 throw e;

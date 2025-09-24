@@ -7,11 +7,12 @@ import lombok.Data;
 import lombok.ToString;
 import lombok.With;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
+import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.level.HeightmapTypes;
+import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityInfo;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
@@ -31,7 +32,11 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
     private final @NonNull BlockEntityInfo[] blockEntities;
     private final @NonNull LightUpdateData lightData;
 
-    public ClientboundLevelChunkWithLightPacket(ByteBuf in) {
+    public ClientboundLevelChunkWithLightPacket(ByteBuf in, Session session) {
+        this(in, session.getPalettedWorldState());
+    }
+
+    public ClientboundLevelChunkWithLightPacket(ByteBuf in, PalettedWorldState palettedWorldState) {
         this.x = in.readInt();
         this.z = in.readInt();
 
@@ -43,12 +48,10 @@ public class ClientboundLevelChunkWithLightPacket implements MinecraftPacket {
 
         var dataLen = MinecraftTypes.readVarInt(in);
         int afterSectionDataIndex = in.readerIndex() + dataLen;
-        var sectionCountProvider = MinecraftConstants.CHUNK_SECTION_COUNT_PROVIDER;
-        if (sectionCountProvider == null) throw new RuntimeException("Chunk section count provider is null.");
-        var sectionCount = sectionCountProvider.getSectionCount();
+        var sectionCount = palettedWorldState.getChunkSectionCount();
         this.sections = new ChunkSection[sectionCount];
         for (int i = 0; i < sectionCount; i++) {
-            this.sections[i] = MinecraftTypes.readChunkSection(in);
+            this.sections[i] = MinecraftTypes.readChunkSection(in, palettedWorldState);
         }
         // Skip remaining bytes in the chunk data buf, server does not always calculate it correctly before writing data
         if (in.readerIndex() > afterSectionDataIndex) {
