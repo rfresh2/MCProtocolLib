@@ -1,9 +1,10 @@
 name: MCProtocolLib 1.21.9 Publish
 
 on:
-    push:
-        branches:
-            - "1.21.9"
+    workflow_dispatch:
+#    push:
+#        branches:
+#            - "1.21.9"
 
 jobs:
     build:

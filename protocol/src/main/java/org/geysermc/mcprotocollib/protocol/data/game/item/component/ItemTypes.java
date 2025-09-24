@@ -7,19 +7,19 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import lombok.NoArgsConstructor;
 import net.kyori.adventure.text.Component;
-import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.EquipmentSlot;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
+import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -510,6 +510,31 @@ public class ItemTypes {
         buf.writeBoolean(pattern.decal());
     }
 
+    public static <T extends Enum<?>> TypedEntityData<T> readTypedEntityData(ByteBuf buf, Function<ByteBuf, T> reader) {
+        return new TypedEntityData<>(reader.apply(buf), MinecraftTypes.readMNBT(buf));
+    }
+
+    public static <T> void writeTypedEntityData(ByteBuf buf, TypedEntityData<T> typedEntityData, BiConsumer<ByteBuf, T> writer) {
+        writer.accept(buf, typedEntityData.type());
+        MinecraftTypes.writeMNBT(buf, typedEntityData.tag());
+    }
+
+    public static EntityType readEntityType(ByteBuf buf) {
+        return EntityType.from(MinecraftTypes.readVarInt(buf));
+    }
+
+    public static void writeEntityType(ByteBuf buf, EntityType state) {
+        MinecraftTypes.writeVarInt(buf, state.ordinal());
+    }
+
+    public static BlockEntityType readBlockEntityType(ByteBuf buf) {
+        return BlockEntityType.from(MinecraftTypes.readVarInt(buf));
+    }
+
+    public static void writeBlockEntityType(ByteBuf buf, BlockEntityType state) {
+        MinecraftTypes.writeVarInt(buf, state.ordinal());
+    }
+
     public static InstrumentComponent readInstrumentComponent(ByteBuf buf) {
         Holder<InstrumentComponent.Instrument> instrumentHolder = null;
         String instrumentLocation = null;
@@ -671,24 +696,6 @@ public class ItemTypes {
 
         buf.writeBoolean(explosion.isHasTrail());
         buf.writeBoolean(explosion.isHasTwinkle());
-    }
-
-    public static GameProfile readResolvableProfile(ByteBuf buf) {
-        String name = MinecraftTypes.readNullable(buf, MinecraftTypes::readString);
-        UUID id = MinecraftTypes.readNullable(buf, MinecraftTypes::readUUID);
-        GameProfile profile = new GameProfile(id, name);
-
-        List<GameProfile.Property> properties = MinecraftTypes.readList(buf, MinecraftTypes::readProperty);
-        profile.setProperties(properties);
-
-        return profile;
-    }
-
-    public static void writeResolvableProfile(ByteBuf buf, GameProfile profile) {
-        MinecraftTypes.writeNullable(buf, profile.getName(), MinecraftTypes::writeString);
-        MinecraftTypes.writeNullable(buf, profile.getId(), MinecraftTypes::writeUUID);
-
-        MinecraftTypes.writeList(buf, profile.getProperties(), MinecraftTypes::writeProperty);
     }
 
     public static BannerPatternLayer readBannerPatternLayer(ByteBuf buf) {
