@@ -18,7 +18,7 @@ public class ClientboundCodeOfConductPacket implements MinecraftPacket {
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
-        MinecraftTypes.writeString(buf, codeOfConduct);
+    public void serialize(ByteBuf out) {
+        MinecraftTypes.writeString(out, codeOfConduct);
     }
 }

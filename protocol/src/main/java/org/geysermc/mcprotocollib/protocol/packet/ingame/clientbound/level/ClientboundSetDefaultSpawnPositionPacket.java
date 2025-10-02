@@ -6,27 +6,26 @@ import lombok.Data;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.GlobalPos;
 
 @Data
 @With
 @AllArgsConstructor
 public class ClientboundSetDefaultSpawnPositionPacket implements MinecraftPacket {
-    private final int x;
-    private final int y;
-    private final int z;
-    private final float angle;
+    private final GlobalPos globalPos;
+    private final float yaw;
+    private final float pitch;
 
     public ClientboundSetDefaultSpawnPositionPacket(ByteBuf in) {
-        var position = in.readLong();
-        this.x = MinecraftTypes.decodePositionX(position);
-        this.y = MinecraftTypes.decodePositionY(position);
-        this.z = MinecraftTypes.decodePositionZ(position);
-        this.angle = in.readFloat();
+        this.globalPos = MinecraftTypes.readGlobalPos(in);
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     @Override
     public void serialize(ByteBuf out) {
-        MinecraftTypes.writePosition(out, this.x, this.y, this.z);
-        out.writeFloat(this.angle);
+        MinecraftTypes.writeGlobalPos(out, this.globalPos);
+        out.writeFloat(this.yaw);
+        out.writeFloat(this.pitch);
     }
 }
