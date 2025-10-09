@@ -735,11 +735,11 @@ public class ItemTypes {
     }
 
     public static BeehiveOccupant readBeehiveOccupant(ByteBuf buf) {
-        return new BeehiveOccupant(MinecraftTypes.readMNBT(buf), MinecraftTypes.readVarInt(buf), MinecraftTypes.readVarInt(buf));
+        return new BeehiveOccupant(ItemTypes.readTypedEntityData(buf, ItemTypes::readEntityType), MinecraftTypes.readVarInt(buf), MinecraftTypes.readVarInt(buf));
     }
 
     public static void writeBeehiveOccupant(ByteBuf buf, BeehiveOccupant occupant) {
-        MinecraftTypes.writeMNBT(buf, occupant.getEntityData());
+        ItemTypes.writeTypedEntityData(buf, occupant.getEntityData(), ItemTypes::writeEntityType);
         MinecraftTypes.writeVarInt(buf, occupant.getTicksInHive());
         MinecraftTypes.writeVarInt(buf, occupant.getMinTicksInHive());
     }
