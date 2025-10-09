@@ -1,6 +1,5 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata;
 
-import com.viaversion.nbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import lombok.Getter;
@@ -46,7 +45,6 @@ public class MetadataTypes {
     public static final MetadataType<Optional<UUID>> OPTIONAL_LIVING_ENTITY_REFERENCE = register(id -> new MetadataType<>(id, optionalReader(MinecraftTypes::readUUID), optionalWriter(MinecraftTypes::writeUUID), ObjectEntityMetadata::new));
     public static final IntMetadataType BLOCK_STATE = register(id -> new IntMetadataType(id, MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntEntityMetadata::new));
     public static final IntMetadataType OPTIONAL_BLOCK_STATE = register(id -> new IntMetadataType(id, MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntEntityMetadata::new));
-    public static final MetadataType<MNBT> COMPOUND_TAG = register(id -> new MetadataType<>(id, MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectEntityMetadata::new));
     public static final MetadataType<Particle> PARTICLE = register(id -> new MetadataType<>(id, MinecraftTypes::readParticle, MinecraftTypes::writeParticle, ObjectEntityMetadata::new));
     public static final MetadataType<List<Particle>> PARTICLES = register(id -> new MetadataType<>(id, listReader(MinecraftTypes::readParticle), listWriter(MinecraftTypes::writeParticle), ObjectEntityMetadata::new));
     public static final MetadataType<VillagerData> VILLAGER_DATA = register(id -> new MetadataType<>(id, MinecraftTypes::readVillagerData, MinecraftTypes::writeVillagerData, ObjectEntityMetadata::new));
