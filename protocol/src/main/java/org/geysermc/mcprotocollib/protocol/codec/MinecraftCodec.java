@@ -39,7 +39,6 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundCommandsPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundCooldownPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundCustomChatCompletionsPacket;
-import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.ClientboundDebugSamplePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDeleteChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDisguisedChatPacket;
@@ -70,6 +69,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.Clien
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.ClientboundDebugChunkValuePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.ClientboundDebugEntityValuePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.ClientboundDebugEventPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.debug.ClientboundDebugSamplePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundAddEntityPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundAnimatePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundDamageEventPacket;
@@ -232,7 +232,7 @@ import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.Serverbound
 public class MinecraftCodec {
     public static final PacketCodec CODEC = PacketCodec.builder()
             .protocolVersion(773)
-            .minecraftVersion("1.21.9")
+            .minecraftVersion("1.21.10")
             .state(ProtocolState.HANDSHAKE, MinecraftPacketRegistry.builder()
                     .registerServerboundPacket(ClientIntentionPacket.class, ClientIntentionPacket::new)
             )
