@@ -38,7 +38,7 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.6.Final")
+    api("io.netty:netty-all:4.2.7.Final")
 
     api("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT")
 

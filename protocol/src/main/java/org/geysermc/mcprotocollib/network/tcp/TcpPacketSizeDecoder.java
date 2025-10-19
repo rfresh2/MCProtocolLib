@@ -29,15 +29,15 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
             // skip any runs of 0x00 we might find
             int packetStart = in.forEachByte(FIND_NON_NUL);
             if (packetStart == -1) {
+                in.clear();
                 return;
             }
             in.readerIndex(packetStart);
 
             // try to read the length of the packet
             in.markReaderIndex();
-            int preIndex = in.readerIndex();
             int length = readRawVarInt21(in);
-            if (preIndex == in.readerIndex()) {
+            if (packetStart == in.readerIndex()) {
                 return;
             }
             if (length < 0) {

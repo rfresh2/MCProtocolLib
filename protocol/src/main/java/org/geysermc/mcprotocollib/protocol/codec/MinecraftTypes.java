@@ -179,9 +179,9 @@ public class MinecraftTypes {
         }
     }
 
-    public static void write21BitVarInt(ByteBuf buf, int value) {
-        int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
-        buf.writeMedium(w);
+    public static int encode21BitVarInt(int value) {
+        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
+        return (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
     }
 
     private static void writeVarIntFull(ByteBuf buf, int value) {
