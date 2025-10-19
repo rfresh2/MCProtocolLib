@@ -29,10 +29,10 @@ public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<Byt
             int uncompressed = in.readableBytes();
             if(uncompressed < this.session.getCompressionThreshold()) {
                 MinecraftTypes.writeVarInt(out, uncompressed + 1);
-                MinecraftTypes.writeVarInt(out, 0);
+                out.writeByte(0);
                 out.writeBytes(in);
             } else {
-                MinecraftTypes.write21BitVarInt(out, 0); // Dummy packet length
+                out.writeMedium(0); // Dummy packet length
                 MinecraftTypes.writeVarInt(out, uncompressed);
                 ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible(ctx.alloc(), compressor, in);
 
@@ -47,11 +47,8 @@ public class TcpPacketCompressionAndSizeEncoder extends MessageToByteEncoder<Byt
                     throw new DataFormatException("The server sent a very large (over 2MiB compressed) packet.");
                 }
 
-                int writerIndex = out.writerIndex();
                 int packetLength = out.readableBytes() - 3;
-                out.writerIndex(0);
-                MinecraftTypes.write21BitVarInt(out, packetLength); // write actual packet length
-                out.writerIndex(writerIndex);
+                out.setMedium(0, MinecraftTypes.encode21BitVarInt(packetLength));
             }
         } catch (final Throwable e) {
             if (!session.callPacketError(e)) {
