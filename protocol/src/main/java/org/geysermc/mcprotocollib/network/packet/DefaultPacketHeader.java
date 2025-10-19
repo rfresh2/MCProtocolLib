@@ -8,8 +8,7 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
  */
 public class DefaultPacketHeader implements PacketHeader {
 
-    private static final int[] VAR_INT_LENGTHS = new int[65];
-
+    private static final int[] VAR_INT_LENGTHS = new int[33];
     static {
         for (int i = 0; i <= 32; ++i) {
             VAR_INT_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
