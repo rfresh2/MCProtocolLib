@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
 import net.kyori.adventure.key.Key;
+import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.level.waypoint.AzimuthWaypointData;
@@ -78,13 +79,13 @@ public class ClientboundTrackedWaypointPacket implements MinecraftPacket {
 
         MinecraftTypes.writeVarInt(out, this.waypoint.type().ordinal());
 
-        if (this.waypoint.data() instanceof Vec3iWaypointData vec3iData) {
-            MinecraftTypes.writeVec3i(out, vec3iData.vector());
-        } else if (this.waypoint.data() instanceof ChunkWaypointData chunkData) {
-            MinecraftTypes.writeVarInt(out, chunkData.chunkX());
-            MinecraftTypes.writeVarInt(out, chunkData.chunkZ());
-        } else if (this.waypoint.data() instanceof AzimuthWaypointData azimuthData) {
-            out.writeFloat(azimuthData.angle());
+        if (this.waypoint.data() instanceof Vec3iWaypointData(Vector3i vector)) {
+            MinecraftTypes.writeVec3i(out, vector);
+        } else if (this.waypoint.data() instanceof ChunkWaypointData(int chunkX, int chunkZ)) {
+            MinecraftTypes.writeVarInt(out, chunkX);
+            MinecraftTypes.writeVarInt(out, chunkZ);
+        } else if (this.waypoint.data() instanceof AzimuthWaypointData(float angle)) {
+            out.writeFloat(angle);
         }
     }
 }
