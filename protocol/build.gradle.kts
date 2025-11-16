@@ -19,7 +19,7 @@ dependencies {
 
     api("com.github.rfresh2:OpenNBT:3.0.10")
 
-    api("net.raphimc:MinecraftAuth:4.1.2")
+    api("net.raphimc:MinecraftAuth:5.0.0")
 
     api(platform("net.kyori:adventure-bom:4.25.0"))
     api("net.kyori:adventure-text-serializer-gson")
