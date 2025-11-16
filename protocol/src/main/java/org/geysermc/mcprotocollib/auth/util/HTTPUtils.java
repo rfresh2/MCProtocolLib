@@ -52,12 +52,12 @@ public class HTTPUtils {
         final int timeout = 5000;
 
         HttpClient client = new HttpClient()
-                .setConnectTimeout(timeout)
-                .setReadTimeout(timeout * 2)
-                .setCookieManager(null)
-                .setFollowRedirects(false)
-                .setHeader(HttpHeaders.ACCEPT, ContentTypes.APPLICATION_JSON.toString())
-                .setHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-US,en");
+            .setConnectTimeout(timeout)
+            .setReadTimeout(timeout * 2)
+            .setCookieManager(null)
+            .setFollowRedirects(false)
+            .setHeader(HttpHeaders.ACCEPT, ContentTypes.APPLICATION_JSON.toString())
+            .setHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-US,en");
 
         if (proxy != null) {
             client.setProxyHandler(new ProxyHandler(switch (proxy.type()) {
