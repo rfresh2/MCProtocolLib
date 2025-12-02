@@ -4,6 +4,7 @@ import com.velocitypowered.natives.util.Natives;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ConnectTimeoutException;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -285,14 +286,22 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 var decoder = new TcpPacketCompressionDecoder(this, validateDecompression, compressor);
                 this.channel.pipeline().addAfter(TcpPacketSizeEncoder.ID, TcpPacketCompressionAndSizeEncoder.ID, encoder);
                 this.channel.pipeline().addAfter(TcpPacketSizeDecoder.ID, TcpPacketCompressionDecoder.ID, decoder);
-                this.channel.pipeline().remove(TcpPacketSizeEncoder.ID);
+                removeChannelHandler(TcpPacketSizeEncoder.ID);
             } else {
-                var encoder = this.channel.pipeline().remove(TcpPacketCompressionAndSizeEncoder.ID);
-                var decoder = this.channel.pipeline().remove(TcpPacketCompressionDecoder.ID);
+                var encoder = removeChannelHandler(TcpPacketCompressionAndSizeEncoder.ID);
+                var decoder = removeChannelHandler(TcpPacketCompressionDecoder.ID);
                 if (encoder != null && decoder != null) {
                     this.channel.pipeline().addAfter(TcpPacketSizeDecoder.ID, TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(this));
                 }
             }
+        }
+    }
+
+    private ChannelHandler removeChannelHandler(String id) {
+        try {
+            return this.channel.pipeline().remove(id);
+        } catch (final Exception e) {
+            return null;
         }
     }
 
