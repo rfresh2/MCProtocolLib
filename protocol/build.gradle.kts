@@ -21,7 +21,7 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:5.0.0")
 
-    api(platform("net.kyori:adventure-bom:4.25.0"))
+    api(platform("net.kyori:adventure-bom:4.26.1"))
     api("net.kyori:adventure-text-serializer-gson")
     api("net.kyori:adventure-text-serializer-json-legacy-impl")
     api("net.kyori:adventure-text-serializer-legacy")
