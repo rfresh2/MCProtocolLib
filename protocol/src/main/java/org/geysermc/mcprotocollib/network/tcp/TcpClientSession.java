@@ -6,7 +6,6 @@ import io.netty.channel.AddressedEnvelope;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.dns.DefaultDnsQuestion;
 import io.netty.handler.codec.dns.DefaultDnsRawRecord;
 import io.netty.handler.codec.dns.DefaultDnsRecordDecoder;
@@ -66,11 +65,9 @@ public class TcpClientSession extends TcpSession {
     }
 
     public Bootstrap buildBootstrap(final ChannelInitializer<Channel> initializer) {
-        return new Bootstrap()
-            .channel(tcpManager.getChannelClass())
-            .handler(initializer)
-            .group(tcpManager.getWorkerGroup())
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout() * 1000);
+        return getFlag(MinecraftConstants.CLIENT_BOOTSTRAP_INITIALIZER, TcpClientBootstrapInitializer.DEFAULT_FACTORY)
+            .create(this, initializer)
+            .initBootstrap();
     }
 
     @Override
