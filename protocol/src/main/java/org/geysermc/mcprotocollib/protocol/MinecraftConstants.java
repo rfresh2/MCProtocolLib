@@ -6,7 +6,9 @@ import org.geysermc.mcprotocollib.auth.SessionService;
 import org.geysermc.mcprotocollib.network.Flag;
 import org.geysermc.mcprotocollib.network.packet.DefaultPacketHeader;
 import org.geysermc.mcprotocollib.network.packet.PacketHeader;
+import org.geysermc.mcprotocollib.network.tcp.TcpClientBootstrapInitializer;
 import org.geysermc.mcprotocollib.network.tcp.TcpClientChannelInitializer;
+import org.geysermc.mcprotocollib.network.tcp.TcpServerBootstrapInitializer;
 import org.geysermc.mcprotocollib.network.tcp.TcpServerChannelInitializer;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoBuilder;
 import org.geysermc.mcprotocollib.protocol.data.status.handler.ServerInfoHandler;
@@ -110,10 +112,20 @@ public final class MinecraftConstants {
      * Custom TcpServerChannelInitializer impl
      */
     public static final Flag<TcpServerChannelInitializer.Factory> SERVER_CHANNEL_INITIALIZER = new Flag<>("server-channel-initializer", TcpServerChannelInitializer.Factory.class);
+
+    /**
+     * Custom TcpServerBootstrapInitializer impl
+     */
+    public static final Flag<TcpServerBootstrapInitializer.Factory> SERVER_BOOTSTRAP_INITIALIZER = new Flag<>("server-bootstrap-initializer", TcpServerBootstrapInitializer.Factory.class);
     /**
      * Custom TcpClientChannelInitializer impl
      */
     public static final Flag<TcpClientChannelInitializer.Factory> CLIENT_CHANNEL_INITIALIZER = new Flag<>("client-channel-initializer", TcpClientChannelInitializer.Factory.class);
+
+    /**
+     * Custom TcpClientBootstrapInitializer impl
+     */
+    public static final Flag<TcpClientBootstrapInitializer.Factory> CLIENT_BOOTSTRAP_INITIALIZER = new Flag<>("client-bootstrap-initializer", TcpClientBootstrapInitializer.Factory.class);
 
     /**
      * Session flag for determining the packet compression threshold. Server only.

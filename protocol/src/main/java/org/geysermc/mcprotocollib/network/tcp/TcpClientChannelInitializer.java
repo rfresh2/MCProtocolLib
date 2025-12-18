@@ -43,7 +43,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
     }
 
     @Override
-    protected void initChannel(final Channel channel) throws Exception {
+    public void initChannel(final Channel channel) throws Exception {
         MinecraftProtocol protocol = client.getPacketProtocol();
         protocol.newClientSession(client, transferring);
 

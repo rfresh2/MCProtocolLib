@@ -4,6 +4,8 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
+import lombok.Getter;
+import lombok.Setter;
 import org.geysermc.mcprotocollib.network.AbstractServer;
 import org.geysermc.mcprotocollib.protocol.MinecraftConstants;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
@@ -14,6 +16,8 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+@Getter
+@Setter
 public class TcpServer extends AbstractServer {
     private Channel channel;
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpServer.class);
@@ -37,6 +41,17 @@ public class TcpServer extends AbstractServer {
         TcpServerSession createSession(InetSocketAddress address);
     }
 
+    public ChannelInitializer<Channel> buildChannelInitializer() {
+        return getGlobalFlag(MinecraftConstants.SERVER_CHANNEL_INITIALIZER, TcpServerChannelInitializer.DEFAULT_FACTORY)
+            .create(this);
+    }
+
+    public ServerBootstrap initBootstrap(ChannelInitializer<Channel> initializer) {
+        return getGlobalFlag(MinecraftConstants.SERVER_BOOTSTRAP_INITIALIZER, TcpServerBootstrapInitializer.DEFAULT_FACTORY)
+            .create(this, initializer)
+            .initBootstrap();
+    }
+
     public TcpServerSession createSession(InetSocketAddress address) {
         return this.sessionBuilder.createSession(address);
     }
@@ -56,10 +71,7 @@ public class TcpServer extends AbstractServer {
             return;
         }
 
-        var bootstrap = new ServerBootstrap()
-            .channel(tcpManager.getServerSocketChannelClass())
-            .childHandler(buildChannelInitializer())
-            .group(tcpManager.getBossGroup(), tcpManager.getWorkerGroup())
+        var bootstrap = initBootstrap(buildChannelInitializer())
             .localAddress(this.getHost(), this.getPort());
 
         CompletableFuture<Void> handleFuture = new CompletableFuture<>();
@@ -79,11 +91,6 @@ public class TcpServer extends AbstractServer {
         if (wait) {
             handleFuture.join();
         }
-    }
-
-    private ChannelInitializer<Channel> buildChannelInitializer() {
-        return getGlobalFlag(MinecraftConstants.SERVER_CHANNEL_INITIALIZER, TcpServerChannelInitializer.DEFAULT_FACTORY)
-            .create(this);
     }
 
     @Override
