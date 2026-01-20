@@ -9,11 +9,11 @@ import org.geysermc.mcprotocollib.network.event.server.SessionAddedEvent;
 import org.geysermc.mcprotocollib.network.event.server.SessionRemovedEvent;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 public abstract class AbstractServer implements Server {
@@ -21,10 +21,10 @@ public abstract class AbstractServer implements Server {
     private final int port;
     private final Supplier<? extends MinecraftProtocol> protocolSupplier;
 
-    private final List<Session> sessions = new ArrayList<>();
+    private final List<Session> sessions = new CopyOnWriteArrayList<>();
 
     private final Map<String, Object> flags = new HashMap<>();
-    private final List<ServerListener> listeners = new ArrayList<>();
+    private final List<ServerListener> listeners = new CopyOnWriteArrayList<>();
 
     public AbstractServer(String host, int port, Supplier<? extends MinecraftProtocol> protocolSupplier) {
         this.host = host;
@@ -103,7 +103,7 @@ public abstract class AbstractServer implements Server {
 
     @Override
     public List<Session> getSessions() {
-        return new ArrayList<>(this.sessions);
+        return this.sessions;
     }
 
     public void addSession(Session session) {
