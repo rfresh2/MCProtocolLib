@@ -25,17 +25,20 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        try {
-            // skip any runs of 0x00 we might find
-            int packetStart = in.forEachByte(FIND_NON_NUL);
-            if (packetStart == -1) {
-                in.clear();
-                return;
+        int wlen = in.readableBytes();
+        // skip any runs of 0x00 we might find
+        int packetStart = in.forEachByte(FIND_NON_NUL);
+        if (packetStart == -1) {
+            in.clear();
+            if (wlen > 128) {
+                throw new CorruptedFrameException("Invalid packet preamble");
             }
-            in.readerIndex(packetStart);
+            return;
+        }
+        in.readerIndex(packetStart);
 
-            // try to read the length of the packet
-            in.markReaderIndex();
+        int readStartIndex = in.readerIndex();
+        try {
             int length = readRawVarInt21(in);
             if (packetStart == in.readerIndex()) {
                 return;
@@ -47,12 +50,13 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
             // note that zero-length packets are ignored
             if (length > 0) {
                 if (in.readableBytes() < length) {
-                    in.resetReaderIndex();
+                    in.readerIndex(readStartIndex);
                 } else {
                     out.add(in.readRetainedSlice(length));
                 }
             }
-        } catch (final Throwable e) {
+        } catch (Exception e) {
+            in.readerIndex(readStartIndex);
             throw new CorruptedFrameException(e);
         }
     }
