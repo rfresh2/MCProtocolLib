@@ -3,6 +3,7 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -16,6 +17,7 @@ import java.util.OptionalInt;
 @Data
 @With
 @AllArgsConstructor
+@ToString(exclude = "entries")
 public class ClientboundRecipeBookAddPacket implements MinecraftPacket {
     private final List<Entry> entries;
     private final boolean replace;
