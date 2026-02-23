@@ -61,6 +61,18 @@ public class TcpServer extends AbstractServer {
     }
 
     @Override
+    public int getPort() {
+        int configPort = super.getPort();
+        if (configPort <= 0) {
+            if (this.channel != null) {
+                return ((InetSocketAddress) this.channel.localAddress()).getPort();
+            }
+            return 0;
+        }
+        return configPort;
+    }
+
+    @Override
     public boolean isListening() {
         return this.channel != null && this.channel.isOpen();
     }
