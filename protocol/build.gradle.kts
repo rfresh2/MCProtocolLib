@@ -42,7 +42,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.53.1")
+    api("org.checkerframework:checker-qual:3.54.0")
 
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
