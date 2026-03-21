@@ -58,7 +58,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             if (in.readBoolean()) {
                 Component title = MinecraftTypes.readComponent(in);
                 Component description = MinecraftTypes.readComponent(in);
-                ItemStack icon = MinecraftTypes.readOptionalItemStack(in);
+                ItemStack icon = MinecraftTypes.readItemStackTemplate(in);
                 AdvancementType advancementType = AdvancementType.from(MinecraftTypes.readVarInt(in));
 
                 int flags = in.readInt();
@@ -132,7 +132,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 out.writeBoolean(true);
                 MinecraftTypes.writeComponent(out, displayData.getTitle());
                 MinecraftTypes.writeComponent(out, displayData.getDescription());
-                MinecraftTypes.writeOptionalItemStack(out, displayData.getIcon());
+                MinecraftTypes.writeItemStackTemplate(out, displayData.getIcon());
                 MinecraftTypes.writeVarInt(out, displayData.getAdvancementType().ordinal());
                 String backgroundTexture = displayData.getBackgroundTexture();
 

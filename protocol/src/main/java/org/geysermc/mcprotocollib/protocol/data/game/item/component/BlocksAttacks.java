@@ -8,7 +8,17 @@ import java.util.List;
 
 @Builder(toBuilder = true)
 public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale, List<DamageReduction> damageReductions,
-                            ItemDamageFunction itemDamage, @Nullable String bypassedBy, @Nullable Sound blockSound, @Nullable Sound disableSound) {
+                            ItemDamageFunction itemDamage, @Nullable HolderSet bypassedBy, @Nullable Sound blockSound, @Nullable Sound disableSound) {
+    public BlocksAttacks(float blockDelaySeconds, float disableCooldownScale, List<DamageReduction> damageReductions,
+                         ItemDamageFunction itemDamage, @Nullable HolderSet bypassedBy, @Nullable Sound blockSound, @Nullable Sound disableSound) {
+        this.blockDelaySeconds = blockDelaySeconds;
+        this.disableCooldownScale = disableCooldownScale;
+        this.damageReductions = List.copyOf(damageReductions);
+        this.itemDamage = itemDamage;
+        this.bypassedBy = bypassedBy;
+        this.blockSound = blockSound;
+        this.disableSound = disableSound;
+    }
 
     @Builder(toBuilder = true)
     public record DamageReduction(float horizontalBlockingAngle, @Nullable HolderSet type, float base, float factor) {

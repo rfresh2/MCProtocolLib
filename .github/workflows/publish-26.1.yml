@@ -1,10 +1,10 @@
-name: MCProtocolLib 1.21.11 Publish
+name: MCProtocolLib 26.1 Publish
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - "1.21.11"
+      - "26.1"
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          PUBLISH_VERSION: "1.21.11.${{ github.run_number }}"
+          PUBLISH_VERSION: "26.1.0.${{ github.run_number }}"
         run: ./gradlew build publishMavenPublicationToVcRepository
 
       - name: Upload Artifact

@@ -38,6 +38,24 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.MapPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.Palette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPalette;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBeeInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBrainDump;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBreezeInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugEntityBlockIntersection;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGameEventInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGameEventListenerInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGoalInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugHiveInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugNeighborUpdateInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugOrientationInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugPathInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugPoiInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugRaidsInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugStructuresInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugSubscriptions;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugVillageSectionsInfo;
+import org.geysermc.mcprotocollib.protocol.data.game.debug.DedicatedServerTickTimeInfo;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.Effect;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.EntityEvent;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.ModifierOperation;
@@ -105,33 +123,18 @@ import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.SmithingReci
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.StonecutterRecipeDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.AnyFuelSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.CompositeSlotDisplay;
+import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.DyedSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.EmptySlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.ItemSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.ItemStackSlotDisplay;
+import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.OnlyWithComponentSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.RecipeSlotType;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.SlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.SmithingTrimDemoSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.TagSlotDisplay;
+import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.WithAnyPotionSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.WithRemainderSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBeeInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBrainDump;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugBreezeInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugEntityBlockIntersection;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGameEventInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGameEventListenerInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugGoalInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugHiveInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugNeighborUpdateInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugOrientationInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugPathInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugPoiInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugRaidsInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugStructuresInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugSubscriptions;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DebugVillageSectionsInfo;
-import org.geysermc.mcprotocollib.protocol.data.game.debug.DedicatedServerTickTimeInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
@@ -604,6 +607,19 @@ public class MinecraftTypes {
         MinecraftTypes.writeOptionalItemStack(buf, item);
     }
 
+    public static ItemStack readItemStackTemplate(ByteBuf buf) {
+        int id = MinecraftTypes.readVarInt(buf);
+        int count = MinecraftTypes.readVarInt(buf);
+        DataComponents components = MinecraftTypes.readDataComponentPatch(buf, false);
+        return new ItemStack(id, count, components);
+    }
+
+    public static void writeItemStackTemplate(ByteBuf buf, ItemStack template) {
+        MinecraftTypes.writeVarInt(buf, template.getId());
+        MinecraftTypes.writeVarInt(buf, template.getAmount());
+        MinecraftTypes.writeDataComponentPatch(buf, template.getDataComponents(), false);
+    }
+
     @Nullable
     public static DataComponents readDataComponentPatch(ByteBuf buf, boolean untrusted) {
         int nonNullComponents = MinecraftTypes.readVarInt(buf);
@@ -923,42 +939,6 @@ public class MinecraftTypes {
         MinecraftTypes.writeEnum(buf, pose);
     }
 
-    public static Holder<String> readChickenVariant(ByteBuf buf) {
-        if (buf.readBoolean()) {
-            return Holder.ofId(MinecraftTypes.readVarInt(buf));
-        } else {
-            return Holder.ofCustom(MinecraftTypes.readResourceLocationString(buf));
-        }
-    }
-
-    public static void writeChickenVariant(ByteBuf buf, Holder<String> variant) {
-        if (variant.isId()) {
-            buf.writeBoolean(true);
-            MinecraftTypes.writeVarInt(buf, variant.id());
-        } else {
-            buf.writeBoolean(false);
-            MinecraftTypes.writeResourceLocation(buf, variant.custom());
-        }
-    }
-
-    public static Holder<Key> readZombieNautilusVariant(ByteBuf buf) {
-        if (buf.readBoolean()) {
-            return Holder.ofId(MinecraftTypes.readVarInt(buf));
-        } else {
-            return Holder.ofCustom(MinecraftTypes.readResourceLocation(buf));
-        }
-    }
-
-    public static void writeZombieNautilusVariant(ByteBuf buf, Holder<Key> variant) {
-        if (variant.isId()) {
-            buf.writeBoolean(true);
-            MinecraftTypes.writeVarInt(buf, variant.id());
-        } else {
-            buf.writeBoolean(false);
-            MinecraftTypes.writeResourceLocation(buf, variant.custom());
-        }
-    }
-
     public static Holder<PaintingVariant> readPaintingVariant(ByteBuf buf) {
         return MinecraftTypes.readHolder(buf, input -> {
             return new PaintingVariant(MinecraftTypes.readVarInt(input), MinecraftTypes.readVarInt(input), MinecraftTypes.readResourceLocationString(input),
@@ -1166,7 +1146,7 @@ public class MinecraftTypes {
                 yield new SpellParticleData(color, power);
             }
             case ENTITY_EFFECT, TINTED_LEAVES, FLASH -> new ColorParticleData(buf.readInt());
-            case ITEM -> new ItemParticleData(MinecraftTypes.readItemStack(buf));
+            case ITEM -> new ItemParticleData(MinecraftTypes.readItemStackTemplate(buf));
             case SCULK_CHARGE -> new SculkChargeParticleData(buf.readFloat());
             case SHRIEK -> new ShriekParticleData(MinecraftTypes.readVarInt(buf));
             case TRAIL -> new TrailParticleData(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readInt(), MinecraftTypes.readVarInt(buf));
@@ -1547,13 +1527,15 @@ public class MinecraftTypes {
         switch (type) {
             case EMPTY -> display = EmptySlotDisplay.INSTANCE;
             case ANY_FUEL -> display = new AnyFuelSlotDisplay();
+            case WITH_ANY_POTION -> display = new WithAnyPotionSlotDisplay(MinecraftTypes.readSlotDisplay(buf));
+            case ONLY_WITH_COMPONENT -> display = new OnlyWithComponentSlotDisplay(MinecraftTypes.readSlotDisplay(buf),
+                DataComponentTypes.from(MinecraftTypes.readVarInt(buf)));
             case ITEM -> display = new ItemSlotDisplay(MinecraftTypes.readVarInt(buf));
-            case ITEM_STACK -> display = new ItemStackSlotDisplay(MinecraftTypes.readItemStack(buf));
+            case ITEM_STACK -> display = new ItemStackSlotDisplay(MinecraftTypes.readItemStackTemplate(buf));
             case TAG -> display = new TagSlotDisplay(MinecraftTypes.readResourceLocationString(buf));
-            case SMITHING_TRIM -> {
-                display = new SmithingTrimDemoSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf),
-                    MinecraftTypes.readHolder(buf, ItemTypes::readTrimPattern));
-            }
+            case DYED -> display = new DyedSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf));
+            case SMITHING_TRIM -> display = new SmithingTrimDemoSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf),
+                MinecraftTypes.readHolder(buf, ItemTypes::readTrimPattern));
             case WITH_REMAINDER -> display = new WithRemainderSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf));
             case COMPOSITE -> display = new CompositeSlotDisplay(MinecraftTypes.readList(buf, MinecraftTypes::readSlotDisplay));
             default -> throw new IllegalStateException("Unexpected value: " + type);
@@ -1564,9 +1546,22 @@ public class MinecraftTypes {
     public static void writeSlotDisplay(ByteBuf buf, SlotDisplay display) {
         MinecraftTypes.writeVarInt(buf, display.getType().ordinal());
         switch (display.getType()) {
+            case WITH_ANY_POTION -> MinecraftTypes.writeSlotDisplay(buf, ((WithAnyPotionSlotDisplay)display).display());
+            case ONLY_WITH_COMPONENT -> {
+                OnlyWithComponentSlotDisplay onlyWithComponentSlotDisplay = (OnlyWithComponentSlotDisplay) display;
+
+                MinecraftTypes.writeSlotDisplay(buf, onlyWithComponentSlotDisplay.source());
+                MinecraftTypes.writeVarInt(buf, onlyWithComponentSlotDisplay.component().getId());
+            }
             case ITEM -> MinecraftTypes.writeVarInt(buf, ((ItemSlotDisplay)display).item());
-            case ITEM_STACK -> MinecraftTypes.writeItemStack(buf, ((ItemStackSlotDisplay)display).itemStack());
+            case ITEM_STACK -> MinecraftTypes.writeItemStackTemplate(buf, ((ItemStackSlotDisplay)display).itemStack());
             case TAG -> MinecraftTypes.writeResourceLocation(buf, ((TagSlotDisplay)display).tag());
+            case DYED -> {
+                DyedSlotDisplay dyedSlotDisplay = (DyedSlotDisplay) display;
+
+                MinecraftTypes.writeSlotDisplay(buf, dyedSlotDisplay.dye());
+                MinecraftTypes.writeSlotDisplay(buf, dyedSlotDisplay.target());
+            }
             case SMITHING_TRIM -> {
                 SmithingTrimDemoSlotDisplay smithingSlotDisplay = (SmithingTrimDemoSlotDisplay) display;
 
