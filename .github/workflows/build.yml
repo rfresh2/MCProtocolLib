@@ -1,33 +1,41 @@
 name: MCProtocolLib Build
 
 on:
-    pull_request:
-    push:
-        branches:
-            - "*"
+  pull_request:
+  push:
+    branches:
+      - "*"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Check out repository
-              uses: actions/checkout@v6
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
 
-            - name: Setup JDK
-              uses: actions/setup-java@v5
-              with:
-                  java-version: '21'
-                  distribution: 'temurin'
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-            - name: Elevate wrapper permissions
-              run: chmod +x ./gradlew
+      - name: Elevate wrapper permissions
+        run: chmod +x ./gradlew
 
-            - name: Setup Gradle
-              uses: gradle/actions/setup-gradle@v5
-              with:
-                  dependency-graph: generate-and-submit
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          dependency-graph: generate-and-submit
 
-            - name: Build
-              run: ./gradlew build
+      - name: Build
+        run: ./gradlew build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: artifacts
+          path: protocol/build/libs/
+          if-no-files-found: error
+
 
