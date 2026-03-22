@@ -4,7 +4,7 @@ plugins {
     `java-library`
 }
 
-version = "26.1"
+version = "26.1.0"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
 val javaVersion = JavaLanguageVersion.of(21)
 

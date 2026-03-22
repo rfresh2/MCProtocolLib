@@ -71,8 +71,8 @@ public class DataComponentTypes {
     public static final DataComponentType<SwingAnimation> SWING_ANIMATION = register(id -> new DataComponentType<>(id, "swing_animation", ItemTypes::readSwingAnimation, ItemTypes::writeSwingAnimation, ObjectDataComponent::new));
     public static final IntComponentType ADDITIONAL_TRADE_COST = register(id -> new IntComponentType(id, "additional_trade_cost", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register(id -> new DataComponentType<>(id, "stored_enchantments", ItemTypes::readItemEnchantments, ItemTypes::writeItemEnchantments, ObjectDataComponent::new));
-    public static final IntComponentType DYED_COLOR = register(id -> new IntComponentType(id, "dyed_color", ByteBuf::readInt, ByteBuf::writeInt, IntDataComponent::new));
     public static final IntComponentType DYE = register(id -> new IntComponentType(id, "dye", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
+    public static final IntComponentType DYED_COLOR = register(id -> new IntComponentType(id, "dyed_color", ByteBuf::readInt, ByteBuf::writeInt, IntDataComponent::new));
     public static final IntComponentType MAP_COLOR = register(id -> new IntComponentType(id, "map_color", ByteBuf::readInt, ByteBuf::writeInt, IntDataComponent::new));
     public static final IntComponentType MAP_ID = register(id -> new IntComponentType(id, "map_id", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<MNBT> MAP_DECORATIONS = register(id -> new DataComponentType<>(id, "map_decorations", MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectDataComponent::new));
