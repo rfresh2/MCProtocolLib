@@ -1,5 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.PalettedWorldState;
 import org.junit.jupiter.api.Assertions;
@@ -7,13 +8,13 @@ import org.junit.jupiter.api.Test;
 
 public class ChunkSectionTest {
     // warning: modded servers with custom blocks can be even higher which WILL break a global palette
-    private static final int MAX_BLOCK_STATE_ID_1_21 = 26684;
-    PalettedWorldState paletteConfig = new PalettedWorldState(0, MAX_BLOCK_STATE_ID_1_21 + 1, 0, 256, 0);
+    private static final int MAX_BLOCK_STATE_ID_26_1 = 29872;
+    PalettedWorldState paletteConfig = new PalettedWorldState(0, MAX_BLOCK_STATE_ID_26_1 + 1, 0, 256, 0, IntSet.of());
 
     @Test
     public void testLargeBlockStateId() {
         final ChunkSection section = new ChunkSection(paletteConfig);
-        writeNewBlockStates(section, 0, MAX_BLOCK_STATE_ID_1_21);
+        writeNewBlockStates(section, 0, MAX_BLOCK_STATE_ID_26_1);
         // we now have a global palette
 
         try {
@@ -31,7 +32,7 @@ public class ChunkSectionTest {
 
         try {
             for (int i = 0; i < 16; i++) {
-                nextBlockStateId = writeNewBlockStates(section, nextBlockStateId++, MAX_BLOCK_STATE_ID_1_21);
+                nextBlockStateId = writeNewBlockStates(section, nextBlockStateId++, MAX_BLOCK_STATE_ID_26_1);
             }
         } catch (final Throwable e) {
             Assertions.fail(e);

@@ -2,6 +2,7 @@ package org.geysermc.mcprotocollib.protocol.data;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.BitStorage;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.ChunkSection;
@@ -23,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ChunkTest {
     private static final Logger log = LoggerFactory.getLogger(ChunkTest.class);
     private final List<ChunkSection> chunkSectionsToTest = new ArrayList<>();
-    PalettedWorldState paletteConfig = new PalettedWorldState(0, 30000, 0, 256, 0);
+    PalettedWorldState paletteConfig = new PalettedWorldState(0, 30000, 0, 256, 0, IntSet.of());
 
     @BeforeEach
     public void setup() {
@@ -36,7 +37,7 @@ public class ChunkTest {
         SingletonPalette singletonPalette = new SingletonPalette(20);
         DataPalette dataPalette = new DataPalette(singletonPalette, null, PaletteType.BLOCK_STATE, paletteConfig);
         DataPalette biomePalette = new DataPalette(singletonPalette, null, PaletteType.BIOME, paletteConfig);
-        section = new ChunkSection(4096, dataPalette, biomePalette);
+        section = new ChunkSection(4096, 0, dataPalette, biomePalette);
         chunkSectionsToTest.add(section);
     }
 
