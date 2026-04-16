@@ -64,7 +64,7 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         addProxy(pipeline);
 
         pipeline
-            .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder())
+            .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder(client))
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(client))
             .addLast(AutoReadFlowControlHandler.ID, new AutoReadFlowControlHandler())
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(client, true))

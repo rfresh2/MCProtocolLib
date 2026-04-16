@@ -44,7 +44,7 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
         session.refreshWriteTimeoutHandler(channel);
 
         pipeline
-            .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder())
+            .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder(session))
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(session))
             .addLast(AutoReadFlowControlHandler.ID, new AutoReadFlowControlHandler())
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(session, false))
