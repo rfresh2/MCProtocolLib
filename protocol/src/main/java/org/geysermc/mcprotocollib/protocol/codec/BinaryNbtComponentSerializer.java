@@ -17,6 +17,7 @@ import net.kyori.adventure.text.StorageNBTComponent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
@@ -225,7 +226,30 @@ public class BinaryNbtComponentSerializer {
         if (clickEvent != null) {
             writer.writeCompoundTag("clickEvent");
             writer.writeStringTag("action", clickEvent.action().toString());
-            writer.writeStringTag("value", clickEvent.value());
+            switch (clickEvent.payload()) {
+                case ClickEvent.Payload.Text txt -> {
+                    writer.writeStringTag("value", txt.value());
+                }
+                // todo: i think the other click event types don't exist on 1.21.4?
+                case ClickEvent.Payload.Int i -> {
+                    writer.writeIntTag("value", i.integer());
+                }
+                // todo: i think this is wrong
+//                case ClickEvent.Payload.Custom custom -> {
+//                    writer.writeStringTag("id", custom.key().asString());
+//                    if (custom.nbt() != null) {
+//                        writer.writeCompoundTag("nbt");
+//                        // todo: write nbt
+//                        writer.writeEndTag();
+//                    }
+//                }
+//                case ClickEvent.Payload.Dialog dialog -> {
+//                    dialog.dialog()
+//                }
+
+                default -> writer.writeStringTag("value", "suggest_command"); // idk
+            }
+
             writer.writeEndTag();
         }
         var hoverEvent = style.hoverEvent();
@@ -311,7 +335,7 @@ public class BinaryNbtComponentSerializer {
         }
     }
 
-    public static void serialize(MNBTWriter writer, NBTComponent<?, ?> nbtComponent) {
+    public static void serialize(MNBTWriter writer, NBTComponent<?> nbtComponent) {
         writer.writeStringTag("type", "nbt");
         writer.writeStringTag("nbt", nbtComponent.nbtPath());
         writer.writeByteTag("interpret", (byte) (nbtComponent.interpret() ? 1 : 0));
