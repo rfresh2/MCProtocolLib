@@ -21,7 +21,7 @@ dependencies {
 
     api("net.raphimc:MinecraftAuth:5.0.0")
 
-    api(platform("net.kyori:adventure-bom:4.26.1"))
+    api(platform("net.kyori:adventure-bom:5.0.0"))
     api("net.kyori:adventure-text-serializer-gson")
     api("net.kyori:adventure-text-serializer-json-legacy-impl")
     api("net.kyori:adventure-text-serializer-legacy")
@@ -42,7 +42,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.55.1")
+    api("org.checkerframework:checker-qual:4.0.0")
 
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
