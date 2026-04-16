@@ -17,7 +17,7 @@ repositories {
 dependencies {
     api("org.slf4j:slf4j-api:2.0.17")
 
-    api("com.github.rfresh2:OpenNBT:3.0.10")
+    api("com.github.rfresh2:OpenNBT:3.0.12")
 
     api("net.raphimc:MinecraftAuth:5.0.0")
 
@@ -42,7 +42,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:3.54.0")
+    api("org.checkerframework:checker-qual:3.55.1")
 
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

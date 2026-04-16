@@ -4,6 +4,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
+import org.geysermc.mcprotocollib.network.Session;
+import org.geysermc.mcprotocollib.network.packet.Packet;
+import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.geysermc.mcprotocollib.protocol.packet.handshake.serverbound.ClientIntentionPacket;
 
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -15,8 +19,11 @@ import static io.netty.util.ByteProcessor.FIND_NON_NUL;
  */
 public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
     public static final String ID = "size-decoder";
+    private final Session session;
 
-    public TcpPacketSizeDecoder() { }
+    public TcpPacketSizeDecoder(final Session session) {
+        this.session = session;
+    }
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) throws Exception {
@@ -30,7 +37,7 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
         int packetStart = in.forEachByte(FIND_NON_NUL);
         if (packetStart == -1) {
             in.clear();
-            if (wlen > 128) {
+            if (session instanceof TcpServerSession && wlen > 16) {
                 throw new CorruptedFrameException("Invalid packet preamble");
             }
             return;
@@ -44,7 +51,16 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
                 return;
             }
             if (length < 0) {
-                throw new DataFormatException("Packet length too small: " + length);
+                throw new CorruptedFrameException("Packet length too small: " + length);
+            }
+
+            if (length > 0) {
+                if (session instanceof TcpServerSession serverSession && serverSession.getPacketProtocol().getInboundState() == ProtocolState.HANDSHAKE) {
+                    if (validateServerboundHandshakePacket(in, length)) {
+                        in.readerIndex(packetStart);
+                        return;
+                    }
+                }
             }
 
             // note that zero-length packets are ignored
@@ -57,8 +73,46 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
             }
         } catch (Exception e) {
             in.readerIndex(readStartIndex);
+            if (e instanceof CorruptedFrameException) {
+                throw e;
+            }
             throw new CorruptedFrameException(e);
         }
+    }
+
+    private boolean validateServerboundHandshakePacket(ByteBuf in, int length) throws Exception {
+        final int index = in.readerIndex();
+        final int packetId = readRawVarInt21(in);
+        // Index hasn't changed, we've read nothing
+        if (index == in.readerIndex()) {
+            return true;
+        }
+        final int payloadLength = length - session.getPacketProtocol().getPacketHeader().getLengthSize(packetId);
+
+        // We handle every packet in this phase, if you said something we don't know, something is really wrong
+        Class<? extends Packet> packetClass;
+        try {
+            packetClass = session.getPacketProtocol().getInboundPacketRegistry().getServerboundClass(packetId);
+        } catch (IllegalArgumentException e) {
+            throw new CorruptedFrameException("Unknown packet", e);
+        }
+        if (packetClass != ClientIntentionPacket.class) {
+            throw new CorruptedFrameException("Received non-handshake packet type: %s".formatted(packetClass.getSimpleName()));
+        }
+
+        // We 'technically' have the incoming bytes of a payload here, and so, these can actually parse
+        // the packet if needed, so, we'll take advantage of the existing methods
+        int expectedMinLen = 7;
+        int expectedMaxLen = 9 + (300 * 3);
+        if (payloadLength > expectedMaxLen) {
+            throw new CorruptedFrameException("Handshake packet too large: expected %s buf size %s".formatted(expectedMaxLen, payloadLength));
+        }
+        if (payloadLength < expectedMinLen) {
+            throw new CorruptedFrameException("Handshake packet too small: %s buf size %s".formatted(expectedMinLen, payloadLength));
+        }
+
+        in.readerIndex(index);
+        return false;
     }
 
     /**
