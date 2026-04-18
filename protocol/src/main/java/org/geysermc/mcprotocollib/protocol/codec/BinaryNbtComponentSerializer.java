@@ -17,6 +17,7 @@ import net.kyori.adventure.text.StorageNBTComponent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
@@ -30,6 +31,7 @@ import java.io.DataOutputStream;
 import java.util.List;
 import java.util.Map;
 
+import static net.kyori.adventure.text.event.ClickEvent.Action.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BinaryNbtComponentSerializer {
@@ -226,26 +228,50 @@ public class BinaryNbtComponentSerializer {
         if (clickEvent != null) {
             writer.writeCompoundTag("click_event");
             writer.writeStringTag("action", clickEvent.action().toString());
-            String valueId = switch (clickEvent.action()) {
-                case OPEN_URL -> ComponentTreeConstants.CLICK_EVENT_URL;
-                case OPEN_FILE -> ComponentTreeConstants.CLICK_EVENT_PATH;
-                case RUN_COMMAND, SUGGEST_COMMAND -> ComponentTreeConstants.CLICK_EVENT_COMMAND;
-                case CHANGE_PAGE -> ComponentTreeConstants.CLICK_EVENT_PAGE;
-                default -> ComponentTreeConstants.CLICK_EVENT_VALUE;
-            };
-            switch (clickEvent.action()) {
-                case CHANGE_PAGE -> {
-                    writer.writeIntTag(valueId, Integer.parseInt(clickEvent.value()));
+            String valueId;
+            if (clickEvent.action() == OPEN_URL) {
+                valueId = ComponentTreeConstants.CLICK_EVENT_URL;
+            } else if (clickEvent.action() == OPEN_FILE) {
+                valueId = ComponentTreeConstants.CLICK_EVENT_PATH;
+            } else if (clickEvent.action() == RUN_COMMAND || clickEvent.action() == SUGGEST_COMMAND) {
+                valueId = ComponentTreeConstants.CLICK_EVENT_COMMAND;
+            } else if (clickEvent.action() == CHANGE_PAGE) {
+                valueId = ComponentTreeConstants.CLICK_EVENT_PAGE;
+            } else {
+                valueId = ComponentTreeConstants.CLICK_EVENT_VALUE;
                 }
-                case OPEN_URL -> {
-                    if (clickEvent.value().startsWith("http://") || clickEvent.value().startsWith("https://")) {
-                        writer.writeStringTag(valueId, clickEvent.value());
+            if (clickEvent.action() == CHANGE_PAGE) {
+                writer.writeIntTag(valueId, ((ClickEvent.Payload.Int) clickEvent.payload()).integer());
+            } else if (clickEvent.action() == OPEN_URL) {
+                var payload = (ClickEvent.Payload.Text) clickEvent.payload();
+                if (payload.value().startsWith("http://") || payload.value().startsWith("https://")) {
+                    writer.writeStringTag(valueId, payload.value());
                     } else {
-                        writer.writeStringTag(valueId, "https://" + clickEvent.value());
+                    writer.writeStringTag(valueId, "https://" + payload.value());
                     }
+            } else {
+                switch (clickEvent.payload()) {
+                    case ClickEvent.Payload.Text txt -> {
+                        writer.writeStringTag(valueId, txt.value());
                 }
-                default -> {
-                    writer.writeStringTag(valueId, clickEvent.value());
+                    // todo: i think the other click event types don't exist on 1.21.4?
+                    case ClickEvent.Payload.Int i -> {
+                        writer.writeIntTag(valueId, i.integer());
+                    }
+                    // todo: i think this is wrong
+//                case ClickEvent.Payload.Custom custom -> {
+//                    writer.writeStringTag("id", custom.key().asString());
+//                    if (custom.nbt() != null) {
+//                        writer.writeCompoundTag("nbt");
+//                        // todo: write nbt
+//                        writer.writeEndTag();
+//                    }
+//                }
+//                case ClickEvent.Payload.Dialog dialog -> {
+//                    dialog.dialog()
+//                }
+
+                    default -> writer.writeStringTag("value", "suggest_command"); // idk
                 }
             }
             writer.writeEndTag();
@@ -333,7 +359,7 @@ public class BinaryNbtComponentSerializer {
         }
     }
 
-    public static void serialize(MNBTWriter writer, NBTComponent<?, ?> nbtComponent) {
+    public static void serialize(MNBTWriter writer, NBTComponent<?> nbtComponent) {
         writer.writeStringTag("type", "nbt");
         writer.writeStringTag("nbt", nbtComponent.nbtPath());
         writer.writeByteTag("interpret", (byte) (nbtComponent.interpret() ? 1 : 0));
