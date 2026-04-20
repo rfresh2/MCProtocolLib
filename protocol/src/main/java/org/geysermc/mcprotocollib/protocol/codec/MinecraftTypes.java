@@ -1156,51 +1156,53 @@ public class MinecraftTypes {
     }
 
     public static void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) {
-        switch (type) {
-            case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR, BLOCK_CRUMBLE -> {
-                BlockParticleData blockData = (BlockParticleData) data;
+        if (data == null) {
+            return;
+        }
+        switch (data) {
+            case BlockParticleData blockData -> {
                 MinecraftTypes.writeVarInt(buf, blockData.getBlockState());
             }
-            case DUST -> {
-                DustParticleData dustData = (DustParticleData) data;
-                buf.writeInt(dustData.getColor());
-                buf.writeFloat(dustData.getScale());
-            }
-            case DUST_COLOR_TRANSITION -> {
-                DustColorTransitionParticleData dustData = (DustColorTransitionParticleData) data;
+            case DustColorTransitionParticleData dustData -> {
                 buf.writeInt(dustData.getColor());
                 buf.writeInt(dustData.getNewColor());
                 buf.writeFloat(dustData.getScale());
             }
-            case ENTITY_EFFECT -> {
-                ColorParticleData entityEffectData = (ColorParticleData) data;
-                buf.writeInt(entityEffectData.getColor());
+            case DustParticleData dustData -> {
+                buf.writeInt(dustData.getColor());
+                buf.writeFloat(dustData.getScale());
             }
-            case ITEM -> {
-                ItemParticleData itemData = (ItemParticleData) data;
+            case ColorParticleData colorData -> {
+                buf.writeInt(colorData.getColor());
+            }
+            case ItemParticleData itemData -> {
                 MinecraftTypes.writeItemStack(buf, itemData.getItemStack());
             }
-            case SCULK_CHARGE -> {
-                SculkChargeParticleData sculkData = (SculkChargeParticleData) data;
+            case SculkChargeParticleData sculkData -> {
                 buf.writeFloat(sculkData.getRoll());
             }
-            case SHRIEK -> {
-                ShriekParticleData shriekData = (ShriekParticleData) data;
+            case ShriekParticleData shriekData -> {
                 MinecraftTypes.writeVarInt(buf, shriekData.getDelay());
             }
-            case TRAIL -> {
-                TrailParticleData trailData = (TrailParticleData) data;
+            case TrailParticleData trailData -> {
                 buf.writeDouble(trailData.targetX());
                 buf.writeDouble(trailData.targetY());
                 buf.writeDouble(trailData.targetZ());
                 buf.writeInt(trailData.color());
                 MinecraftTypes.writeVarInt(buf, trailData.duration());
             }
-            case VIBRATION -> {
-                VibrationParticleData vibrationData = (VibrationParticleData) data;
+            case VibrationParticleData vibrationData -> {
                 MinecraftTypes.writePositionSource(buf, vibrationData.getPositionSource());
                 MinecraftTypes.writeVarInt(buf, vibrationData.getArrivalTicks());
             }
+            case PowerParticleData powerData -> {
+                buf.writeFloat(powerData.getPower());
+            }
+            case SpellParticleData spellData -> {
+                buf.writeInt(spellData.getColor());
+                buf.writeFloat(spellData.getPower());
+            }
+            default -> {}
         }
     }
 
