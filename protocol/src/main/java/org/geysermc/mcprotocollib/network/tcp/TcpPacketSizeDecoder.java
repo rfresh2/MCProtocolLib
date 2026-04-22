@@ -103,7 +103,7 @@ public class TcpPacketSizeDecoder extends ByteToMessageDecoder {
         // We 'technically' have the incoming bytes of a payload here, and so, these can actually parse
         // the packet if needed, so, we'll take advantage of the existing methods
         int expectedMinLen = 7;
-        int expectedMaxLen = 9 + (300 * 3);
+        int expectedMaxLen = 2000;
         if (payloadLength > expectedMaxLen) {
             throw new CorruptedFrameException("Handshake packet too large: expected %s buf size %s".formatted(expectedMaxLen, payloadLength));
         }
