@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "9.4.0"
+    id("io.freefair.lombok") version "9.5.0"
     `maven-publish`
     `java-library`
 }
@@ -42,7 +42,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:4.0.0")
+    api("org.checkerframework:checker-qual:4.1.0")
 
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
