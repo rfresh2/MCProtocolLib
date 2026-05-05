@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "9.4.0"
+    id("io.freefair.lombok") version "9.5.0"
     `maven-publish`
     `java-library`
 }
@@ -38,11 +38,11 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.12.Final")
+    api("io.netty:netty-all:4.2.13.Final")
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:4.0.0")
+    api("org.checkerframework:checker-qual:4.1.0")
 
     testImplementation(platform("org.junit:junit-bom:6.0.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
