@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.17")
+    api("org.slf4j:slf4j-api:2.0.18")
 
     api("com.github.rfresh2:OpenNBT:3.0.13")
 
