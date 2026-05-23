@@ -32,6 +32,7 @@ public interface AttributeType {
 
     @Getter
     enum Builtin implements AttributeType {
+        AIR_DRAG_MODIFIER("minecraft:air_drag_modifier", 1, 0, 2048),
         ARMOR("minecraft:armor", 0, 0, 30),
         ARMOR_TOUGHNESS("minecraft:armor_toughness", 0, 0, 20),
         ATTACK_DAMAGE("minecraft:attack_damage", 2, 0, 2048),
@@ -39,6 +40,7 @@ public interface AttributeType {
         ATTACK_SPEED("minecraft:attack_speed", 4, 0, 1024),
         BLOCK_BREAK_SPEED("minecraft:block_break_speed", 1, 0, 1024),
         BLOCK_INTERACTION_RANGE("minecraft:block_interaction_range", 4.5, 0, 64),
+        BOUNCINESS("minecraft:bounciness", 0, 0, 1),
         BURNING_TIME("minecraft:burning_time", 1, 0, 1024),
         CAMERA_DISTANCE("minecraft:camera_distance", 4, 0, 32),
         EXPLOSION_KNOCKBACK_RESISTANCE("minecraft:explosion_knockback_resistance", 0, 0, 1),
@@ -46,9 +48,10 @@ public interface AttributeType {
         FALL_DAMAGE_MULTIPLIER("minecraft:fall_damage_multiplier", 1, 0, 100),
         FLYING_SPEED("minecraft:flying_speed", 0.4, 0, 1024),
         FOLLOW_RANGE("minecraft:follow_range", 32, 0, 2048),
+        FRICTION_MODIFIER("minecraft:friction_modifier", 1, 0, 2048),
         GRAVITY("minecraft:gravity", 0.08, -1, 1),
         JUMP_STRENGTH("minecraft:jump_strength", 0.42, 0, 32),
-        KNOCKBACK_RESISTANCE("minecraft:knockback_resistance", 0, 0, 1),
+        KNOCKBACK_RESISTANCE("minecraft:knockback_resistance", 0, -2, 1),
         LUCK("minecraft:luck", 0, -1024, 1024),
         MAX_ABSORPTION("minecraft:max_absorption", 0, 0, 2048),
         MAX_HEALTH("minecraft:max_health", 20, 1, 1024),
