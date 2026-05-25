@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.17")
+    api("org.slf4j:slf4j-api:2.0.18")
 
     api("com.github.rfresh2:OpenNBT:3.0.13")
 
@@ -38,13 +38,13 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
 
-    api("io.netty:netty-all:4.2.13.Final")
+    api("io.netty:netty-all:4.2.14.Final")
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:4.1.0")
 
-    testImplementation(platform("org.junit:junit-bom:6.0.3"))
+    testImplementation(platform("org.junit:junit-bom:6.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
