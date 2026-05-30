@@ -28,7 +28,6 @@ public enum BlockEntityType {
     END_GATEWAY,
     COMMAND_BLOCK,
     SHULKER_BOX,
-    BED,
     CONDUIT,
     BARREL,
     SMOKER,

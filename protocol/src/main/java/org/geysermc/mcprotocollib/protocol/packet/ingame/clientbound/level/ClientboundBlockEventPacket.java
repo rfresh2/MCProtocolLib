@@ -50,7 +50,7 @@ public class ClientboundBlockEventPacket implements MinecraftPacket {
     private static final int BELL = 848;
     private static final int COPPER_CHEST_LOWER = 1108;
     private static final int COPPER_CHEST_HIGHER = 1115;
-    private static final int DECORATED_POT = 1182;
+    private static final int DECORATED_POT = 1183;
     private static final Logger log = LoggerFactory.getLogger(ClientboundBlockEventPacket.class);
 
     private final @NonNull Vector3i position;
