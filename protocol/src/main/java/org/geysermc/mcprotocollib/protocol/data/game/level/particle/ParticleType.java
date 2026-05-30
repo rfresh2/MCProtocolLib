@@ -5,6 +5,9 @@ public enum ParticleType {
     BLOCK,
     BLOCK_MARKER,
     BUBBLE,
+    SULFUR_BUBBLES,
+    NOXIOUS_GAS,
+    NOXIOUS_GAS_CLOUD,
     CLOUD,
     COPPER_FIRE_FLAME,
     CRIT,
@@ -117,7 +120,8 @@ public enum ParticleType {
     RAID_OMEN,
     TRIAL_OMEN,
     BLOCK_CRUMBLE,
-    FIREFLY;
+    FIREFLY,
+    SULFUR_CUBE_GOO;
 
     private static final ParticleType[] VALUES = values();
 
