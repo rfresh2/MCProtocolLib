@@ -77,6 +77,8 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticl
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustColorTransitionParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.GeyserBaseParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.GeyserParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ItemParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData;
@@ -1015,6 +1017,8 @@ public class MinecraftTypes {
     public static ParticleData readParticleData(ByteBuf buf, ParticleType type) {
         return switch (type) {
             case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR, BLOCK_CRUMBLE -> new BlockParticleData(MinecraftTypes.readVarInt(buf));
+            case GEYSER, GEYSER_PLUME -> new GeyserParticleData(buf.readInt());
+            case GEYSER_BASE, GEYSER_POOF -> new GeyserBaseParticleData(buf.readInt(), buf.readFloat());
             case DRAGON_BREATH -> new PowerParticleData(buf.readFloat());
             case DUST -> {
                 int color = buf.readInt();

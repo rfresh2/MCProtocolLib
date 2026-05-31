@@ -59,7 +59,7 @@ public interface AttributeType {
         MINING_EFFICIENCY("minecraft:mining_efficiency", 0, 0, 1024),
         MOVEMENT_EFFICIENCY("minecraft:movement_efficiency", 0, 0, 1),
         MOVEMENT_SPEED("minecraft:movement_speed", 0.7, 0, 1024),
-        NAMEPLATE_DISTANCE("minecraft:nameplate_distance", 64, 0, 512),
+        NAME_TAG_DISTANCE("minecraft:name_tag_distance", 64, 0, 512),
         OXYGEN_BONUS("minecraft:oxygen_bonus", 0, 0, 1024),
         SAFE_FALL_DISTANCE("minecraft:safe_fall_distance", 3, -1024, 1024),
         SCALE("minecraft:scale", 1, 0.0625, 16),
