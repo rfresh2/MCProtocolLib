@@ -307,7 +307,7 @@ public class ServerListener extends SessionAdapter {
                     session.setCompression(new CompressionConfig(threshold, new ZlibCompression(), true)));
         }
 
-        session.send(new ClientboundLoginFinishedPacket(profile));
+        session.send(new ClientboundLoginFinishedPacket(profile, UUID.randomUUID()));
     }
 
     private void keepAlive(Session session) {
