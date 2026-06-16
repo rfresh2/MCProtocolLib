@@ -53,7 +53,7 @@ public class ClientboundSetPlayerTeamPacket implements MinecraftPacket {
 
     public ClientboundSetPlayerTeamPacket(@NonNull String teamName, @NonNull Component displayName, @NonNull Component playerPrefix, @NonNull Component playerSuffix,
                                           boolean friendlyFire, boolean seeFriendlyInvisibles, @NonNull NameTagVisibility nameTagVisibility,
-                                          @NonNull CollisionRule collisionRule, @NonNull TeamColor color) {
+                                          @NonNull CollisionRule collisionRule, @Nullable TeamColor color) {
         this.teamName = teamName;
         this.action = TeamAction.UPDATE;
 
@@ -91,7 +91,7 @@ public class ClientboundSetPlayerTeamPacket implements MinecraftPacket {
 
     public ClientboundSetPlayerTeamPacket(@NonNull String teamName, @NonNull Component displayName, @NonNull Component playerPrefix, @NonNull Component playerSuffix,
                                           boolean friendlyFire, boolean seeFriendlyInvisibles, @NonNull NameTagVisibility nameTagVisibility,
-                                          @NonNull CollisionRule collisionRule, @NonNull TeamColor color, @NonNull String[] players) {
+                                          @NonNull CollisionRule collisionRule, @Nullable TeamColor color, @NonNull String[] players) {
         this.teamName = teamName;
         this.action = TeamAction.CREATE;
 
