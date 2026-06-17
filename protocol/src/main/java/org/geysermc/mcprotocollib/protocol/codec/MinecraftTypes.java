@@ -239,6 +239,23 @@ public class MinecraftTypes {
         throw new IllegalArgumentException("VarInt too long (length must be <= 5)");
     }
 
+    public static OptionalInt readOptionalVarInt(ByteBuf buf) {
+        var varInt = MinecraftTypes.readVarInt(buf);
+        if (varInt == 0) {
+            return OptionalInt.empty();
+        } else {
+            return OptionalInt.of(varInt-1);
+        }
+    }
+
+    public static void writeOptionalVarInt(ByteBuf buf, OptionalInt value) {
+        if (value.isPresent()) {
+            MinecraftTypes.writeVarInt(buf, value.getAsInt()+1);
+        } else {
+            MinecraftTypes.writeVarInt(buf, 0);
+        }
+    }
+
     public static void writeVarLong(ByteBuf buf, long value) {
         while ((value & -128L) != 0) {
             buf.writeByte((int) (value & 127L) | 128);

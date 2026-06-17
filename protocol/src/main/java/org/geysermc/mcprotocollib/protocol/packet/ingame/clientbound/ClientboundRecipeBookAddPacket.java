@@ -12,7 +12,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.RecipeDispla
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.RecipeDisplayEntry;
 
 import java.util.List;
-import java.util.OptionalInt;
 
 @Data
 @With
@@ -27,8 +26,7 @@ public class ClientboundRecipeBookAddPacket implements MinecraftPacket {
             int id = MinecraftTypes.readVarInt(buf);
             RecipeDisplay display = MinecraftTypes.readRecipeDisplay(buf);
 
-            int optionalInt = MinecraftTypes.readVarInt(buf);
-            OptionalInt group = optionalInt == 0 ? OptionalInt.empty() : OptionalInt.of(optionalInt - 1);
+            var group = MinecraftTypes.readOptionalVarInt(buf);
             int category = MinecraftTypes.readVarInt(buf);
             List<HolderSet> craftingRequirements = MinecraftTypes.readNullable(in, buf1 -> MinecraftTypes.readList(buf1, MinecraftTypes::readHolderSet));
 
@@ -45,7 +43,7 @@ public class ClientboundRecipeBookAddPacket implements MinecraftPacket {
         MinecraftTypes.writeList(out, this.entries, (buf, entry) -> {
             MinecraftTypes.writeVarInt(buf, entry.contents().id());
             MinecraftTypes.writeRecipeDisplay(buf, entry.contents().display());
-            MinecraftTypes.writeVarInt(buf, entry.contents().group().isEmpty() ? 0 : entry.contents().group().getAsInt());
+            MinecraftTypes.writeOptionalVarInt(buf, entry.contents().group());
             MinecraftTypes.writeVarInt(buf, entry.contents().category());
             MinecraftTypes.writeNullable(buf, entry.contents().craftingRequirements(), (buf1, reqs) -> MinecraftTypes.writeList(buf1, reqs, MinecraftTypes::writeHolderSet));
 
