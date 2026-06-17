@@ -19,6 +19,7 @@ import org.cloudburstmc.math.vector.Vector3d;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.mcprotocollib.auth.GameProfile;
+import org.geysermc.mcprotocollib.auth.texture.TextureModel;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
 import org.geysermc.mcprotocollib.protocol.data.game.Identifier;
@@ -95,6 +96,8 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticl
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ColorParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustColorTransitionParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.GeyserBaseParticleData;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.GeyserParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ItemParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleData;
@@ -1128,6 +1131,8 @@ public class MinecraftTypes {
     public static ParticleData readParticleData(ByteBuf buf, ParticleType type) {
         return switch (type) {
             case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR, BLOCK_CRUMBLE -> new BlockParticleData(MinecraftTypes.readVarInt(buf));
+            case GEYSER, GEYSER_PLUME -> new GeyserParticleData(buf.readInt());
+            case GEYSER_BASE, GEYSER_POOF -> new GeyserBaseParticleData(buf.readInt(), buf.readFloat());
             case DRAGON_BREATH -> new PowerParticleData(buf.readFloat());
             case DUST -> {
                 int color = buf.readInt();
@@ -1989,8 +1994,8 @@ public class MinecraftTypes {
         Key body = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
         Key cape = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
         Key elytra = MinecraftTypes.readNullable(buf, MinecraftTypes::readResourceLocation);
-        GameProfile.TextureModel model = MinecraftTypes.readNullable(buf, in -> {
-            return in.readBoolean() ? GameProfile.TextureModel.SLIM : GameProfile.TextureModel.WIDE;
+        TextureModel model = MinecraftTypes.readNullable(buf, in -> {
+            return in.readBoolean() ? TextureModel.SLIM : TextureModel.WIDE;
         });
         return new ResolvableProfile(profile, body, cape, elytra, model, dynamic);
     }
@@ -2006,7 +2011,7 @@ public class MinecraftTypes {
         MinecraftTypes.writeNullable(buf, profile.getBody(), MinecraftTypes::writeResourceLocation);
         MinecraftTypes.writeNullable(buf, profile.getCape(), MinecraftTypes::writeResourceLocation);
         MinecraftTypes.writeNullable(buf, profile.getElytra(), MinecraftTypes::writeResourceLocation);
-        MinecraftTypes.writeNullable(buf, profile.getModel(), (out, model) -> out.writeBoolean(model == GameProfile.TextureModel.SLIM));
+        MinecraftTypes.writeNullable(buf, profile.getModel(), (out, model) -> out.writeBoolean(model == TextureModel.SLIM));
     }
 
     public static GameProfile.Property readProperty(ByteBuf buf) {

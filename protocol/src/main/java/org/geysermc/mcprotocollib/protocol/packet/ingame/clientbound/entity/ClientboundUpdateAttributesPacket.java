@@ -24,6 +24,9 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
     public ClientboundUpdateAttributesPacket(ByteBuf in) {
         this.entityId = MinecraftTypes.readVarInt(in);
         int length = MinecraftTypes.readVarInt(in);
+        if (length > 128) {
+            throw new IllegalArgumentException(length + " attributes exceeds max size of: " + 128);
+        }
         this.attributes = new ArrayList<>(length);
         for (int index = 0; index < length; index++) {
             int attributeId = MinecraftTypes.readVarInt(in);
@@ -42,6 +45,9 @@ public class ClientboundUpdateAttributesPacket implements MinecraftPacket {
     @Override
     public void serialize(ByteBuf out) {
         MinecraftTypes.writeVarInt(out, this.entityId);
+        if (this.attributes.size() > 128) {
+            throw new IllegalArgumentException(this.attributes.size() + " attributes exceeds max size of: " + 128);
+        }
         MinecraftTypes.writeVarInt(out, this.attributes.size());
         for (int i = 0; i < this.attributes.size(); i++) {
             Attribute attribute = this.attributes.get(i);
