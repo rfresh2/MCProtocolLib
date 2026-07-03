@@ -57,10 +57,6 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
         }
 
         ChannelPipeline pipeline = channel.pipeline();
-
-        client.refreshReadTimeoutHandler(channel);
-        client.refreshWriteTimeoutHandler(channel);
-
         addProxy(pipeline);
 
         pipeline
@@ -70,6 +66,9 @@ public class TcpClientChannelInitializer extends ChannelInitializer<Channel> {
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(client, true))
             .addLast(FlushHandler.ID, new FlushHandler())
             .addLast(TcpSession.ID, client);
+
+        client.refreshReadTimeoutHandler(channel);
+        client.refreshWriteTimeoutHandler(channel);
 
         addHAProxySupport(pipeline);
     }
