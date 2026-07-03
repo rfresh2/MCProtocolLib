@@ -40,9 +40,6 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
 
         ChannelPipeline pipeline = channel.pipeline();
 
-        session.refreshReadTimeoutHandler(channel);
-        session.refreshWriteTimeoutHandler(channel);
-
         pipeline
             .addLast(TcpPacketSizeDecoder.ID, new TcpPacketSizeDecoder(session))
             .addLast(TcpPacketSizeEncoder.ID, new TcpPacketSizeEncoder(session))
@@ -50,5 +47,8 @@ public class TcpServerChannelInitializer extends ChannelInitializer<Channel> {
             .addLast(TcpPacketCodec.ID, new TcpPacketCodec(session, false))
             .addLast(FlushHandler.ID, new FlushHandler())
             .addLast(TcpSession.ID, session);
+
+        session.refreshReadTimeoutHandler(channel);
+        session.refreshWriteTimeoutHandler(channel);
     }
 }

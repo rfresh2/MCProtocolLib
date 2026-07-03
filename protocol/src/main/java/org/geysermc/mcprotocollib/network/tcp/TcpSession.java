@@ -593,7 +593,7 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
                 }
             } else {
                 if (channel.pipeline().get(READ_TIMEOUT_HANDLER_ID) == null) {
-                    channel.pipeline().addFirst(READ_TIMEOUT_HANDLER_ID, new ReadTimeoutHandler(this.readTimeout));
+                    channel.pipeline().addAfter(TcpPacketCodec.ID, READ_TIMEOUT_HANDLER_ID, new ReadTimeoutHandler(this.readTimeout));
                 } else {
                     channel.pipeline().replace(READ_TIMEOUT_HANDLER_ID, READ_TIMEOUT_HANDLER_ID, new ReadTimeoutHandler(this.readTimeout));
                 }
@@ -604,7 +604,6 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
     protected void refreshWriteTimeoutHandler() {
         this.refreshWriteTimeoutHandler(this.channel);
     }
-
 
     protected void refreshWriteTimeoutHandler(Channel channel) {
         if (channel != null) {
