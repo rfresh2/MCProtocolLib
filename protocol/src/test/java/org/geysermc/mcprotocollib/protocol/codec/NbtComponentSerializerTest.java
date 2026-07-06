@@ -2,10 +2,15 @@ package org.geysermc.mcprotocollib.protocol.codec;
 
 import com.viaversion.nbt.io.MNBTIO;
 import lombok.SneakyThrows;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.BlockNBTComponent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.object.ObjectContents;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 public class NbtComponentSerializerTest {
     //    @Test
@@ -54,6 +59,25 @@ public class NbtComponentSerializerTest {
         var component = DefaultComponentSerializer.get().deserialize(json);
         componentEqualityTest(component);
         binaryTest(component);
+    }
+
+//    @Test
+    public void objectComponentTest() {
+        var component = Component.text("test").append(Component.object(b -> b.contents(ObjectContents.playerHead(UUID.randomUUID())).fallback(Component.text("fallbackText").append(Component.text(2)))));
+        var json = DefaultComponentSerializer.get().serialize(component);
+//        componentEqualityTest(component);
+        var mnbt = BinaryNbtComponentSerializer.serializeToMNBT(component);
+        var tag = MNBTIO.read(mnbt);
+    }
+
+    @Test
+    public void nbtComponentTest() {
+        var component = Component.blockNBT("the_nbt_path", true, Component.text("-"), BlockNBTComponent.Pos.fromString("100 200 300"))
+            .append(Component.entityNBT("entity_nbt_path", "minecraft:player"))
+            .append(Component.storageNBT("storage_nbt_path", true, Key.key("minecraft:chest")));
+        var json = DefaultComponentSerializer.get().serialize(component);
+        var mnbt = BinaryNbtComponentSerializer.serializeToMNBT(component);
+        var tag = MNBTIO.read(mnbt);
     }
 
 //    @Test
