@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.EntityNBTComponent;
 import net.kyori.adventure.text.KeybindComponent;
 import net.kyori.adventure.text.NBTComponent;
+import net.kyori.adventure.text.ObjectComponent;
 import net.kyori.adventure.text.ScoreComponent;
 import net.kyori.adventure.text.SelectorComponent;
 import net.kyori.adventure.text.StorageNBTComponent;
@@ -23,6 +24,9 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.commons.ComponentTreeConstants;
+import net.kyori.adventure.text.object.PlayerHeadObjectContents;
+import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.commons.ComponentTreeConstants;
 import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
 import org.slf4j.Logger;
@@ -67,6 +71,8 @@ public class BinaryNbtComponentSerializer {
             case KeybindComponent keybindComponent -> serializeKeybindComponent(writer, keybindComponent);
             case ScoreComponent scoreComponent -> serializeScoreComponent(writer, scoreComponent);
             case SelectorComponent selectorComponent -> serializeSelectorComponent(writer, selectorComponent);
+            case ObjectComponent objectComponent -> serializeObjectComponent(writer, objectComponent);
+            case NBTComponent nbtComponent -> serializeNbtComponent(writer, nbtComponent);
             case null -> {
                 LOGGER.error("BinaryNbtComponentSerializer: Null component type");
                 return;
@@ -191,6 +197,87 @@ public class BinaryNbtComponentSerializer {
     public static void serializeKeybindComponent(MNBTWriter writer, KeybindComponent component) {
         writer.writeStringTag("type", "keybind");
         writer.writeStringTag("keybind", component.keybind());
+    }
+
+    public static void serializeObjectComponent(final MNBTWriter writer, final ObjectComponent objectComponent) {
+        if (objectComponent.fallback() != null) {
+            writer.writeCompoundTag(ComponentTreeConstants.OBJECT_FALLBACK);
+            serializeComponent(writer, objectComponent.fallback());
+            writer.writeEndTag();
+        }
+        var contents = objectComponent.contents();
+        switch (contents) {
+            case SpriteObjectContents spriteContents -> {
+                if (!spriteContents.atlas().equals(SpriteObjectContents.DEFAULT_ATLAS)) {
+                    writer.writeStringTag(ComponentTreeConstants.OBJECT_ATLAS, spriteContents.atlas().asString());
+                }
+                writer.writeStringTag(ComponentTreeConstants.OBJECT_SPRITE, spriteContents.sprite().asString());
+            }
+            case PlayerHeadObjectContents playerHeadContents -> {
+                if (playerHeadContents.hat() != PlayerHeadObjectContents.DEFAULT_HAT) {
+                    writer.writeByteTag(ComponentTreeConstants.OBJECT_HAT, playerHeadContents.hat() ? (byte) 1 : (byte) 0);
+                }
+                if (playerHeadContents.name() != null && playerHeadContents.id() == null && playerHeadContents.profileProperties().isEmpty() && playerHeadContents.texture() == null) {
+                    writer.writeStringTag(ComponentTreeConstants.OBJECT_PLAYER, playerHeadContents.name());
+                } else {
+                    writer.writeCompoundTag(ComponentTreeConstants.OBJECT_PLAYER);
+                    if (playerHeadContents.name() != null) {
+                        writer.writeStringTag(ComponentTreeConstants.OBJECT_PLAYER_NAME, playerHeadContents.name());
+                    }
+                    if (playerHeadContents.id() != null) {
+                        var uuid = playerHeadContents.id();
+                        writer.writeIntArrayTag(ComponentTreeConstants.OBJECT_PLAYER_ID, new int[]{
+                            (int) (uuid.getMostSignificantBits() >> 32),
+                            (int) uuid.getMostSignificantBits(),
+                            (int) (uuid.getLeastSignificantBits() >> 32),
+                            (int) uuid.getLeastSignificantBits()
+                        });
+                    }
+                    if (!playerHeadContents.profileProperties().isEmpty()) {
+                        writer.writeListTag(ComponentTreeConstants.OBJECT_PLAYER_PROPERTIES, 10, playerHeadContents.profileProperties().size());
+                        for (int i = 0; i < playerHeadContents.profileProperties().size(); i++) {
+                            var property = playerHeadContents.profileProperties().get(i);
+                            writer.writeStringTag(ComponentTreeConstants.PROFILE_PROPERTY_NAME, property.name());
+                            writer.writeStringTag(ComponentTreeConstants.PROFILE_PROPERTY_VALUE, property.value());
+                            if (property.signature() != null) {
+                                writer.writeStringTag(ComponentTreeConstants.PROFILE_PROPERTY_SIGNATURE, property.signature());
+                            }
+                            writer.writeEndTag();
+                        }
+                    }
+                    if (playerHeadContents.texture() != null) {
+                        writer.writeStringTag(ComponentTreeConstants.OBJECT_PLAYER_TEXTURE, playerHeadContents.texture().asString());
+                    }
+                    writer.writeEndTag();
+                }
+            }
+            default -> {
+                LOGGER.error("BinaryNbtComponentSerializer: Unknown object component contents type: {}", contents.getClass().getName());
+            }
+        }
+    }
+
+    private static void serializeNbtComponent(final MNBTWriter writer, final NBTComponent component) {
+        writer.writeStringTag(ComponentTreeConstants.NBT, component.nbtPath());
+        if (component.interpret()) {
+            writer.writeByteTag(ComponentTreeConstants.NBT_INTERPRET, (byte) 1);
+        }
+        if (component.plain()) {
+            writer.writeByteTag(ComponentTreeConstants.NBT_PLAIN, (byte) 1);
+        }
+        if (component.separator() != null) {
+            writer.writeCompoundTag(ComponentTreeConstants.SEPARATOR);
+            serializeComponent(writer, component.separator());
+            writer.writeEndTag();
+        }
+        switch (component) {
+            case BlockNBTComponent blockNBTComponent -> writer.writeStringTag(ComponentTreeConstants.NBT_BLOCK, blockNBTComponent.pos().asString());
+            case EntityNBTComponent entityNBTComponent -> writer.writeStringTag(ComponentTreeConstants.NBT_ENTITY, entityNBTComponent.selector());
+            case StorageNBTComponent storageNBTComponent -> writer.writeStringTag(ComponentTreeConstants.NBT_STORAGE, storageNBTComponent.storage().asString());
+            default -> {
+                LOGGER.error("BinaryNbtComponentSerializer: Unknown NBT component type: {}", component.getClass().getName());
+            }
+        }
     }
 
     public static void serializeStyle(MNBTWriter writer, Style style) {
