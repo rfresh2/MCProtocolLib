@@ -39,7 +39,8 @@ public class NbtComponentSerializer {
         "italic",
         "underlined",
         "strikethrough",
-        "obfuscated"
+        "obfuscated",
+        "hat"
     ));
     // Order is important
     private static final List<Pair<String, String>> COMPONENT_TYPES = Arrays.asList(
