@@ -6,7 +6,7 @@ plugins {
 
 version = "26.2.0"
 description = "MCProtocolLib is a simple library for communicating with Minecraft clients and servers."
-val javaVersion = JavaLanguageVersion.of(21)
+val javaVersion = JavaLanguageVersion.of(25)
 
 repositories {
     maven("https://maven.2b2t.vc/releases")
@@ -40,7 +40,7 @@ dependencies {
 
     api("io.netty:netty-all:4.2.16.Final")
 
-    api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
+    api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:4.2.1")
 
