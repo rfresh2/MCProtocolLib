@@ -40,7 +40,7 @@ dependencies {
 
     api("io.netty:netty-all:4.2.16.Final")
 
-    api("com.velocitypowered:velocity-native:4.0.0-SNAPSHOT")
+    api("com.velocitypowered:velocity-native:4.1.0-SNAPSHOT")
 
     api("org.checkerframework:checker-qual:4.2.1")
 
