@@ -32,11 +32,11 @@ dependencies {
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
 
-    val fastutilVersion = "8.5.16"
-    api("com.github.rfresh2.fastutil.maps:object-int-maps:$fastutilVersion")
-    api("com.github.rfresh2.fastutil.maps:int-object-maps:$fastutilVersion")
-    api("com.github.rfresh2.fastutil.maps:int-int-maps:$fastutilVersion")
-    api("com.github.rfresh2.fastutil.maps:reference-int-maps:$fastutilVersion")
+    api(platform("com.github.rfresh2.fastutil:fastutil-bom:8.5.19"))
+    api("com.github.rfresh2.fastutil.maps:object-int-maps:")
+    api("com.github.rfresh2.fastutil.maps:int-object-maps")
+    api("com.github.rfresh2.fastutil.maps:int-int-maps")
+    api("com.github.rfresh2.fastutil.maps:reference-int-maps")
 
     api("io.netty:netty-all:4.2.16.Final")
 
