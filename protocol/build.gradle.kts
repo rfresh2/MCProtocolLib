@@ -38,11 +38,11 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps")
 
-    api("io.netty:netty-all:4.2.16.Final")
+    api("io.netty:netty-all:4.2.17.Final")
 
     api("com.velocitypowered:velocity-native:4.1.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:4.2.1")
+    api("org.checkerframework:checker-qual:4.2.2")
 
     testImplementation(platform("org.junit:junit-bom:6.1.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
