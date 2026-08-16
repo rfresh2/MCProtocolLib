@@ -35,8 +35,8 @@ public class ServerboundKeyPacket implements MinecraftPacket {
     }
 
     public ServerboundKeyPacket(ByteBuf in) {
-        this.sharedKey = MinecraftTypes.readByteArray(in);
-        this.encryptedChallenge = MinecraftTypes.readByteArray(in);
+        this.sharedKey = MinecraftTypes.readByteArray(in, 256);
+        this.encryptedChallenge = MinecraftTypes.readByteArray(in, 128);
     }
 
     @Override

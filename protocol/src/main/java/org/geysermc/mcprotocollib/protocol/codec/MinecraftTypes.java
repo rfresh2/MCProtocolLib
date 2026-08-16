@@ -172,6 +172,7 @@ public class MinecraftTypes {
     private static final int POSITION_Y_SHIFT = 0xFFF;
     private static final int POSITION_WRITE_SHIFT = 0x3FFFFFF;
     public static boolean useBinaryNbtComponentSerializer = true;
+    public static final int MAX_BYTE_ARRAY_SIZE = 65536;
 
     public static void writeVarInt(ByteBuf buf, int value) {
         // Peel the one and two byte count cases explicitly as they are the most common VarInt sizes
@@ -434,11 +435,28 @@ public class MinecraftTypes {
     }
 
     public static byte[] readByteArray(ByteBuf buf) {
-        return MinecraftTypes.readByteArray(buf, MinecraftTypes::readVarInt);
+        return MinecraftTypes.readByteArray(buf, MinecraftTypes::readVarInt, MAX_BYTE_ARRAY_SIZE);
+    }
+
+    public static byte[] readByteArray(ByteBuf buf, int maxSize) {
+        return MinecraftTypes.readByteArray(buf, MinecraftTypes::readVarInt, maxSize);
     }
 
     public static byte[] readByteArray(ByteBuf buf, ToIntFunction<ByteBuf> reader) {
+        return MinecraftTypes.readByteArray(buf, reader, MAX_BYTE_ARRAY_SIZE);
+    }
+
+    public static byte[] readByteArray(ByteBuf buf, ToIntFunction<ByteBuf> reader, int maxSize) {
         int length = reader.applyAsInt(buf);
+        if (length < 0) {
+            throw new IllegalArgumentException("Array length: " + length + " cannot be less than 0.");
+        }
+        if (length > maxSize) {
+            throw new IllegalArgumentException("Array length: " + length + " langer than max size: " + maxSize);
+        }
+        if (!buf.isReadable(length)) {
+            throw new IllegalArgumentException("Array length: " + length + " is longer than buffer length: " + buf.readableBytes());
+        }
         byte[] bytes = new byte[length];
         buf.readBytes(bytes);
         return bytes;
