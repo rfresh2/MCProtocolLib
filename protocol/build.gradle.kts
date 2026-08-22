@@ -64,6 +64,7 @@ tasks {
         val options = options as StandardJavadocDocletOptions
         options.encoding = "UTF-8"
         options.addStringOption("Xdoclint:all,-missing", "-quiet")
+        options.splitIndex()
     }
     test {
         useJUnitPlatform()
