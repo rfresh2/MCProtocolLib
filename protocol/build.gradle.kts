@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.18")
+    api("org.slf4j:slf4j-api:2.0.19")
 
     api("com.github.rfresh2:OpenNBT:3.0.13")
 
@@ -38,19 +38,19 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps")
 
-    api("io.netty:netty-all:4.2.17.Final")
+    api("io.netty:netty-all:4.2.18.Final")
 
     api("com.velocitypowered:velocity-native:4.1.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:4.2.2")
+    api("org.checkerframework:checker-qual:4.2.3")
 
-    testImplementation(platform("org.junit:junit-bom:6.1.2"))
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 lombok {
-    version = "1.18.42"
+    version = "1.18.48"
 }
 
 tasks {
@@ -64,6 +64,7 @@ tasks {
         val options = options as StandardJavadocDocletOptions
         options.encoding = "UTF-8"
         options.addStringOption("Xdoclint:all,-missing", "-quiet")
+        options.splitIndex()
     }
     test {
         useJUnitPlatform()
