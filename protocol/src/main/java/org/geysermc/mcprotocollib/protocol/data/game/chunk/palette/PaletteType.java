@@ -11,11 +11,13 @@ public enum PaletteType {
     private final int minBitsPerEntry;
     private final int maxBitsPerEntry;
     private final int storageSize;
+    private final int sizeBits;
 
     PaletteType(int minBitsPerEntry, int maxBitsPerEntry, int storageSize) {
         this.minBitsPerEntry = minBitsPerEntry;
         this.maxBitsPerEntry = maxBitsPerEntry;
         this.storageSize = storageSize;
+        this.sizeBits = Integer.numberOfTrailingZeros(storageSize) / 3;
     }
 
     public int bitsPerEntry(PalettedWorldState palettedWorldState) {
