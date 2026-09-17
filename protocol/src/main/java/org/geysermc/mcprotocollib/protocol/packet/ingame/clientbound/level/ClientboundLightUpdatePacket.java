@@ -19,8 +19,8 @@ public class ClientboundLightUpdatePacket implements MinecraftPacket {
     private final int z;
     private final @NonNull LightUpdateData lightData;
 
-    public ClientboundLightUpdatePacket(int x, int z, long @NonNull [] skyYMask, long @NonNull [] blockYMask,
-                                        long @NonNull [] emptySkyYMask, long @NonNull [] emptyBlockYMask,
+    public ClientboundLightUpdatePacket(int x, int z, byte @NonNull [] skyYMask, byte @NonNull [] blockYMask,
+                                        byte @NonNull [] emptySkyYMask, byte @NonNull [] emptyBlockYMask,
                                         @NonNull List<byte[]> skyUpdates, @NonNull List<byte[]> blockUpdates) {
         for (byte[] content : skyUpdates) {
             if (content.length != 2048) {

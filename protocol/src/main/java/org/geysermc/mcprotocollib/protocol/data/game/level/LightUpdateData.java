@@ -9,10 +9,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class LightUpdateData {
-    private final long @NonNull [] skyYMask;
-    private final long @NonNull [] blockYMask;
-    private final long @NonNull [] emptySkyYMask;
-    private final long @NonNull [] emptyBlockYMask;
+    private final byte @NonNull [] skyYMask;
+    private final byte @NonNull [] blockYMask;
+    private final byte @NonNull [] emptySkyYMask;
+    private final byte @NonNull [] emptyBlockYMask;
     private final @NonNull List<byte[]> skyUpdates;
     private final @NonNull List<byte[]> blockUpdates;
 }

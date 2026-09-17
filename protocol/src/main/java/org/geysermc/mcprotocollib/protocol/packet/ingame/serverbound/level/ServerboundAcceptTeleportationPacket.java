@@ -12,13 +12,28 @@ import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 @AllArgsConstructor
 public class ServerboundAcceptTeleportationPacket implements MinecraftPacket {
     private final int id;
+    private final double x;
+    private final double y;
+    private final double z;
+    private final float yaw;
+    private final float pitch;
 
     public ServerboundAcceptTeleportationPacket(ByteBuf in) {
         this.id = MinecraftTypes.readVarInt(in);
+        this.x = in.readDouble();
+        this.y = in.readDouble();
+        this.z = in.readDouble();
+        this.yaw = in.readFloat();
+        this.pitch = in.readFloat();
     }
 
     @Override
     public void serialize(ByteBuf out) {
         MinecraftTypes.writeVarInt(out, this.id);
+        out.writeDouble(this.x);
+        out.writeDouble(this.y);
+        out.writeDouble(this.z);
+        out.writeFloat(this.yaw);
+        out.writeFloat(this.pitch);
     }
 }

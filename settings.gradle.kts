@@ -11,4 +11,7 @@ plugins {
 
 rootProject.name = "mcprotocollib"
 
-include("protocol")
+include(
+    "protocol",
+//    "text-serializer-nbt"
+)

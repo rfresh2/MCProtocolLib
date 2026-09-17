@@ -2,6 +2,7 @@ package org.geysermc.mcprotocollib.protocol.data.game.entity.player;
 
 public enum PlayerAction {
     START_DESTROY_BLOCK,
+    CHANGE_DESTROY_DIRECTION,
     ABORT_DESTROY_BLOCK,
     STOP_DESTROY_BLOCK,
     DROP_ALL_ITEMS,

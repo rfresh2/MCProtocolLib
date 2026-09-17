@@ -158,7 +158,7 @@ public class ServerListener extends SessionAdapter {
                     for (CompoundTag compoundTag : valueTag) {
                         StringTag nameTag = compoundTag.getStringTag("name");
                     int id = compoundTag.getInt("id");
-                        entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
+                    entries.add(id, new RegistryEntry(nameTag.getValue(), MNBTIO.write(compoundTag.get("element"), false)));
                 }
 
                     session.send(new ClientboundRegistryDataPacket(typeTag.getValue(), entries));
@@ -204,6 +204,7 @@ public class ServerListener extends SessionAdapter {
             session.send(new ClientboundStatusResponsePacket(info));
         } else if (packet instanceof ServerboundPingRequestPacket pingRequestPacket) {
             session.send(new ClientboundPongResponsePacket(pingRequestPacket.getPingTime()));
+            session.disconnect(Component.translatable("multiplayer.status.request_handled"));
         }
     }
 
@@ -218,7 +219,6 @@ public class ServerListener extends SessionAdapter {
             keepAliveState = new KeepAliveState();
         } else if (packet instanceof ServerboundPingRequestPacket pingRequestPacket) {
             session.send(new ClientboundPongResponsePacket(pingRequestPacket.getPingTime()));
-                session.send(new ClientboundPongResponsePacket(pingRequestPacket.getPingTime()));
         }
     }
 

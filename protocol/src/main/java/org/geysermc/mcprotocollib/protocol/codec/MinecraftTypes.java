@@ -9,6 +9,8 @@ import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NoArgsConstructor;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -86,6 +88,8 @@ import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponen
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.HolderSet;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.ItemTypes;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.ResolvableFloat;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.ResolvableInt;
 import org.geysermc.mcprotocollib.protocol.data.game.level.LightUpdateData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.TestInstanceBlockEntity;
@@ -323,8 +327,18 @@ public class MinecraftTypes {
     }
 
     public static <T> List<T> readList(ByteBuf buf, Function<ByteBuf, T> reader) {
+        return readList(buf, reader, true);
+    }
+
+    public static <T> List<T> readList(ByteBuf buf, Function<ByteBuf, T> reader, boolean isNew) {
         int size = MinecraftTypes.readVarInt(buf);
-        List<T> list = new ArrayList<>(size);
+        List<T> list;
+        if (isNew) {
+            list = new ArrayList<>(Math.min(size, 65536));
+        } else {
+            list = new ArrayList<>(size);
+        }
+
         for (int i = 0; i < size; i++) {
             list.add(reader.apply(buf));
         }
@@ -386,9 +400,9 @@ public class MinecraftTypes {
         if (length == -1) {
             return new HolderSet(MinecraftTypes.readResourceLocationString(buf));
         } else {
-            int[] holders = new int[length];
+            IntList holders = new IntArrayList(Math.min(length, 65536));
             for (int i = 0; i < length; i++) {
-                holders[i] = MinecraftTypes.readVarInt(buf);
+                holders.add(MinecraftTypes.readVarInt(buf));
             }
 
             return new HolderSet(holders);
@@ -401,7 +415,7 @@ public class MinecraftTypes {
             MinecraftTypes.writeResourceLocation(buf, holderSet.getLocation());
         } else {
             assert holderSet.getHolders() != null;
-            MinecraftTypes.writeVarInt(buf, holderSet.getHolders().length + 1);
+            MinecraftTypes.writeVarInt(buf, holderSet.getHolders().size() + 1);
             for (int holder : holderSet.getHolders()) {
                 MinecraftTypes.writeVarInt(buf, holder);
             }
@@ -1049,16 +1063,10 @@ public class MinecraftTypes {
     }
 
     public static void writeComponent(ByteBuf buf, Component component) {
-        if (useBinaryNbtComponentSerializer) {
-            try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
-                BinaryNbtComponentSerializer.serializeMNBTToBuffer(component, out);
-            } catch (final IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        } else {
-            var json = DefaultComponentSerializer.get().serializeToTree(component);
-            var tag = NbtComponentSerializer.jsonComponentToTag(json);
-            writeTag(buf, tag);
+        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
+            BinaryNbtComponentSerializer.serializeMNBTToBuffer(component, out);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1378,10 +1386,10 @@ public class MinecraftTypes {
     }
 
     public static LightUpdateData readLightUpdateData(ByteBuf buf) {
-        var skyYMask = readLongArray(buf);
-        var blockYMask = readLongArray(buf);
-        var emptySkyYMask = readLongArray(buf);
-        var emptyBlockYMask = readLongArray(buf);
+        var skyYMask = readByteArray(buf, buf.readableBytes());
+        var blockYMask = readByteArray(buf, buf.readableBytes());
+        var emptySkyYMask = readByteArray(buf, buf.readableBytes());
+        var emptyBlockYMask = readByteArray(buf, buf.readableBytes());
 
         int skyUpdateSize = readVarInt(buf);
         var skyUpdates = new ArrayList<byte[]>(skyUpdateSize);
@@ -1398,10 +1406,10 @@ public class MinecraftTypes {
     }
 
     public static void writeLightUpdateData(ByteBuf buf, LightUpdateData data) {
-        writeLongArray(buf, data.getSkyYMask());
-        writeLongArray(buf, data.getBlockYMask());
-        writeLongArray(buf, data.getEmptySkyYMask());
-        writeLongArray(buf, data.getEmptyBlockYMask());
+        writeByteArray(buf, data.getSkyYMask());
+        writeByteArray(buf, data.getBlockYMask());
+        writeByteArray(buf, data.getEmptySkyYMask());
+        writeByteArray(buf, data.getEmptyBlockYMask());
 
         writeVarInt(buf, data.getSkyUpdates().size());
         for (byte[] array : data.getSkyUpdates()) {
@@ -1415,8 +1423,7 @@ public class MinecraftTypes {
     }
 
     private static void writeBitSet(ByteBuf buf, BitSet bitSet) {
-        long[] array = bitSet.toLongArray();
-        MinecraftTypes.writeLongArray(buf, array);
+        MinecraftTypes.writeByteArray(buf, bitSet.toByteArray());
     }
 
     public static LevelEvent readLevelEvent(ByteBuf buf) {
@@ -1574,7 +1581,7 @@ public class MinecraftTypes {
                 DataComponentTypes.from(MinecraftTypes.readVarInt(buf)));
             case ITEM -> display = new ItemSlotDisplay(MinecraftTypes.readVarInt(buf));
             case ITEM_STACK -> display = new ItemStackSlotDisplay(MinecraftTypes.readItemStackTemplate(buf));
-            case TAG -> display = new TagSlotDisplay(MinecraftTypes.readResourceLocationString(buf));
+            case TAG -> display = new TagSlotDisplay(MinecraftTypes.readHolderSet(buf));
             case DYED -> display = new DyedSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf));
             case SMITHING_TRIM -> display = new SmithingTrimDemoSlotDisplay(MinecraftTypes.readSlotDisplay(buf), MinecraftTypes.readSlotDisplay(buf),
                 MinecraftTypes.readHolder(buf, ItemTypes::readTrimPattern));
@@ -1597,7 +1604,7 @@ public class MinecraftTypes {
             }
             case ITEM -> MinecraftTypes.writeVarInt(buf, ((ItemSlotDisplay)display).item());
             case ITEM_STACK -> MinecraftTypes.writeItemStackTemplate(buf, ((ItemStackSlotDisplay)display).itemStack());
-            case TAG -> MinecraftTypes.writeResourceLocation(buf, ((TagSlotDisplay)display).tag());
+            case TAG -> MinecraftTypes.writeHolderSet(buf, ((TagSlotDisplay)display).holderSet());
             case DYED -> {
                 DyedSlotDisplay dyedSlotDisplay = (DyedSlotDisplay) display;
 
@@ -1666,12 +1673,12 @@ public class MinecraftTypes {
                 String inventory = MinecraftTypes.readString(buf);
                 boolean wantsGolem = buf.readBoolean();
                 int angerLevel = buf.readInt();
-                List<String> activities = MinecraftTypes.readList(buf, MinecraftTypes::readString);
-                List<String> behaviors = MinecraftTypes.readList(buf, MinecraftTypes::readString);
-                List<String> memories = MinecraftTypes.readList(buf, MinecraftTypes::readString);
-                List<String> gossips = MinecraftTypes.readList(buf, MinecraftTypes::readString);
-                List<Vector3i> pois = MinecraftTypes.readList(buf, MinecraftTypes::readPosition);
-                List<Vector3i> potentialPois = MinecraftTypes.readList(buf, MinecraftTypes::readPosition);
+                List<String> activities = MinecraftTypes.readList(buf, MinecraftTypes::readString, false);
+                List<String> behaviors = MinecraftTypes.readList(buf, MinecraftTypes::readString, false);
+                List<String> memories = MinecraftTypes.readList(buf, MinecraftTypes::readString, false);
+                List<String> gossips = MinecraftTypes.readList(buf, MinecraftTypes::readString, false);
+                List<Vector3i> pois = MinecraftTypes.readList(buf, MinecraftTypes::readPosition, false);
+                List<Vector3i> potentialPois = MinecraftTypes.readList(buf, MinecraftTypes::readPosition, false);
                 info = new DebugBrainDump(name, profession, xp, health, maxHealth, inventory, wantsGolem, angerLevel,
                     activities, behaviors, memories, gossips, pois, potentialPois);
             }
@@ -1693,7 +1700,7 @@ public class MinecraftTypes {
                 boolean reached = buf.readBoolean();
                 int nextNodeIndex = buf.readInt();
                 Vector3i target = MinecraftTypes.readPosition(buf);
-                List<DebugPathInfo.Node> nodes = MinecraftTypes.readList(buf, MinecraftTypes::readDebugPathNode);
+                List<DebugPathInfo.Node> nodes = MinecraftTypes.readList(buf, MinecraftTypes::readDebugPathNode, false);
 
                 List<DebugPathInfo.Node> targetNodes = MinecraftTypes.readList(buf, MinecraftTypes::readDebugPathNode);
                 DebugPathInfo.Node[] openSet = new DebugPathInfo.Node[MinecraftTypes.readVarInt(buf)];
@@ -2021,6 +2028,38 @@ public class MinecraftTypes {
         MinecraftTypes.writeNullable(buf, profile.getId(), MinecraftTypes::writeUUID);
 
         MinecraftTypes.writeList(buf, profile.getProperties(), MinecraftTypes::writeProperty);
+    }
+
+    public static ResolvableFloat readResolvableFloat(ByteBuf buf) {
+        boolean constant = buf.readBoolean();
+        if (constant)
+            return new ResolvableFloat(true, buf.readFloat(), null);
+        else
+            return new ResolvableFloat(false, 0, MinecraftTypes.readResourceLocation(buf));
+    }
+
+    public static void writeResolvableFloat(ByteBuf buf, ResolvableFloat number) {
+        buf.writeBoolean(number.isConstant());
+        if (number.isConstant())
+            buf.writeFloat(number.value());
+        else
+            MinecraftTypes.writeResourceLocation(buf, number.key());
+    }
+
+    public static ResolvableInt readResolvableInt(ByteBuf buf) {
+        boolean constant = buf.readBoolean();
+        if (constant)
+            return new ResolvableInt(true, buf.readInt(), null);
+        else
+            return new ResolvableInt(false, 0, MinecraftTypes.readResourceLocation(buf));
+    }
+
+    public static void writeResolvableInt(ByteBuf buf, ResolvableInt number) {
+        buf.writeBoolean(number.isConstant());
+        if (number.isConstant())
+            buf.writeInt(number.value());
+        else
+            MinecraftTypes.writeResourceLocation(buf, number.key());
     }
 
     public static ResolvableProfile readResolvableProfile(ByteBuf buf) {

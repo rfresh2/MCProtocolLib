@@ -10,7 +10,7 @@ import java.util.Map;
 public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> pattern) {
 
     @Builder(toBuilder = true)
-    public record TrimMaterial(String assetBase, Map<String, String> assetOverrides, Component description) {
+    public record TrimMaterial(String paletteId, Component description) {
     }
 
     @Builder(toBuilder = true)

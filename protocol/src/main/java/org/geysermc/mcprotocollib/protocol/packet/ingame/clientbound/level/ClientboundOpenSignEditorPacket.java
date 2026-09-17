@@ -21,7 +21,7 @@ public class ClientboundOpenSignEditorPacket implements MinecraftPacket {
         this.x = MinecraftTypes.decodePositionX(position);
         this.y = MinecraftTypes.decodePositionY(position);
         this.z = MinecraftTypes.decodePositionZ(position);
-        this.isFrontText = in.readBoolean();
+        this.isFrontText = MinecraftTypes.readVarInt(in) == 1;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot;
 
-public record TagSlotDisplay(String tag) implements SlotDisplay {
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.HolderSet;
+
+public record TagSlotDisplay(HolderSet holderSet) implements SlotDisplay {
     @Override
     public RecipeSlotType getType() {
         return RecipeSlotType.TAG;

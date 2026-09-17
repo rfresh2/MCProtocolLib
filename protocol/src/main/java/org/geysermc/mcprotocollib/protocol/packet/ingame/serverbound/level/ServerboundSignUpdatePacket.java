@@ -7,7 +7,9 @@ import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Data
 @With
@@ -15,18 +17,18 @@ public class ServerboundSignUpdatePacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull String[] lines;
+    private final @NonNull List<String> lines;
     private final boolean isFrontText;
 
-    public ServerboundSignUpdatePacket(int x, int y, int z, @NonNull String[] lines, boolean isFrontText) {
-        if (lines.length != 4) {
+    public ServerboundSignUpdatePacket(int x, int y, int z, @NonNull List<String> lines, boolean isFrontText) {
+        if (lines.size() != 4) {
             throw new IllegalArgumentException("Lines must contain exactly 4 strings.");
         }
 
         this.x = x;
         this.y = y;
         this.z = z;
-        this.lines = Arrays.copyOf(lines, lines.length);
+        this.lines = List.copyOf(lines);
         this.isFrontText = isFrontText;
     }
 
@@ -35,19 +37,19 @@ public class ServerboundSignUpdatePacket implements MinecraftPacket {
         this.x = MinecraftTypes.decodePositionX(position);
         this.y = MinecraftTypes.decodePositionY(position);
         this.z = MinecraftTypes.decodePositionZ(position);
-        this.isFrontText = in.readBoolean();
-        this.lines = new String[4];
-        for (int count = 0; count < this.lines.length; count++) {
-            this.lines[count] = MinecraftTypes.readString(in);
+        this.lines = new ArrayList<>(4);
+        for (int count = 0; count < 4; count++) {
+            this.lines.add(MinecraftTypes.readString(in, 384));
         }
+        this.isFrontText = MinecraftTypes.readVarInt(in) == 1;
     }
 
     @Override
     public void serialize(ByteBuf out) {
         MinecraftTypes.writePosition(out, this.x, this.y, this.z);
-        out.writeBoolean(this.isFrontText);
         for (String line : this.lines) {
             MinecraftTypes.writeString(out, line);
         }
+        out.writeBoolean(this.isFrontText);
     }
 }

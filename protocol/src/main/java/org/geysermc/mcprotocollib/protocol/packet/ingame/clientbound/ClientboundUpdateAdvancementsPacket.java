@@ -67,10 +67,7 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 boolean hidden = (flags & FLAG_HIDDEN) != 0;
 
                 String backgroundTexture = hasBackgroundTexture ? MinecraftTypes.readString(in) : null;
-                float posX = in.readFloat();
-                float posY = in.readFloat();
-
-                displayData = new DisplayData(title, description, icon, advancementType, showToast, hidden, posX, posY, backgroundTexture);
+                displayData = new DisplayData(title, description, icon, advancementType, showToast, hidden, backgroundTexture);
             }
 
             int requirementCount = MinecraftTypes.readVarInt(in);
@@ -86,8 +83,10 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             }
 
             boolean sendTelemetryEvent = in.readBoolean();
+            float posX = in.readFloat();
+            float posY = in.readFloat();
 
-            this.advancements[i] = new Advancement(id, requirements, parentId, displayData, sendTelemetryEvent);
+            this.advancements[i] = new Advancement(id, requirements, parentId, displayData, sendTelemetryEvent, posX, posY);
         }
 
         this.removedAdvancements = new String[MinecraftTypes.readVarInt(in)];
@@ -154,9 +153,6 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
                 if (backgroundTexture != null) {
                     MinecraftTypes.writeString(out, backgroundTexture);
                 }
-
-                out.writeFloat(displayData.getPosX());
-                out.writeFloat(displayData.getPosY());
             } else {
                 out.writeBoolean(false);
             }
@@ -171,6 +167,8 @@ public class ClientboundUpdateAdvancementsPacket implements MinecraftPacket {
             }
 
             out.writeBoolean(advancement.isSendsTelemetryEvent());
+            out.writeFloat(advancement.getPosX());
+            out.writeFloat(advancement.getPosY());
         }
 
         MinecraftTypes.writeVarInt(out, this.removedAdvancements.length);
