@@ -31,6 +31,7 @@ dependencies {
 
     api("org.cloudburstmc.math:api:2.0")
     api("org.cloudburstmc.math:immutable:2.0")
+    api(project(":text-serializer-nbt"))
 
     api(platform("com.github.rfresh2.fastutil:fastutil-bom:8.5.19"))
     api("com.github.rfresh2.fastutil.maps:object-int-maps:")

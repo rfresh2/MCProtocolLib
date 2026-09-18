@@ -13,5 +13,5 @@ rootProject.name = "mcprotocollib"
 
 include(
     "protocol",
-//    "text-serializer-nbt"
+    "text-serializer-nbt"
 )

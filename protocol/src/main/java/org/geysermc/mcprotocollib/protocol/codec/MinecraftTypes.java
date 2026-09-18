@@ -1,6 +1,5 @@
 package org.geysermc.mcprotocollib.protocol.codec;
 
-import com.google.gson.JsonElement;
 import com.viaversion.nbt.io.MNBTIO;
 import com.viaversion.nbt.io.NBTIO;
 import com.viaversion.nbt.limiter.TagLimiter;
@@ -8,6 +7,7 @@ import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.Tag;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufUtil;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -20,6 +20,8 @@ import org.cloudburstmc.math.imaginary.Quaternionf;
 import org.cloudburstmc.math.vector.Vector3d;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.nbt.NBTInputStream;
+import org.cloudburstmc.nbt.NbtType;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.auth.texture.TextureModel;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
@@ -1052,14 +1054,32 @@ public class MinecraftTypes {
         MinecraftTypes.writeVarInt(buf, e.ordinal());
     }
 
+    @Nullable
+    public static Object readAnyTagCloudburst(ByteBuf buf) {
+        try {
+            ByteBufInputStream input = new ByteBufInputStream(buf);
+
+            int typeId = input.readUnsignedByte();
+            if (typeId == 0) {
+                return null;
+            }
+
+            NbtType<?> type = NbtType.byId(typeId);
+
+            // Mojang's codecs, for untrusted sources, use a maximum size of 2048 KiB when reading: https://mcsrc.dev/2/26.2/net/minecraft/nbt/NbtAccounter#L6
+            return new NBTInputStream(input, 2097152L).readValue(type, 512);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public static Component readComponent(ByteBuf buf) {
-        // do not use CompoundTag, as mojang serializes a plaintext component as just a single StringTag
-        Tag tag = readTag(buf, null);
+        // do not use NbtMap, as mojang serializes a plaintext component as just a single StringTag, and technically 3rd-party servers could send lists
+        var tag = readAnyTagCloudburst(buf);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read Component");
         }
-        JsonElement json = NbtComponentSerializer.tagComponentToJson(tag);
-        return DefaultComponentSerializer.get().deserializeFromTree(json);
+        return DefaultComponentSerializer.nbt().deserialize(tag);
     }
 
     public static void writeComponent(ByteBuf buf, Component component) {
