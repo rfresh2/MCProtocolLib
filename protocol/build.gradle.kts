@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "9.5.0"
+    id("io.freefair.lombok") version "9.8.0"
     `maven-publish`
     `java-library`
 }
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.19")
+    api("org.slf4j:slf4j-api:2.0.20")
 
     api("com.github.rfresh2:OpenNBT:3.0.13")
 
@@ -42,7 +42,7 @@ dependencies {
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
-    api("org.checkerframework:checker-qual:4.2.3")
+    api("org.checkerframework:checker-qual:4.3.0")
 
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
