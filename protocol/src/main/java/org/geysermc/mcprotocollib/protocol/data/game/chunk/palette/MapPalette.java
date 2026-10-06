@@ -27,7 +27,7 @@ public class MapPalette implements Palette {
         this.capacity = 1 << bitsPerEntry;
 
         this.idToState = new int[this.capacity];
-        this.stateToId = new Int2IntOpenHashMap(capacity, 0.5f);
+        this.stateToId = new Int2IntOpenHashMap((int) (capacity / 0.8f), 0.8f);
         this.stateToId.defaultReturnValue(MISSING_ID);
     }
 
