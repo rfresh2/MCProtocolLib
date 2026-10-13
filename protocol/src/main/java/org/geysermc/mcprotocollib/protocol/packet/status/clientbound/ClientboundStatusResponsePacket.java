@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
@@ -32,9 +31,9 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
     private static final boolean ENFORCES_SECURE_CHAT_DEFAULT = false;
     private static final Gson GSON = new Gson();
 
-    private final @NonNull JsonObject data;
+    private final JsonObject data;
 
-    public ClientboundStatusResponsePacket(@NonNull ServerStatusInfo info) {
+    public ClientboundStatusResponsePacket(ServerStatusInfo info) {
         this(toJson(info));
     }
 
@@ -87,7 +86,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
         return new ServerStatusInfo(description, players, version, icon, enforcesSecureChat);
     }
 
-    public ClientboundStatusResponsePacket withInfo(@NonNull ServerStatusInfo info) {
+    public ClientboundStatusResponsePacket withInfo(ServerStatusInfo info) {
         return withData(toJson(info));
     }
 
@@ -102,7 +101,7 @@ public class ClientboundStatusResponsePacket implements MinecraftPacket {
             plrs.addProperty("online", info.getPlayerInfo().getOnlinePlayers());
             if (!info.getPlayerInfo().getPlayers().isEmpty()) {
             JsonArray array = new JsonArray(info.getPlayerInfo().getPlayers().size());
-            @NonNull List<GameProfile> players = info.getPlayerInfo().getPlayers();
+            var players = info.getPlayerInfo().getPlayers();
             for (int i = 0; i < players.size(); i++) {
                     final GameProfile profile = players.get(i);
                     JsonObject o = new JsonObject();

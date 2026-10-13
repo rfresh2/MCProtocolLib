@@ -3,7 +3,7 @@ package org.geysermc.mcprotocollib.protocol.data.game;
 import com.viaversion.nbt.mini.MNBT;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Data
 @AllArgsConstructor

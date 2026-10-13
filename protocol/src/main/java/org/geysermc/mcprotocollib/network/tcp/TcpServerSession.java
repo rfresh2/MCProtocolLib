@@ -3,6 +3,7 @@ package org.geysermc.mcprotocollib.network.tcp;
 import io.netty.channel.ChannelHandlerContext;
 import org.geysermc.mcprotocollib.network.Flag;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +17,8 @@ public class TcpServerSession extends TcpSession {
     }
 
     @Override
-    public Map<String, Object> getFlags() {
-        Map<String, Object> ret = new HashMap<>();
+    public Map<String, @Nullable Object> getFlags() {
+        Map<String, @Nullable Object> ret = new HashMap<>();
         ret.putAll(this.server.getGlobalFlags());
         ret.putAll(super.getFlags());
         return ret;
@@ -33,7 +34,7 @@ public class TcpServerSession extends TcpSession {
     }
 
     @Override
-    public <T> T getFlag(Flag<T> flag, T def) {
+    public <T extends @Nullable Object> T getFlag(Flag<T> flag, T def) {
         T ret = super.getFlag(flag, null);
         if(ret != null) {
             return ret;

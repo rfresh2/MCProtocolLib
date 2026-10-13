@@ -4,7 +4,6 @@ import com.viaversion.nbt.io.NBTIO;
 import com.viaversion.nbt.limiter.TagLimiter;
 import com.viaversion.nbt.tag.CompoundTag;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.network.Server;
@@ -81,13 +80,13 @@ public class MinecraftProtocol extends PacketProtocol {
      * The player's identity.
      */
     @Getter
-    private GameProfile profile;
+    private @Nullable GameProfile profile;
 
     /**
      * Authentication access token.
      */
     @Getter
-    private String accessToken;
+    private @Nullable String accessToken;
 
     /**
      * Whether to add the default client and server listeners for performing initial login.
@@ -122,7 +121,7 @@ public class MinecraftProtocol extends PacketProtocol {
      *
      * @param username Username to use.
      */
-    public MinecraftProtocol(@NonNull String username) {
+    public MinecraftProtocol(String username) {
         this(new GameProfile(UUID.randomUUID(), username), null);
     }
 
@@ -132,7 +131,7 @@ public class MinecraftProtocol extends PacketProtocol {
      * @param codec    The packet codec to use.
      * @param username Username to use.
      */
-    public MinecraftProtocol(@NonNull PacketCodec codec, @NonNull String username) {
+    public MinecraftProtocol(PacketCodec codec, String username) {
         this(codec, new GameProfile(UUID.randomUUID(), username), null);
     }
 
@@ -142,7 +141,7 @@ public class MinecraftProtocol extends PacketProtocol {
      * @param profile     GameProfile to use.
      * @param accessToken Access token to use, or null if using offline mode.
      */
-    public MinecraftProtocol(@NonNull GameProfile profile, String accessToken) {
+    public MinecraftProtocol(GameProfile profile, @Nullable String accessToken) {
         this(MinecraftCodec.CODEC, profile, accessToken);
     }
 
@@ -153,7 +152,7 @@ public class MinecraftProtocol extends PacketProtocol {
      * @param profile     GameProfile to use.
      * @param accessToken Access token to use, or null if using offline mode.
      */
-    public MinecraftProtocol(@NonNull PacketCodec codec, @NonNull GameProfile profile, String accessToken) {
+    public MinecraftProtocol(PacketCodec codec, GameProfile profile, @Nullable String accessToken) {
         this.codec = codec;
         this.targetState = ProtocolState.LOGIN;
         this.profile = profile;
@@ -205,12 +204,12 @@ public class MinecraftProtocol extends PacketProtocol {
 
     @Override
     public PacketRegistry getInboundPacketRegistry() {
-        return this.inboundStateRegistry;
+        return Objects.requireNonNull(this.inboundStateRegistry, "packet registries not yet initialised");
     }
 
     @Override
     public PacketRegistry getOutboundPacketRegistry() {
-        return this.outboundStateRegistry;
+        return Objects.requireNonNull(this.outboundStateRegistry, "packet registries not yet initialised");
     }
 
     /**

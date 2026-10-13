@@ -2,13 +2,11 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -17,10 +15,10 @@ public class ServerboundSignUpdatePacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull List<String> lines;
+    private final List<String> lines;
     private final boolean isFrontText;
 
-    public ServerboundSignUpdatePacket(int x, int y, int z, @NonNull List<String> lines, boolean isFrontText) {
+    public ServerboundSignUpdatePacket(int x, int y, int z, List<String> lines, boolean isFrontText) {
         if (lines.size() != 4) {
             throw new IllegalArgumentException("Lines must contain exactly 4 strings.");
         }

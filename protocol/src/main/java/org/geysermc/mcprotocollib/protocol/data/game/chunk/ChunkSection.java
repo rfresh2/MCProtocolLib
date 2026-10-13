@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.data.game.chunk;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 @Getter
@@ -16,8 +15,8 @@ public class ChunkSection {
 
     private int blockCount;
     private int fluidCount;
-    private @NonNull DataPalette chunkData;
-    private @NonNull DataPalette biomeData;
+    private DataPalette chunkData;
+    private DataPalette biomeData;
 
     public ChunkSection(PalettedWorldState palettedWorldState) {
         this(0, 0, DataPalette.createForChunk(palettedWorldState), DataPalette.createForBiome(palettedWorldState));

@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.data.game.chunk;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.GlobalPalette;
@@ -12,6 +11,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.MapPalette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.Palette;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.PaletteType;
 import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPalette;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 @Setter
@@ -20,8 +20,8 @@ import org.geysermc.mcprotocollib.protocol.data.game.chunk.palette.SingletonPale
 @ToString
 public class DataPalette {
 
-    private @NonNull Palette palette;
-    private BitStorage storage;
+    private Palette palette;
+    private @Nullable BitStorage storage;
     private final PaletteType paletteType;
     private final PalettedWorldState palettedWorldState;
 

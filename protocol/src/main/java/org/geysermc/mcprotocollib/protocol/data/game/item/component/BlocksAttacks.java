@@ -2,7 +2,7 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import lombok.Builder;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 

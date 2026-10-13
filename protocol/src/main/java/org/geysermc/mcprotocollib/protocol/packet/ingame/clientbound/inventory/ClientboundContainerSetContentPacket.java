@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -16,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 public class ClientboundContainerSetContentPacket implements MinecraftPacket {
     private final int containerId;
     private final int stateId;
-    private final ItemStack @NonNull [] items;
+    private final ItemStack [] items;
     private final @Nullable ItemStack carriedItem;
 
     public ClientboundContainerSetContentPacket(ByteBuf in) {

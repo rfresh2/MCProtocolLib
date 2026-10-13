@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -11,11 +10,13 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.Particle;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 @Data
 @With
 @AllArgsConstructor
 public class ClientboundLevelParticlesPacket implements MinecraftPacket {
-    private final @NonNull Particle particle;
+    private final Particle particle;
     private final boolean longDistance;
     private final boolean alwaysShow;
     private final double x;
@@ -45,7 +46,9 @@ public class ClientboundLevelParticlesPacket implements MinecraftPacket {
         this.yMaxSpeed = in.readFloat();
         this.zMaxSpeed = in.readFloat();
         this.amount = MinecraftTypes.readVarInt(in);
-        this.randomizationType = RandomizationType.from(MinecraftTypes.readVarInt(in));
+
+        int randomization = MinecraftTypes.readVarInt(in);
+        this.randomizationType = Objects.requireNonNull(RandomizationType.from(randomization), "invalid particle randomization type received: " + randomization);
     }
 
     @Override

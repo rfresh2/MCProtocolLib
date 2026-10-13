@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -31,12 +30,12 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
     private final byte param;
     private final byte actionType;
     private final @Nullable HashedStack carriedItem;
-    private final @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots;
+    private final Int2ObjectMap<@Nullable HashedStack> changedSlots;
 
     public ServerboundContainerClickPacket(
         int containerId, int stateId, int slot,
-        @NonNull ContainerActionType action, @NonNull ContainerAction param,
-        @Nullable HashedStack carriedItem, @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots
+        ContainerActionType action, ContainerAction param,
+        @Nullable HashedStack carriedItem, Int2ObjectMap<@Nullable HashedStack> changedSlots
     ) {
         this(containerId, stateId, slot, paramToByte(param, action), (byte) action.ordinal(), carriedItem, changedSlots);
     }
@@ -52,7 +51,7 @@ public class ServerboundContainerClickPacket implements MinecraftPacket {
     public ServerboundContainerClickPacket(
         int containerId, int stateId, int slot,
         byte param, byte actionType, @Nullable HashedStack carriedItem,
-        @NonNull Int2ObjectMap<@Nullable HashedStack> changedSlots
+        Int2ObjectMap<@Nullable HashedStack> changedSlots
     ) {
         this.containerId = containerId;
         this.stateId = stateId;

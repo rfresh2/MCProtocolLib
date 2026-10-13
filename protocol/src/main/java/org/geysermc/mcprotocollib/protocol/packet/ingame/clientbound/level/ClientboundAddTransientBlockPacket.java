@@ -7,13 +7,12 @@ import lombok.With;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
-import org.jspecify.annotations.NonNull;
 
 @Data
 @With
 @AllArgsConstructor
 public class ClientboundAddTransientBlockPacket implements MinecraftPacket {
-    private final @NonNull Vector3i position;
+    private final Vector3i position;
     private final int block;
 
     public ClientboundAddTransientBlockPacket(ByteBuf in) {

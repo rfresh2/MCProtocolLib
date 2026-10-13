@@ -38,6 +38,7 @@ import org.geysermc.mcprotocollib.protocol.packet.status.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.status.clientbound.ClientboundStatusResponsePacket;
 import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.ServerboundPingRequestPacket;
 import org.geysermc.mcprotocollib.protocol.packet.status.serverbound.ServerboundStatusRequestPacket;
+import org.jspecify.annotations.Nullable;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class ServerListener extends SessionAdapter {
 
     private final byte[] challenge = new byte[4];
     private String username = "";
-    private KeepAliveState keepAliveState;
+    private @Nullable KeepAliveState keepAliveState;
 
     private long lastPingTime = 0;
     private int lastPingId = 0;
@@ -108,6 +109,7 @@ public class ServerListener extends SessionAdapter {
             case STATUS -> handleStatusPacket(session, protocol, packet);
             case GAME -> handleGamePacket(session, protocol, packet);
             case CONFIGURATION -> handleConfigurationPacket(session, protocol, packet);
+            case null -> throw new IllegalArgumentException("Received packet in unknown protocol state!");
         }
     }
 
@@ -251,7 +253,8 @@ public class ServerListener extends SessionAdapter {
     private void beginLogin(Session session, MinecraftProtocol protocol, ClientIntentionPacket packet, boolean transferred) {
         isTransfer = transferred;
         protocol.setOutboundState(ProtocolState.LOGIN);
-        if (transferred && !session.getFlag(MinecraftConstants.ACCEPT_TRANSFERS_KEY)) {
+        Boolean acceptsTransfersFlag = session.getFlag(MinecraftConstants.ACCEPT_TRANSFERS_KEY);
+        if (transferred && (acceptsTransfersFlag == null || !acceptsTransfersFlag)) {
             session.disconnect(Component.translatable("multiplayer.disconnect.transfers_disabled"));
         } else if (packet.getProtocolVersion() > protocol.getCodec().getProtocolVersion()) {
             session.disconnect(Component.translatable("multiplayer.disconnect.incompatible", Component.text(protocol.getCodec().getMinecraftVersion())));
@@ -272,7 +275,7 @@ public class ServerListener extends SessionAdapter {
         }
     }
 
-    private void authenticate(Session session, boolean shouldAuthenticate, SecretKey key) {
+    private void authenticate(Session session, boolean shouldAuthenticate, @Nullable SecretKey key) {
         GameProfile profile;
         if (shouldAuthenticate && key != null) {
             SessionService sessionService = session.getFlag(MinecraftConstants.SESSION_SERVICE_KEY, new SessionService());

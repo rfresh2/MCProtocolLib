@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.common.serverbound;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -19,15 +18,15 @@ import java.util.List;
 @With
 @AllArgsConstructor
 public class ServerboundClientInformationPacket implements MinecraftPacket {
-    private final @NonNull String language;
+    private final String language;
     private final int viewDistance;
-    private final @NonNull ChatVisibility chatVisibility;
+    private final ChatVisibility chatVisibility;
     private final boolean chatColors;
-    private final @NonNull List<SkinPart> visibleParts;
-    private final @NonNull HandPreference mainHand;
+    private final List<SkinPart> visibleParts;
+    private final HandPreference mainHand;
     private final boolean textFilteringEnabled;
     private final boolean allowsListing;
-    private final @NonNull ParticleStatus particleStatus;
+    private final ParticleStatus particleStatus;
 
     public ServerboundClientInformationPacket(ByteBuf in) {
         this.language = MinecraftTypes.readString(in);

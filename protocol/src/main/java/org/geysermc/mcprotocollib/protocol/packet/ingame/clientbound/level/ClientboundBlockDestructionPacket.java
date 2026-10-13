@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -17,7 +16,7 @@ public class ClientboundBlockDestructionPacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull BlockBreakStage stage;
+    private final BlockBreakStage stage;
 
     public ClientboundBlockDestructionPacket(ByteBuf in) {
         this.breakerEntityId = MinecraftTypes.readVarInt(in);

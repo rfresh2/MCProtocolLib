@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -14,11 +13,11 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerAction;
 @With
 @AllArgsConstructor
 public class ServerboundPlayerActionPacket implements MinecraftPacket {
-    private final @NonNull PlayerAction action;
+    private final PlayerAction action;
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull Direction face;
+    private final Direction face;
     private final int sequence;
 
     public ServerboundPlayerActionPacket(ByteBuf in) {

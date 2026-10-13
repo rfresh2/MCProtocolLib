@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.ToString;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
@@ -22,6 +21,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.command.properties.ScoreHol
 import org.geysermc.mcprotocollib.protocol.data.game.command.properties.StringProperties;
 import org.geysermc.mcprotocollib.protocol.data.game.command.properties.TimeProperties;
 
+import java.util.Objects;
 import java.util.OptionalInt;
 
 @Data
@@ -41,7 +41,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
     private static final int ENTITY_FLAG_SINGLE_TARGET = 0x01;
     private static final int ENTITY_FLAG_PLAYERS_ONLY = 0x02;
 
-    private final @NonNull CommandNode[] nodes;
+    private final CommandNode[] nodes;
     private final int firstNodeIndex;
 
     public ClientboundCommandsPacket(ByteBuf in) {
@@ -188,14 +188,15 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
             }
 
             if (node.getType() == CommandType.LITERAL || node.getType() == CommandType.ARGUMENT) {
-                MinecraftTypes.writeString(out, node.getName());
+                MinecraftTypes.writeString(out, Objects.requireNonNull(node.getName(), "node must have a name if LITERAL or ARGUMENT"));
             }
 
             if (node.getType() == CommandType.ARGUMENT) {
-                MinecraftTypes.writeVarInt(out, node.getParser().ordinal());
+                MinecraftTypes.writeVarInt(out, Objects.requireNonNull(node.getParser(), "node must have a parser if ARGUMENT").ordinal());
+                var nodeProperties = node.getProperties();
                 switch (node.getParser()) {
                     case DOUBLE -> {
-                        DoubleProperties properties = (DoubleProperties) node.getProperties();
+                        DoubleProperties properties = (DoubleProperties) Objects.requireNonNull(nodeProperties, "parser requires properties");
 
                         int numberFlags = 0;
                         if (properties.getMin() != -Double.MAX_VALUE) {
@@ -216,7 +217,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                         }
                     }
                     case FLOAT -> {
-                        FloatProperties properties = (FloatProperties) node.getProperties();
+                        FloatProperties properties = (FloatProperties) Objects.requireNonNull(nodeProperties, "parser requires properties");
 
                         int numberFlags = 0;
                         if (properties.getMin() != -Float.MAX_VALUE) {
@@ -237,7 +238,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                         }
                     }
                     case INTEGER -> {
-                        IntegerProperties properties = (IntegerProperties) node.getProperties();
+                        IntegerProperties properties = (IntegerProperties) Objects.requireNonNull(nodeProperties, "parser requires properties");
 
                         int numberFlags = 0;
                         if (properties.getMin() != Integer.MIN_VALUE) {
@@ -258,7 +259,7 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                         }
                     }
                     case LONG -> {
-                        LongProperties properties = (LongProperties) node.getProperties();
+                        LongProperties properties = (LongProperties) Objects.requireNonNull(nodeProperties, "parser requires properties");
 
                         int numberFlags = 0;
                         if (properties.getMin() != Long.MIN_VALUE) {
@@ -278,9 +279,9 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
                             out.writeLong(properties.getMax());
                         }
                     }
-                    case STRING -> MinecraftTypes.writeVarInt(out, ((StringProperties) node.getProperties()).ordinal());
+                    case STRING -> MinecraftTypes.writeVarInt(out, ((StringProperties) Objects.requireNonNull(nodeProperties, "parser requires properties")).ordinal());
                     case ENTITY -> {
-                        EntityProperties properties = (EntityProperties) node.getProperties();
+                        EntityProperties properties = (EntityProperties) Objects.requireNonNull(nodeProperties, "parser requires properties");
                         int entityFlags = 0;
                         if (properties.isSingleTarget()) {
                             entityFlags |= ENTITY_FLAG_SINGLE_TARGET;
@@ -292,9 +293,9 @@ public class ClientboundCommandsPacket implements MinecraftPacket {
 
                         out.writeByte(entityFlags);
                     }
-                    case SCORE_HOLDER -> out.writeBoolean(((ScoreHolderProperties) node.getProperties()).isAllowMultiple());
-                    case TIME -> out.writeInt(((TimeProperties) node.getProperties()).getMin());
-                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY, RESOURCE_SELECTOR -> MinecraftTypes.writeResourceLocation(out, ((ResourceProperties) node.getProperties()).getRegistryKey());
+                    case SCORE_HOLDER -> out.writeBoolean(((ScoreHolderProperties) Objects.requireNonNull(nodeProperties, "parser requires properties")).isAllowMultiple());
+                    case TIME -> out.writeInt(((TimeProperties) Objects.requireNonNull(nodeProperties, "parser requires properties")).getMin());
+                    case RESOURCE_OR_TAG, RESOURCE_OR_TAG_KEY, RESOURCE, RESOURCE_KEY, RESOURCE_SELECTOR -> MinecraftTypes.writeResourceLocation(out, ((ResourceProperties) Objects.requireNonNull(nodeProperties, "parser requires properties")).getRegistryKey());
                     default -> {
                     }
                 }

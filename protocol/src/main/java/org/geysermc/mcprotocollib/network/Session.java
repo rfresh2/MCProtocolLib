@@ -64,7 +64,7 @@ public interface Session {
      *
      * @return The local address, or null if the session is not connected.
      */
-    SocketAddress getLocalAddress();
+    @Nullable SocketAddress getLocalAddress();
 
     /**
      * Gets the remote address of the session.
@@ -86,7 +86,7 @@ public interface Session {
      *
      * @return This session's flags.
      */
-    Map<String, Object> getFlags();
+    Map<String, @Nullable Object> getFlags();
 
     /**
      * Checks whether this session has a flag set. If this session belongs to a server,
@@ -107,7 +107,7 @@ public interface Session {
      * @return Value of the flag.
      * @throws IllegalStateException If the flag's value isn't of the required type.
      */
-    <T> T getFlag(Flag<T> flag);
+    <T extends @Nullable Object> @Nullable T getFlag(Flag<T> flag);
 
     /**
      * Gets the value of the given flag as an instance of the given type. If this
@@ -120,7 +120,7 @@ public interface Session {
      * @return Value of the flag.
      * @throws IllegalStateException If the flag's value isn't of the required type.
      */
-    <T> T getFlag(Flag<T> flag, T def);
+    <T extends @Nullable Object> T getFlag(Flag<T> flag, T def);
 
     /**
      * Sets the value of a flag. This does not change a server's flags if this session
@@ -130,7 +130,7 @@ public interface Session {
      * @param flag Flag to check for.
      * @param value Value to set the flag to.
      */
-    <T> void setFlag(Flag<T> flag, T value);
+    <T extends @Nullable Object> void setFlag(Flag<T> flag, T value);
 
     /**
      * Sets the values for a collection of flags.
@@ -306,7 +306,7 @@ public interface Session {
      * @param reason Reason for disconnecting.
      * @see #disconnect(String, Throwable)
      */
-    default void disconnect(@NonNull String reason) {
+    default void disconnect(String reason) {
         this.disconnect(reason, null);
     }
 
@@ -319,7 +319,7 @@ public interface Session {
      * @param cause Throwable responsible for disconnecting.
      * @see #disconnect(Component, Throwable)
      */
-    default void disconnect(@NonNull String reason, @Nullable Throwable cause) {
+    default void disconnect(String reason, @Nullable Throwable cause) {
         this.disconnect(Component.text(reason), cause);
     }
 
@@ -328,7 +328,7 @@ public interface Session {
      *
      * @param reason Reason for disconnecting.
      */
-    default void disconnect(@NonNull Component reason) {
+    default void disconnect(Component reason) {
         this.disconnect(reason, null);
     }
 
@@ -338,7 +338,7 @@ public interface Session {
      * @param reason Reason for disconnecting.
      * @param cause  Throwable responsible for disconnecting.
      */
-    void disconnect(@NonNull Component reason, @Nullable Throwable cause);
+    void disconnect(Component reason, @Nullable Throwable cause);
 
     /**
      * Auto read in netty means that the server is automatically reading from the channel.

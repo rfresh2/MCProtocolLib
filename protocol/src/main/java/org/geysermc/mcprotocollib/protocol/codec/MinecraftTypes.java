@@ -142,7 +142,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.TagSlot
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.WithAnyPotionSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.recipe.display.slot.WithRemainderSlotDisplay;
 import org.geysermc.mcprotocollib.protocol.data.game.statistic.StatisticCategory;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -161,6 +160,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
@@ -355,7 +355,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static <T> T readLengthPrefixed(ByteBuf buf, int maxLength, Function<ByteBuf, T> reader) {
+    public static <T extends @Nullable Object> T readLengthPrefixed(ByteBuf buf, int maxLength, Function<ByteBuf, T> reader) {
         int length = MinecraftTypes.readVarInt(buf);
         if (length > maxLength) {
             throw new IllegalArgumentException("Buffer is longer than maximum allowed length");
@@ -367,7 +367,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static <T> void writeLengthPrefixed(ByteBuf buf, int maxLength, T value, BiConsumer<ByteBuf, T> writer) {
+    public static <T extends @Nullable Object> void writeLengthPrefixed(ByteBuf buf, int maxLength, T value, BiConsumer<ByteBuf, T> writer) {
         buf.markWriterIndex();
         buf.writeMedium(0);
         int start = buf.writerIndex();
@@ -617,17 +617,15 @@ public class MinecraftTypes {
         });
     }
 
-    @Nullable
-    public static ItemStack readOptionalItemStack(ByteBuf buf) {
+    public static @Nullable ItemStack readOptionalItemStack(ByteBuf buf) {
         return MinecraftTypes.readOptionalItemStack(buf, false);
     }
 
-    public static void writeOptionalItemStack(ByteBuf buf, ItemStack item) {
+    public static void writeOptionalItemStack(ByteBuf buf, @Nullable ItemStack item) {
         MinecraftTypes.writeOptionalItemStack(buf, item, false);
     }
 
-    @Nullable
-    public static ItemStack readOptionalItemStack(ByteBuf buf, boolean untrusted) {
+    public static @Nullable ItemStack readOptionalItemStack(ByteBuf buf, boolean untrusted) {
         int count = MinecraftTypes.readVarInt(buf);
         if (count <= 0) {
             return null;
@@ -643,7 +641,7 @@ public class MinecraftTypes {
         return new ItemStack(item, count, components);
     }
 
-    public static void writeOptionalItemStack(ByteBuf buf, ItemStack item, boolean untrusted) {
+    public static void writeOptionalItemStack(ByteBuf buf, @Nullable ItemStack item, boolean untrusted) {
         boolean empty = item == null || item.getAmount() <= 0;
         MinecraftTypes.writeVarInt(buf, !empty ? item.getAmount() : 0);
         if (!empty) {
@@ -652,12 +650,14 @@ public class MinecraftTypes {
         }
     }
 
-    @NotNull
     public static ItemStack readItemStack(ByteBuf buf) {
-        return MinecraftTypes.readOptionalItemStack(buf);
+        return Objects.requireNonNull(MinecraftTypes.readOptionalItemStack(buf), "expected non-empty item stack");
     }
 
-    public static void writeItemStack(ByteBuf buf, @NotNull ItemStack item) {
+    public static void writeItemStack(ByteBuf buf, ItemStack item) {
+        if (item.getAmount() <= 0) {
+            throw new IllegalArgumentException("Expected non-empty item stack");
+        }
         MinecraftTypes.writeOptionalItemStack(buf, item);
     }
 
@@ -706,7 +706,7 @@ public class MinecraftTypes {
         return new DataComponents(dataComponents);
     }
 
-    public static void writeDataComponentPatch(ByteBuf buf, DataComponents dataComponents, boolean untrusted) {
+    public static void writeDataComponentPatch(ByteBuf buf, @Nullable DataComponents dataComponents, boolean untrusted) {
         if (dataComponents == null) {
             MinecraftTypes.writeVarInt(buf, 0);
             MinecraftTypes.writeVarInt(buf, 0);
@@ -1191,7 +1191,7 @@ public class MinecraftTypes {
         MinecraftTypes.writeParticleData(buf, particle.getType(), particle.getData());
     }
 
-    public static ParticleData readParticleData(ByteBuf buf, ParticleType type) {
+    public static @Nullable ParticleData readParticleData(ByteBuf buf, ParticleType type) {
         return switch (type) {
             case BLOCK, BLOCK_MARKER, FALLING_DUST, DUST_PILLAR, BLOCK_CRUMBLE -> new BlockParticleData(MinecraftTypes.readVarInt(buf));
             case GEYSER, GEYSER_PLUME -> new GeyserParticleData(buf.readInt());
@@ -1223,7 +1223,7 @@ public class MinecraftTypes {
         };
     }
 
-    public static void writeParticleData(ByteBuf buf, ParticleType type, ParticleData data) {
+    public static void writeParticleData(ByteBuf buf, ParticleType type, @Nullable ParticleData data) {
         if (data == null) {
             return;
         }
@@ -1396,9 +1396,9 @@ public class MinecraftTypes {
         }
     }
 
-    @Nullable
     public static BlockEntityType readBlockEntityType(ByteBuf buf) {
-        return BlockEntityType.from(MinecraftTypes.readVarInt(buf));
+        int id = MinecraftTypes.readVarInt(buf);
+        return Objects.requireNonNull(BlockEntityType.from(id), "Received invalid block entity type: " + id);
     }
 
     public static void writeBlockEntityType(ByteBuf buf, BlockEntityType type) {
@@ -1648,7 +1648,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static DebugInfo readDebugSubscriptionUpdate(ByteBuf buf, DebugSubscriptions type) {
+    public static @Nullable DebugInfo readDebugSubscriptionUpdate(ByteBuf buf, DebugSubscriptions type) {
         if (type == DebugSubscriptions.DEDICATED_SERVER_TICK_TIME) {
             // This throws an NPE in vanilla, currently just returning for leniency
             return DedicatedServerTickTimeInfo.INSTANCE;
@@ -1661,7 +1661,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static void writeDebugSubscriptionUpdate(ByteBuf buf, DebugSubscriptions type, DebugInfo debugInfo) {
+    public static void writeDebugSubscriptionUpdate(ByteBuf buf, DebugSubscriptions type, @Nullable DebugInfo debugInfo) {
         if (type == DebugSubscriptions.DEDICATED_SERVER_TICK_TIME) {
             // This throws an NPE in vanilla, currently just returning for leniency
             return;
@@ -1674,7 +1674,7 @@ public class MinecraftTypes {
         MinecraftTypes.writeDebugSubscription(buf, type, debugInfo);
     }
 
-    public static DebugInfo readDebugSubscription(ByteBuf buf, DebugSubscriptions type) {
+    public static @Nullable DebugInfo readDebugSubscription(ByteBuf buf, DebugSubscriptions type) {
         DebugInfo info;
         switch (type) {
             case BEES -> {
@@ -1774,8 +1774,8 @@ public class MinecraftTypes {
         return info;
     }
 
-    public static void writeDebugSubscription(ByteBuf buf, DebugSubscriptions type, DebugInfo debugInfo) {
-        if (type == DebugSubscriptions.DEDICATED_SERVER_TICK_TIME) {
+    public static void writeDebugSubscription(ByteBuf buf, DebugSubscriptions type, @Nullable DebugInfo debugInfo) {
+        if (type == DebugSubscriptions.DEDICATED_SERVER_TICK_TIME || debugInfo == null) {
             // This throws an NPE in vanilla, currently just returning for leniency
             return;
         }
@@ -1935,7 +1935,7 @@ public class MinecraftTypes {
             return;
         }
 
-        buf.writeByte(palette.getStorage().getBitsPerEntry());
+        buf.writeByte(Objects.requireNonNull(palette.getStorage(), "DataPalette must have BitStorage if not singleton").getBitsPerEntry());
 
         if (!(palette.getPalette() instanceof GlobalPalette)) {
             int paletteLength = palette.getPalette().size();
@@ -2027,8 +2027,8 @@ public class MinecraftTypes {
     }
 
     public static void writeStaticGameProfile(ByteBuf buf, GameProfile profile) {
-        MinecraftTypes.writeUUID(buf, profile.getId());
-        MinecraftTypes.writeString(buf, profile.getName());
+        MinecraftTypes.writeUUID(buf, Objects.requireNonNull(profile.getId(), "static game profile must have UUID"));
+        MinecraftTypes.writeString(buf, Objects.requireNonNull(profile.getName(), "static game profile must have name"));
         MinecraftTypes.writeList(buf, profile.getProperties(), MinecraftTypes::writeProperty);
     }
 
@@ -2060,10 +2060,11 @@ public class MinecraftTypes {
 
     public static void writeResolvableFloat(ByteBuf buf, ResolvableFloat number) {
         buf.writeBoolean(number.isConstant());
-        if (number.isConstant())
+        if (number.isConstant()) {
             buf.writeFloat(number.value());
-        else
-            MinecraftTypes.writeResourceLocation(buf, number.key());
+        } else {
+            MinecraftTypes.writeResourceLocation(buf, Objects.requireNonNull(number.key(), "ResolvableFloat must have key if not constant"));
+        }
     }
 
     public static ResolvableInt readResolvableInt(ByteBuf buf) {
@@ -2076,10 +2077,11 @@ public class MinecraftTypes {
 
     public static void writeResolvableInt(ByteBuf buf, ResolvableInt number) {
         buf.writeBoolean(number.isConstant());
-        if (number.isConstant())
+        if (number.isConstant()) {
             buf.writeInt(number.value());
-        else
-            MinecraftTypes.writeResourceLocation(buf, number.key());
+        } else {
+            MinecraftTypes.writeResourceLocation(buf, Objects.requireNonNull(number.key(), "ResolvableInt must have key if not constant"));
+        }
     }
 
     public static ResolvableProfile readResolvableProfile(ByteBuf buf) {

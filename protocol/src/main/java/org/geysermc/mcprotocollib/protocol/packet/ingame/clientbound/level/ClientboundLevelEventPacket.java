@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -28,14 +27,14 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.event.UnknownLevelEve
 @With
 @AllArgsConstructor
 public class ClientboundLevelEventPacket implements MinecraftPacket {
-    private final @NonNull LevelEvent event;
+    private final LevelEvent event;
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull LevelEventData data;
+    private final LevelEventData data;
     private final boolean broadcast;
 
-    public ClientboundLevelEventPacket(@NonNull LevelEvent event, int x, int y, int z, @NonNull LevelEventData data) {
+    public ClientboundLevelEventPacket(LevelEvent event, int x, int y, int z, LevelEventData data) {
         this(event, x, y, z, data, false);
     }
 

@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type;
 
 import io.netty.buffer.ByteBuf;
-import lombok.NonNull;
 import lombok.Setter;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.FloatMetadataType;
@@ -10,7 +9,7 @@ public class FloatEntityMetadata extends EntityMetadata<Float, FloatMetadataType
     @Setter
     private float value;
 
-    public FloatEntityMetadata(int id, @NonNull FloatMetadataType type, float value) {
+    public FloatEntityMetadata(int id, FloatMetadataType type, float value) {
         super(id, type);
         this.value = value;
     }

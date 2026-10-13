@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.pla
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -26,7 +25,7 @@ public class ClientboundPlayerPositionPacket implements MinecraftPacket {
     private final double deltaZ;
     private final float yaw;
     private final float pitch;
-    private final @NonNull List<PositionElement> relatives;
+    private final List<PositionElement> relatives;
 
     public ClientboundPlayerPositionPacket(int id, double x, double y, double z, double deltaX, double deltaY, double deltaZ, float yaw, float pitch) {
         this.id = id;

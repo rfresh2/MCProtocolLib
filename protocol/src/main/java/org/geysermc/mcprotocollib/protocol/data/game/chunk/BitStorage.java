@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -20,7 +19,7 @@ public class BitStorage {
     }
 
     @Getter
-    private final long @NonNull [] data;
+    private final long [] data;
     @Getter
     private final int bitsPerEntry;
     @Getter

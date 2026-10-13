@@ -4,7 +4,6 @@ import com.viaversion.nbt.mini.MNBT;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -18,7 +17,7 @@ public class ClientboundBlockEntityDataPacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull BlockEntityType type;
+    private final BlockEntityType type;
     private final @Nullable MNBT nbt;
 
     public ClientboundBlockEntityDataPacket(ByteBuf in) {

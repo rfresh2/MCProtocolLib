@@ -2,8 +2,8 @@ package org.geysermc.mcprotocollib.protocol.data.game.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import org.geysermc.mcprotocollib.protocol.data.game.command.properties.CommandProperties;
+import org.jspecify.annotations.Nullable;
 
 import java.util.OptionalInt;
 
@@ -13,7 +13,7 @@ public class CommandNode {
     /**
      * Type of command.
      */
-    private final @NonNull CommandType type;
+    private final CommandType type;
 
     /**
      * Whether the node is executable.
@@ -28,7 +28,7 @@ public class CommandNode {
     /**
      * Child node indices.
      */
-    private final int @NonNull [] childIndices;
+    private final int [] childIndices;
 
     /**
      * Redirect index, or empty if none is set.
@@ -38,21 +38,21 @@ public class CommandNode {
     /**
      * Name of the node, if type is LITERAL or ARGUMENT.
      */
-    private final String name;
+    private final @Nullable String name;
 
     /**
      * Node parser, if type is ARGUMENT.
      */
-    private final CommandParser parser;
+    private final @Nullable CommandParser parser;
 
     /**
      * Command properties, if type is ARGUMENT and the parser has properties.
      */
-    private final CommandProperties properties;
+    private final @Nullable CommandProperties properties;
 
     /**
      * Suggestions type, if present.
      * See {@link SuggestionType} for vanilla defaults.
      */
-    private final String suggestionType;
+    private final @Nullable String suggestionType;
 }

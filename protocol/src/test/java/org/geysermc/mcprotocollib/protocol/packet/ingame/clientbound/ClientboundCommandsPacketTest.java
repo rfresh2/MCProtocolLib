@@ -81,6 +81,17 @@ public class ClientboundCommandsPacketTest extends PacketTest {
                                 CommandParser.STRING,
                                 StringProperties.SINGLE_WORD,
                                 SuggestionType.AVAILABLE_SOUNDS.getResourceLocation()
+                        ),
+                        new CommandNode(
+                                CommandType.ARGUMENT,
+                                false,
+                                false,
+                                new int[0],
+                                OptionalInt.empty(),
+                                "BooleanArgument",
+                                CommandParser.BOOL,
+                                null,
+                                null
                         )
                 },
                 0

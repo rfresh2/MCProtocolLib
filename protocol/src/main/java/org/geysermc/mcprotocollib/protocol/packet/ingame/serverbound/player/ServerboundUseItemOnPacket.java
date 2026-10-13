@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -17,8 +16,8 @@ public class ServerboundUseItemOnPacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull Direction face;
-    private final @NonNull Hand hand;
+    private final Direction face;
+    private final Hand hand;
     private final float cursorX;
     private final float cursorY;
     private final float cursorZ;

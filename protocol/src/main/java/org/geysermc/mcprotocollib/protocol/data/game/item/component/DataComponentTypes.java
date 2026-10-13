@@ -19,6 +19,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.item.component.type.IntData
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.type.ObjectDataComponent;
 import org.geysermc.mcprotocollib.protocol.data.game.level.block.BlockEntityType;
 import org.geysermc.mcprotocollib.protocol.data.game.level.sound.Sound;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +91,7 @@ public class DataComponentTypes {
     public static final DataComponentType<MNBT> DEBUG_STICK_STATE = register(id -> new DataComponentType<>(id, "debug_stick_state", MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectDataComponent::new));
     public static final DataComponentType<TypedEntityData<EntityType>> ENTITY_DATA = register(id -> new DataComponentType<>(id, "entity_data", buf -> ItemTypes.readTypedEntityData(buf, ItemTypes::readEntityType), (buf, data) -> ItemTypes.writeTypedEntityData(buf, data, ItemTypes::writeEntityType), ObjectDataComponent::new));
     public static final DataComponentType<MNBT> BUCKET_ENTITY_DATA = register(id -> new DataComponentType<>(id, "bucket_entity_data", MinecraftTypes::readMNBT, MinecraftTypes::writeMNBT, ObjectDataComponent::new));
-    public static final DataComponentType<TypedEntityData<BlockEntityType>> BLOCK_ENTITY_DATA = register(id -> new DataComponentType<>(id, "block_entity_data", buf -> ItemTypes.readTypedEntityData(buf, ItemTypes::readBlockEntityType), (buf, data) -> ItemTypes.writeTypedEntityData(buf, data, ItemTypes::writeBlockEntityType), ObjectDataComponent::new));
+    public static final DataComponentType<TypedEntityData<BlockEntityType>> BLOCK_ENTITY_DATA = register(id -> new DataComponentType<>(id, "block_entity_data", buf -> ItemTypes.readTypedEntityData(buf, MinecraftTypes::readBlockEntityType), (buf, data) -> ItemTypes.writeTypedEntityData(buf, data, MinecraftTypes::writeBlockEntityType), ObjectDataComponent::new));
     public static final DataComponentType<Holder<Instrument>> INSTRUMENT = register(id -> new DataComponentType<>(id, "instrument", buf -> MinecraftTypes.readHolder(buf, ItemTypes::readInstrument), (buf, data) -> MinecraftTypes.writeHolder(buf, data, ItemTypes::writeInstrument), ObjectDataComponent::new));
     public static final DataComponentType<Holder<ArmorTrim.TrimMaterial>> PROVIDES_TRIM_MATERIAL = register(id -> new DataComponentType<>(id, "provides_trim_material", buf -> MinecraftTypes.readHolder(buf, ItemTypes::readTrimMaterial), (buf, data) -> MinecraftTypes.writeHolder(buf, data, ItemTypes::writeTrimMaterial), ObjectDataComponent::new));
     public static final IntComponentType OMINOUS_BOTTLE_AMPLIFIER = register(id -> new IntComponentType(id, "ominous_bottle_amplifier", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
@@ -243,7 +244,7 @@ public class DataComponentTypes {
         return VALUES.get(id);
     }
 
-    public static DataComponentType<?> fromKey(Key key) {
+    public static @Nullable DataComponentType<?> fromKey(Key key) {
         return VALUES.stream().filter(component -> component.getKey().equals(key)).findFirst().orElse(null);
     }
 

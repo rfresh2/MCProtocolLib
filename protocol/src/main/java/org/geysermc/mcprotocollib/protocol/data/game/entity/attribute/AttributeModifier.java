@@ -7,7 +7,7 @@ import lombok.NonNull;
 public class AttributeModifier {
     private final @NonNull String id;
     private final double amount;
-    private final @NonNull ModifierOperation operation;
+    private final ModifierOperation operation;
 
     public AttributeModifier(@NonNull String id, double amount, @NonNull ModifierOperation operation) {
         this.id = id;

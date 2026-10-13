@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.With;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftPacket;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
@@ -20,8 +19,8 @@ public class ServerboundSetCommandBlockPacket implements MinecraftPacket {
     private final int x;
     private final int y;
     private final int z;
-    private final @NonNull String command;
-    private final @NonNull CommandBlockMode mode;
+    private final String command;
+    private final CommandBlockMode mode;
     private final boolean doesTrackOutput;
     private final boolean conditional;
     private final boolean automatic;

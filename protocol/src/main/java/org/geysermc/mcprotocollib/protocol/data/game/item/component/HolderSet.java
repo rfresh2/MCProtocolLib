@@ -20,7 +20,7 @@ public final class HolderSet {
     private final @Nullable String location;
     private final @Nullable IntList holders;
 
-    public HolderSet(@NonNull IntList holders) {
+    public HolderSet(IntList holders) {
         this.location = null;
         this.holders = new IntArrayList(holders);
     }
@@ -41,6 +41,7 @@ public final class HolderSet {
             return holders;
         }
 
+        assert location != null;
         return tagResolver.apply(location);
     }
 

@@ -1,7 +1,6 @@
 package org.geysermc.mcprotocollib.protocol;
 
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.auth.GameProfile;
@@ -51,7 +50,7 @@ import java.util.Objects;
  */
 @AllArgsConstructor
 public class ClientListener extends SessionAdapter {
-    private final @NonNull ProtocolState targetState;
+    private final ProtocolState targetState;
     private final boolean transferring;
 
     @SneakyThrows
@@ -82,7 +81,7 @@ public class ClientListener extends SessionAdapter {
                 // TODO: Add generic error, disabled multiplayer and banned from playing online errors
                 try {
                     if (helloPacket.isShouldAuthenticate()) {
-                        sessionService.joinServer(Objects.requireNonNull(profile, "final shouldAuthenticate changed value?"), accessToken, serverId);
+                        sessionService.joinServer(Objects.requireNonNull(profile, "final shouldAuthenticate changed value?"), Objects.requireNonNull(accessToken, "accessToken is required to join server"), serverId);
                     }
                 } catch (IOException e) {
                     session.disconnect(Component.translatable("disconnect.loginFailedInfo", Component.text(e.getMessage())), e);
@@ -168,8 +167,9 @@ public class ClientListener extends SessionAdapter {
         session.switchOutboundState(this.targetState);
         switch (this.targetState) {
             case LOGIN -> {
-                GameProfile profile = session.getFlag(MinecraftConstants.PROFILE_KEY);
-                session.send(new ServerboundHelloPacket(profile.getName(), profile.getId()));
+                GameProfile profile = Objects.requireNonNull(session.getFlag(MinecraftConstants.PROFILE_KEY), "PROFILE_KEY required for ServerboundHelloPacket");
+                session.send(new ServerboundHelloPacket(Objects.requireNonNull(profile.getName(), "GameProfile requires name for ServerboundHelloPacket"),
+                    Objects.requireNonNull(profile.getId(), "GameProfile requires name for ServerboundHelloPacket")));
             }
             case STATUS -> session.send(new ServerboundStatusRequestPacket());
             default -> throw new IllegalStateException("Unexpected value: " + targetState);
