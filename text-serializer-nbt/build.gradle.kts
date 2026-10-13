@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-version = "0.1.0"
+version = "0.2.1"
 description = "Adventure text component serializers for Cloudburst's NBT library"
 val javaVersion = JavaLanguageVersion.of(25)
 

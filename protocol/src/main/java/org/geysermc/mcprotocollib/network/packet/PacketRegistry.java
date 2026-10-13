@@ -9,6 +9,9 @@ import org.geysermc.mcprotocollib.network.Session;
 import org.geysermc.mcprotocollib.network.codec.PacketDefinition;
 import org.geysermc.mcprotocollib.network.codec.PacketSerializer;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * A protocol for packet sending and receiving.
  * All implementations must have a constructor that takes in a {@link ByteBuf}.
@@ -252,5 +255,19 @@ public class PacketRegistry {
         }
 
         return definition;
+    }
+
+    /**
+     * @return a collection of all serverbound packets in the registry
+     */
+    public Collection<PacketDefinition<? extends Packet>> getAllServerboundPackets() {
+        return Collections.unmodifiableCollection(serverbound.values());
+    }
+
+    /**
+     * @return a collection of all clientbound packets in the registry
+     */
+    public Collection<PacketDefinition<? extends Packet>> getAllClientboundPackets() {
+        return Collections.unmodifiableCollection(clientbound.values());
     }
 }
