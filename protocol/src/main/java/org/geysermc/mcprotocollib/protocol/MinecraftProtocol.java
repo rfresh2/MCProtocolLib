@@ -6,7 +6,6 @@ import com.viaversion.nbt.tag.CompoundTag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.network.Server;
 import org.geysermc.mcprotocollib.network.Session;
@@ -16,6 +15,7 @@ import org.geysermc.mcprotocollib.network.packet.PacketRegistry;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftCodec;
 import org.geysermc.mcprotocollib.protocol.codec.PacketCodec;
 import org.geysermc.mcprotocollib.protocol.data.ProtocolState;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

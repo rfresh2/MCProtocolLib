@@ -2,7 +2,7 @@ package org.geysermc.mcprotocollib.protocol.data.game.entity.player;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public enum Animation {
     SWING_ARM(0),

@@ -2,7 +2,7 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import lombok.Data;
 import lombok.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.function.Function;
