@@ -1,24 +1,24 @@
 package org.geysermc.adventure.text.serializer.nbt;
 
+import com.viaversion.nbt.tag.CompoundTag;
 import net.kyori.adventure.dialog.DialogLike;
 import net.kyori.adventure.key.Key;
-import org.cloudburstmc.nbt.NbtMap;
 
 import java.util.Optional;
 
 /**
  * Represents a dialog. This can hold either a {@link Key} reference to a dialog loaded in the {@code "minecraft:dialog"} registry, or an
- * inline-defined dialog serialized as {@link NbtMap}. Instances of this record will always hold one of the two, never both, and never none.
+ * inline-defined dialog serialized as {@link CompoundTag}. Instances of this record will always hold one of the two, never both, and never none.
  *
- * @param reference a reference to a dialog loaded in the {@code "minecraft:dialog"} registy
- * @param inline an inline-defined dialog, serialized as {@link NbtMap}
+ * @param reference a reference to a dialog loaded in the {@code "minecraft:dialog"} registry
+ * @param inline an inline-defined dialog, serialized as {@link CompoundTag}
  * @see NbtComponentSerializer
  */
-public record NbtDialog(Optional<Key> reference, Optional<NbtMap> inline) implements DialogLike {
+public record NbtDialog(Optional<Key> reference, Optional<CompoundTag> inline) implements DialogLike {
 
     public NbtDialog {
         if (reference.isPresent() == inline.isPresent()) {
-            throw new IllegalArgumentException("NbtDialog must either have a reference ID or an inline NbtMap, not none or both!");
+            throw new IllegalArgumentException("NbtDialog must either have a reference ID or an inline CompoundTag, not none or both!");
         }
     }
 
@@ -26,7 +26,7 @@ public record NbtDialog(Optional<Key> reference, Optional<NbtMap> inline) implem
         this(Optional.of(reference), Optional.empty());
     }
 
-    public NbtDialog(NbtMap inline) {
+    public NbtDialog(CompoundTag inline) {
         this(Optional.empty(), Optional.of(inline));
     }
 }

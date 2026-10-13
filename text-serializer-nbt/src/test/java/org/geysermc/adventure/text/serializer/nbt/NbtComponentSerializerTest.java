@@ -1,5 +1,7 @@
 package org.geysermc.adventure.text.serializer.nbt;
 
+import com.viaversion.nbt.tag.CompoundTag;
+import com.viaversion.nbt.tag.ListTag;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.BlockNBTComponent;
 import net.kyori.adventure.text.Component;
@@ -11,10 +13,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.object.ObjectContents;
-import org.cloudburstmc.nbt.NbtList;
-import org.cloudburstmc.nbt.NbtMap;
-import org.cloudburstmc.nbt.NbtMapBuilder;
-import org.cloudburstmc.nbt.NbtType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,16 +24,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class NbtComponentSerializerTest {
-    private static final NbtMapBuilder TRANSLATE_COMPONENT_TEST_CASE = NbtMap.builder()
-        .putString("translate", "message.about.cats")
-        .putString("fallback", "another.message");
+    private static final CompoundTag TRANSLATE_COMPONENT_TEST_CASE = TestTags.compound("translate", "message.about.cats", "fallback", "another.message");
 
     static {
-        // Not a fan, Cloudburts/NBT
-        TRANSLATE_COMPONENT_TEST_CASE.put("with", HeterogeneousNbtList.of("argument 1", NbtMap.builder()
-            .putString("text", "argument 2")
-            .putString("color", "gray")
-            .build()));
+        TRANSLATE_COMPONENT_TEST_CASE.put("with", TestTags.list("argument 1", TestTags.compound("text", "argument 2", "color", "gray")));
     }
 
     static final List<Arguments> GENERAL_COMPONENTS = List.of(
@@ -49,39 +41,27 @@ public class NbtComponentSerializerTest {
                 .arguments(Component.text("argument 1"), Component.text("argument 2").color(NamedTextColor.GRAY))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("keybind", "key.left")
-                .putBoolean("italic", false),
+            TestTags.compound("keybind", "key.left", "italic", false),
             Component.keybind("key.left").decoration(TextDecoration.ITALIC, false)
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putCompound("score", NbtMap.builder()
-                    .putString("name", "eclipseisoffline")
-                    .putString("objective", "diamonds_mined")
-                    .build()),
+            TestTags.compound("score", TestTags.compound("name", "eclipseisoffline", "objective", "diamonds_mined")),
             Component.score("eclipseisoffline", "diamonds_mined")
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("selector", "@a"),
+            TestTags.compound("selector", "@a"),
             Component.selector("@a")
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("selector", "@a[tag=cool_people]")
-                .putString("separator", ".-."),
+            TestTags.compound("selector", "@a[tag=cool_people]", "separator", ".-."),
             Component.selector("@a[tag=cool_people]", Component.text(".-."))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "SelectedItem.id")
-                .putString("entity", "@s"),
+            TestTags.compound("nbt", "SelectedItem.id", "entity", "@s"),
             Component.entityNBT("SelectedItem.id", "@s")
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("sprite", "minecraft:emerald"),
+            TestTags.compound("sprite", "minecraft:emerald"),
             Component.object(ObjectContents.sprite(Key.key("emerald")))
         )
     );
@@ -113,21 +93,15 @@ public class NbtComponentSerializerTest {
             TranslationArgument.component(Component.text("hello 1 2 3"))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("text", "hello")
-                .putList("extra", NbtType.STRING, "2", "4")
-                .build(),
+            TestTags.compound("text", "hello", "extra", TestTags.list("2", "4")),
             TranslationArgument.component(Component.text("hello").append(Component.text("2")).append(Component.text("4")))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("translate", "string.3")
-                .putList("extra", NbtType.COMPOUND, NbtMap.builder()
-                    .putString("text", "hello")
-                    .putBoolean("bold", true)
-                    .build())
-                .putString("color", "red")
-                .build(),
+            TestTags.compound(
+                "translate", "string.3",
+                "extra", TestTags.list(TestTags.compound("text", "hello", "bold", true)),
+                "color", "red"
+            ),
             TranslationArgument.component(Component.translatable("string.3")
                 .append(Component.text("hello").decorate(TextDecoration.BOLD))
                 .color(NamedTextColor.RED))
@@ -135,79 +109,57 @@ public class NbtComponentSerializerTest {
     );
     static final List<Arguments> NBT_COMPONENTS = List.of(
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("text", "this is definitely not an nbt contents component"),
+            TestTags.compound("text", "this is definitely not an nbt contents component"),
             Optional.empty()
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "Inventory[0].components.\"minecraft:enchantments\"")
-                .putString("entity", "@s"),
+            TestTags.compound("nbt", "Inventory[0].components.\"minecraft:enchantments\"", "entity", "@s"),
             Optional.of(Component.entityNBT("Inventory[0].components.\"minecraft:enchantments\"", "@s"))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "my_custom.storage_key")
-                .putBoolean("interpret", true)
-                .putString("storage", "geyser:custom_storage"),
+            TestTags.compound("nbt", "my_custom.storage_key", "interpret", true, "storage", "geyser:custom_storage"),
             Optional.of(Component.storageNBT("my_custom.storage_key", Key.key("geyser", "custom_storage")).interpret(true))
         ),
         /*Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "Items[0]")
-                .putBoolean("plain", true)
-                .putString("block", "~ ~5 ~"),
+            TestTags.compound("nbt", "Items[0]", "plain", true, "block", "~ ~5 ~"),
             Optional.of(Component.blockNBT("Items[0]", BlockNBTComponent.Pos.fromString("~ ~5 ~")).plain(true))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "Items[5]")
-                .putString("block", "^ ^ ^15"),
+            TestTags.compound("nbt", "Items[5]", "block", "^ ^ ^15"),
             Optional.of(Component.blockNBT("Items[5]", BlockNBTComponent.Pos.fromString("^ ^ ^15")))
         ),*/ // FIXME enable when adventure fixes Pos.fromstring
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("nbt", "Items[3]")
-                .putString("separator", ".")
-                .putString("block", "1 2 3"),
+            TestTags.compound("nbt", "Items[3]", "separator", ".", "block", "1 2 3"),
             Optional.of(Component.blockNBT("Items[3]", BlockNBTComponent.Pos.fromString("1 2 3")).separator(Component.text(".")))
         )
     );
     static final List<Arguments> OBJECT_COMPONENTS = List.of(
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("text", "dummy test hello"),
+            TestTags.compound("text", "dummy test hello"),
             Optional.empty()
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("sprite", "geyser:gayser_logo"),
+            TestTags.compound("sprite", "geyser:gayser_logo"),
             Optional.of(Component.object(ObjectContents.sprite(Key.key("geyser", "gayser_logo"))))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putString("atlas", "minecraft:item")
-                .putString("sprite", "geyser:gay_diamond")
-                .putString("fallback", "a gay diamond alt text"),
+            TestTags.compound(
+                "atlas", "minecraft:item",
+                "sprite", "geyser:gay_diamond",
+                "fallback", "a gay diamond alt text"
+            ),
             Optional.of(Component.object(ObjectContents.sprite(Key.key("item"), Key.key("geyser", "gay_diamond"))).fallback(Component.text("a gay diamond alt text")))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putCompound("player", NbtMap.builder()
-                    .putString("name", "AuriiU")
-                    .build()),
+            TestTags.compound("player", TestTags.compound("name", "AuriiU")),
             Optional.of(Component.object(ObjectContents.playerHead("AuriiU")))
         ),
         Arguments.arguments(
-            NbtMap.builder()
-                .putCompound("player", NbtMap.builder()
-                    .putIntArray("id", new int[]{568551383, 634342971, -1301730230, 805981675})
-                    .build())
-                .putBoolean("hat", false)
-                .putCompound("fallback", NbtMap.builder()
-                    .putString("keybind", "key.forward")
-                    .putBoolean("strikethrough", true)
-                    .build()),
+            TestTags.compound(
+                "player", TestTags.compound("id", new int[]{568551383, 634342971, -1301730230, 805981675}),
+                "hat", false,
+                "fallback", TestTags.compound("keybind", "key.forward", "strikethrough", true)
+            ),
             Optional.of(Component.object(ObjectContents.playerHead()
                 .id(new UUID(2441909596714913339L, -5590888765258576405L))
                 .hat(false)
@@ -216,7 +168,7 @@ public class NbtComponentSerializerTest {
     );
     static final List<Arguments> LIST_COMPONENTS = List.of(
         Arguments.arguments(
-            HeterogeneousNbtList.of("test", "5", "4", "6"),
+            TestTags.list("test", "5", "4", "6"),
             // When parsing lists, vanilla takes the first component, and appends the rest to that as children
             Component.text("test")
                 .append(Component.text("5"))
@@ -224,22 +176,17 @@ public class NbtComponentSerializerTest {
                 .append(Component.text("6"))
         ),
         Arguments.arguments(
-            HeterogeneousNbtList.of("test", HeterogeneousNbtList.of("5", "4", "6")),
+            TestTags.list("test", TestTags.list("5", "4", "6")),
             Component.text("test")
                 .append(Component.text("5")
                     .append(Component.text("4"))
                     .append(Component.text("6")))
         ),
         Arguments.arguments(
-            HeterogeneousNbtList.of(NbtMap.builder()
-                .putString("translate", "hello.world")
-                .putString("color", "#BBEEBB")
-                .putBoolean("bold", false)
-                .build(),
-                HeterogeneousNbtList.of("123", NbtMap.builder()
-                    .putString("text", "done!")
-                    .putBoolean("bold", true)
-                    .build())),
+            TestTags.list(
+                TestTags.compound("translate", "hello.world", "color", "#BBEEBB", "bold", false),
+                TestTags.list("123", TestTags.compound("text", "done!", "bold", true))
+            ),
             Component.translatable("hello.world")
                 .color(TextColor.fromHexString("#BBEEBB"))
                 .decoration(TextDecoration.BOLD, false)
@@ -254,71 +201,68 @@ public class NbtComponentSerializerTest {
     @ParameterizedTest
     @FieldSource("GENERAL_COMPONENTS")
     void testDeserialize(Object object, Component result) {
-        if (object instanceof NbtMapBuilder builder) {
-            object = builder.build();
-        }
-        Assertions.assertEquals(result, serializer.deserialize(object));
+        Assertions.assertEquals(result, serializer.deserialize(TestTags.tag(object)));
     }
 
     @ParameterizedTest
     @FieldSource("GENERAL_COMPONENTS")
     void testSerialize(Object result, Component component) {
-        Assertions.assertEquals(result, serializer.serialize(component));
+        Assertions.assertEquals(TestTags.tag(result), serializer.serialize(component));
     }
 
     @ParameterizedTest
     @FieldSource("TRANSLATION_ARGUMENTS")
     void testDeserializeTranslationArgument(Object object, TranslationArgument result) {
-        Assertions.assertEquals(result, serializer.deserializeTranslationArgument(object));
+        Assertions.assertEquals(result, serializer.deserializeTranslationArgument(TestTags.tag(object)));
     }
 
     @ParameterizedTest
     @FieldSource("TRANSLATION_ARGUMENTS")
     void testSerializeTranslationArgument(Object result, TranslationArgument argument) {
-        Assertions.assertEquals(result, serializer.serializeTranslationArgument(argument));
+        Assertions.assertEquals(TestTags.tag(result), serializer.serializeTranslationArgument(argument));
     }
 
     @ParameterizedTest
     @FieldSource("NBT_COMPONENTS")
-    void testDeserializeFuzzyNbtContentsComponent(NbtMapBuilder map, Optional<NBTComponent<?>> result) {
-        Assertions.assertEquals(result, serializer.deserializeFuzzyNbtContentsComponent(map.build()).map(ComponentBuilder::build));
+    void testDeserializeFuzzyNbtContentsComponent(CompoundTag map, Optional<NBTComponent<?>> result) {
+        Assertions.assertEquals(result, serializer.deserializeFuzzyNbtContentsComponent(map).map(ComponentBuilder::build));
     }
 
     @ParameterizedTest
     @FieldSource("NBT_COMPONENTS")
-    void testSerializeNbtContentsComponent(NbtMapBuilder result, Optional<NBTComponent<?>> component) {
+    void testSerializeNbtContentsComponent(CompoundTag result, Optional<NBTComponent<?>> component) {
         // If empty then this component isn't an NBT contents component (for deserializing test only), so skip
-        component.ifPresent(nbtComponent -> Assertions.assertEquals(result.build(), serializer.serializeNbtContentsComponent(nbtComponent).build()));
+        component.ifPresent(nbtComponent -> Assertions.assertEquals(result, serializer.serializeNbtContentsComponent(nbtComponent)));
     }
 
     @ParameterizedTest
     @FieldSource("OBJECT_COMPONENTS")
-    void testDeserializeFuzzyObjectComponent(NbtMapBuilder map, Optional<ObjectComponent> result) {
-        Assertions.assertEquals(result, serializer.deserializeFuzzyObjectComponent(map.build()).map(ComponentBuilder::build));
+    void testDeserializeFuzzyObjectComponent(CompoundTag map, Optional<ObjectComponent> result) {
+        Assertions.assertEquals(result, serializer.deserializeFuzzyObjectComponent(map).map(ComponentBuilder::build));
     }
 
     @ParameterizedTest
     @FieldSource("OBJECT_COMPONENTS")
-    void testSerializeObjectComponent(NbtMapBuilder result, Optional<ObjectComponent> component) {
+    void testSerializeObjectComponent(CompoundTag result, Optional<ObjectComponent> component) {
         // If empty then this component isn't an object component (for deserializing test only), so skip
-        component.ifPresent(objectComponent -> Assertions.assertEquals(result.build(), serializer.serializeObjectComponent(objectComponent).build()));
+        component.ifPresent(objectComponent -> Assertions.assertEquals(result, serializer.serializeObjectComponent(objectComponent)));
     }
 
     @ParameterizedTest
     @FieldSource("LIST_COMPONENTS")
-    void testListComponentDeserialize(NbtList<?> list, Component result) {
+    void testListComponentDeserialize(ListTag<?> list, Component result) {
         Assertions.assertEquals(result, serializer.deserialize(list));
     }
 
     @Test
     void testDeserializeInvalidComponent() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> serializer.deserialize(5), "deserialize must throw IllegalArgumentException for invalid components");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> serializer.deserialize(TestTags.tag(5)), "deserialize must throw IllegalArgumentException for invalid components");
     }
 
     @Test
     void testDeserializeInvalidNbtContentsComponent() {
         Assertions.assertThrows(IllegalArgumentException.class,
-            () -> serializer.deserializeFuzzyNbtContentsComponent(NbtMap.builder().putString("nbt", "path_without_spruce").build()),
+            () -> serializer.deserializeFuzzyNbtContentsComponent(TestTags.compound("nbt", "path_without_spruce")),
             "deserializeFuzzyNbtContentsComponent must throw IllegalArgumentException for components without recognised source");
     }
 }

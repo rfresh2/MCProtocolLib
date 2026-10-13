@@ -3,6 +3,7 @@ package org.geysermc.mcprotocollib.protocol.codec;
 import com.google.gson.internal.LazilyParsedNumber;
 import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.mini.MNBTWriter;
+import com.viaversion.nbt.tag.CompoundTag;
 import com.viaversion.nbt.tag.Tag;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
@@ -24,11 +25,12 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.commons.ComponentTreeConstants;
 import net.kyori.adventure.text.object.PlayerHeadObjectContents;
 import net.kyori.adventure.text.object.SpriteObjectContents;
 import net.kyori.adventure.text.serializer.commons.ComponentTreeConstants;
 import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
+import org.geysermc.adventure.text.serializer.nbt.NbtDataComponentValue;
+import org.geysermc.adventure.text.serializer.nbt.NbtDialog;
 import org.slf4j.Logger;
 
 import java.io.DataOutputStream;
@@ -341,24 +343,17 @@ public class BinaryNbtComponentSerializer {
                     case ClickEvent.Payload.Text txt -> {
                         writer.writeStringTag(valueId, txt.value());
                     }
-                    // todo: i think the other click event types don't exist on 1.21.4?
                     case ClickEvent.Payload.Int i -> {
                         writer.writeIntTag(valueId, i.integer());
                     }
-                    // todo: i think this is wrong
-//                case ClickEvent.Payload.Custom custom -> {
-//                    writer.writeStringTag("id", custom.key().asString());
-//                    if (custom.nbt() != null) {
-//                        writer.writeCompoundTag("nbt");
-//                        // todo: write nbt
-//                        writer.writeEndTag();
-//                    }
-//                }
-//                case ClickEvent.Payload.Dialog dialog -> {
-//                    dialog.dialog()
-//                }
-
-                    default -> writer.writeStringTag("value", "suggest_command"); // idk
+                    case ClickEvent.Payload.Custom custom -> writer.writeStringTag("id", custom.key().asString());
+                    case ClickEvent.Payload.Dialog dialog -> {
+                        if (!(dialog.dialog() instanceof NbtDialog nbtDialog)) {
+                            throw new IllegalArgumentException("Unable to encode show_dialog without an NbtDialog");
+                        }
+                        nbtDialog.reference().ifPresent(key -> writer.writeStringTag("dialog", key.asString()));
+                        nbtDialog.inline().ifPresent(tag -> writer.writeTag("dialog", tag));
+                    }
                 }
             }
             writer.writeEndTag();
@@ -393,7 +388,11 @@ public class BinaryNbtComponentSerializer {
                 writer.writeCompoundTag("components");
                 for (var entry : dataComponents.entrySet()) {
                     DataComponentValue dataComponentValue = entry.getValue();
-                    if (dataComponentValue instanceof DataComponentValue.TagSerializable tagSerializable) {
+                    if (dataComponentValue instanceof NbtDataComponentValue nbtComponentValue) {
+                        writer.writeTag(entry.getKey().asString(), nbtComponentValue.tag());
+                    } else if (dataComponentValue instanceof DataComponentValue.Removed) {
+                        writer.writeTag("!" + entry.getKey().asString(), new CompoundTag());
+                    } else if (dataComponentValue instanceof DataComponentValue.TagSerializable tagSerializable) {
                         BinaryTagHolder binaryTag = tagSerializable.asBinaryTag();
                         // todo: not confident this will work
                         //  need to convert this holder into actual nbt somehow

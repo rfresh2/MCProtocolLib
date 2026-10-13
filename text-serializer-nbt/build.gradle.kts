@@ -5,7 +5,7 @@ plugins {
 }
 
 version = "0.2.1"
-description = "Adventure text component serializers for Cloudburst's NBT library"
+description = "Adventure text component serializers for OpenNBT"
 val javaVersion = JavaLanguageVersion.of(25)
 
 repositories {
@@ -17,7 +17,7 @@ repositories {
 dependencies {
     api(libs.jspecify)
     api(libs.adventure.api)
-    api(libs.cloudburstnbt)
+    api(libs.opennbt)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

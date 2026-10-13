@@ -1,12 +1,12 @@
 package org.geysermc.adventure.text.serializer.nbt;
 
+import com.viaversion.nbt.tag.CompoundTag;
+import com.viaversion.nbt.tag.IntArrayTag;
+import com.viaversion.nbt.tag.Tag;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
-import org.cloudburstmc.nbt.NbtMap;
-import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -14,55 +14,54 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 final class HoverEventSerializerImpl {
     @VisibleForTesting
     static final List<HoverEvent.Action<?>> SUPPORTED_EVENTS = List.of(HoverEvent.Action.SHOW_TEXT, HoverEvent.Action.SHOW_ITEM,
         HoverEvent.Action.SHOW_ENTITY, HoverEvent.Action.SHOW_ACHIEVEMENT); // We throw on show_achievement, but that's intended
 
-    static HoverEvent<?> deserialize(NbtMap map, NbtComponentSerializer componentSerializer) {
-        HoverEvent.Action<?> action = HoverEvent.Action.NAMES.valueOrThrow(map.getString("action"));
+    static HoverEvent<?> deserialize(CompoundTag map, NbtComponentSerializer componentSerializer) {
+        var action = HoverEvent.Action.NAMES.valueOrThrow(map.getString("action"));
 
         if (action == HoverEvent.Action.SHOW_TEXT) {
             return HoverEvent.showText(componentSerializer.deserialize(map.get("value")));
         } else if (action == HoverEvent.Action.SHOW_ITEM) {
-            Key id = Key.key(map.getString("id"));
-            int count = map.getInt("count", 1);
-            NbtMap components = map.getCompound("components", null);
+            var id = Key.key(map.getString("id"));
+            var count = map.getInt("count", 1);
+            var components = map.getCompoundTag("components");
             return HoverEvent.showItem(id, count, deserializeDataComponents(components));
         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
-            Key id = Key.key(map.getString("id"));
-            UUID uuid = NbtUtil.deserializeLenientUUID(map.get("uuid"));
-            Object name = map.get("name");
+            var id = Key.key(map.getString("id"));
+            var uuid = NbtUtil.deserializeLenientUUID(map.get("uuid"));
+            var name = map.get("name");
             return HoverEvent.showEntity(id, uuid, componentSerializer.deserializeOrNull(name));
         } else {
             throw new IllegalArgumentException("Don't know how to parse hover event action: " + action.name());
         }
     }
 
-    static NbtMap serialize(HoverEvent<?> event, NbtComponentSerializer componentSerializer) {
-        NbtMapBuilder builder = NbtMap.builder();
+    static CompoundTag serialize(HoverEvent<?> event, NbtComponentSerializer componentSerializer) {
+        var builder = new CompoundTag();
         builder.putString("action", event.action().name());
 
-        HoverEvent.Action<?> action = event.action();
-        Object value = event.value();
+        var action = event.action();
+        var value = event.value();
 
         if (action == HoverEvent.Action.SHOW_TEXT) {
             builder.put("value", componentSerializer.serialize((Component) value));
         } else if (action == HoverEvent.Action.SHOW_ITEM) {
-            HoverEvent.ShowItem item = (HoverEvent.ShowItem) value;
-            builder.put("id", item.item().asString());
+            var item = (HoverEvent.ShowItem) value;
+            builder.putString("id", item.item().asString());
             if (item.count() != 1) {
-                builder.put("count", item.count());
+                builder.putInt("count", item.count());
             }
             if (!item.dataComponents().isEmpty()) {
                 builder.put("components", serializeDataComponents(item.dataComponents()));
             }
         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
-            HoverEvent.ShowEntity entity = (HoverEvent.ShowEntity) value;
+            var entity = (HoverEvent.ShowEntity) value;
             builder.putString("id", entity.type().asString());
-            builder.putIntArray("uuid", NbtUtil.serializeUUID(entity.id()));
+            builder.put("uuid", new IntArrayTag(NbtUtil.serializeUUID(entity.id())));
 
             if (entity.name() != null) {
                 builder.put("name", componentSerializer.serialize(entity.name()));
@@ -71,16 +70,16 @@ final class HoverEventSerializerImpl {
             throw new IllegalArgumentException("Don't know how to encode hover event action: " + action.name());
         }
 
-        return builder.build();
+        return builder;
     }
 
-    private static Map<Key, ? extends DataComponentValue> deserializeDataComponents(@Nullable NbtMap components) {
+    private static Map<Key, ? extends DataComponentValue> deserializeDataComponents(@Nullable CompoundTag components) {
         if (components == null) {
             return Map.of();
         }
 
-        Map<Key, DataComponentValue> deserialized = new HashMap<>();
-        components.forEach((string, tag) -> {
+        var deserialized = new HashMap<Key, DataComponentValue>();
+        components.getValue().forEach((string, tag) -> {
             // '!' indicates removed component
             if (string.startsWith("!")) {
                 deserialized.put(Key.key(string.substring(1)), DataComponentValue.removed());
@@ -92,22 +91,22 @@ final class HoverEventSerializerImpl {
     }
 
     @VisibleForTesting
-    static NbtMap serializeDataComponents(Map<Key, ? extends DataComponentValue> components) {
+    static CompoundTag serializeDataComponents(Map<Key, ? extends DataComponentValue> components) {
         if (components.isEmpty()) {
-            return NbtMap.EMPTY;
+            return new CompoundTag();
         }
 
-        NbtMapBuilder serialized = NbtMap.builder();
+        var serialized = new CompoundTag();
         components.forEach((key, component) -> {
             if (component instanceof DataComponentValue.Removed) {
                 // Removed components are prefixed with a '!', and always represented as an empty map
-                serialized.putCompound("!" + key.asString(), NbtMap.EMPTY);
-            } else if (component instanceof NbtDataComponentValue(Object tag)) {
+                serialized.put("!" + key.asString(), new CompoundTag());
+            } else if (component instanceof NbtDataComponentValue(Tag tag)) {
                 serialized.put(key.asString(), tag);
             } else {
                 throw new IllegalArgumentException("Don't know how to serialise component of type: " + component.getClass());
             }
         });
-        return serialized.build();
+        return serialized;
     }
 }

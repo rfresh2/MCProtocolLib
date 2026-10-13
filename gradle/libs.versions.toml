@@ -4,7 +4,7 @@ metadata.format.version = "1.1"
 jspecify = "1.0.0"
 
 adventure = "5.2.0"
-cloudburstnbt = "3.1.0.Final"
+opennbt = "3.0.13"
 slf4j = "2.0.9"
 math = "2.0"
 fastutil-maps = "8.5.3"
@@ -25,7 +25,7 @@ jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 adventure-text-serializer-gson = { module = "net.kyori:adventure-text-serializer-gson", version.ref = "adventure" }
 
-cloudburstnbt = { module = "org.cloudburstmc:nbt", version.ref = "cloudburstnbt" }
+opennbt = { module = "com.github.rfresh2:OpenNBT", version.ref = "opennbt" }
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }

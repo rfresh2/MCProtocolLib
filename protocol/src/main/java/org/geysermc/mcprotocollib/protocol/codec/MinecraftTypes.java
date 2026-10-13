@@ -18,8 +18,6 @@ import org.cloudburstmc.math.imaginary.Quaternionf;
 import org.cloudburstmc.math.vector.Vector3d;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
-import org.cloudburstmc.nbt.NBTInputStream;
-import org.cloudburstmc.nbt.NbtType;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.geysermc.mcprotocollib.auth.texture.TextureModel;
 import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
@@ -1052,27 +1050,16 @@ public class MinecraftTypes {
     }
 
     @Nullable
-    public static Object readAnyTagCloudburst(ByteBuf buf) {
-        try {
-            ByteBufInputStream input = new ByteBufInputStream(buf);
-
-            int typeId = input.readUnsignedByte();
-            if (typeId == 0) {
-                return null;
-            }
-
-            NbtType<?> type = NbtType.byId(typeId);
-
-            // Mojang's codecs, for untrusted sources, use a maximum size of 2048 KiB when reading: https://mcsrc.dev/2/26.2/net/minecraft/nbt/NbtAccounter#L6
-            return new NBTInputStream(input, 2097152L).readValue(type, 512);
+    public static Tag readAnyTag(ByteBuf buf) {
+        try (var input = new ByteBufInputStream(buf)) {
+            return NBTIO.readTag(input, TagLimiter.create(2097152, 512), false, null);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     public static Component readComponent(ByteBuf buf) {
-        // do not use NbtMap, as mojang serializes a plaintext component as just a single StringTag, and technically 3rd-party servers could send lists
-        var tag = readAnyTagCloudburst(buf);
+        var tag = readAnyTag(buf);
         if (tag == null) {
             throw new IllegalArgumentException("Got end-tag when trying to read Component");
         }

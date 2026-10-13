@@ -2,7 +2,6 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 
 import com.viaversion.nbt.mini.MNBT;
 import com.viaversion.nbt.tag.CompoundTag;
-import com.viaversion.nbt.tag.ListTag;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import lombok.Getter;
@@ -97,7 +96,7 @@ public class DataComponentTypes {
     public static final IntComponentType OMINOUS_BOTTLE_AMPLIFIER = register(id -> new IntComponentType(id, "ominous_bottle_amplifier", MinecraftTypes::readVarInt, MinecraftTypes::writeVarInt, IntDataComponent::new));
     public static final DataComponentType<Holder<JukeboxSong>> JUKEBOX_PLAYABLE = register(id -> new DataComponentType<>(id, "jukebox_playable", buf -> MinecraftTypes.readHolder(buf, ItemTypes::readJukeboxSong), (buf, data) -> MinecraftTypes.writeHolder(buf, data, ItemTypes::writeJukeboxSong), ObjectDataComponent::new));
     public static final DataComponentType<HolderSet> PROVIDES_BANNER_PATTERNS = register(id -> new DataComponentType<>(id, "provides_banner_patterns", MinecraftTypes::readHolderSet, MinecraftTypes::writeHolderSet, ObjectDataComponent::new));
-    public static final DataComponentType<ListTag> RECIPES = register(id -> new DataComponentType<>(id, "recipes", ItemTypes::readRecipes, ItemTypes::writeRecipes, ObjectDataComponent::new));
+    public static final DataComponentType<MNBT> RECIPES = register(id -> new DataComponentType<>(id, "recipes", ItemTypes::readRecipes, ItemTypes::writeRecipes, ObjectDataComponent::new));
     public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register(id -> new DataComponentType<>(id, "lodestone_tracker", ItemTypes::readLodestoneTarget, ItemTypes::writeLodestoneTarget, ObjectDataComponent::new));
     public static final DataComponentType<Fireworks.FireworkExplosion> FIREWORK_EXPLOSION = register(id -> new DataComponentType<>(id, "firework_explosion", ItemTypes::readFireworkExplosion, ItemTypes::writeFireworkExplosion, ObjectDataComponent::new));
     public static final DataComponentType<Fireworks> FIREWORKS = register(id -> new DataComponentType<>(id, "fireworks", ItemTypes::readFireworks, ItemTypes::writeFireworks, ObjectDataComponent::new));

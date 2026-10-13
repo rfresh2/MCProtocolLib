@@ -18,7 +18,7 @@ dependencies {
     api("org.slf4j:slf4j-api:2.0.20")
     api(libs.jspecify)
 
-    api("com.github.rfresh2:OpenNBT:3.0.13")
+    api(libs.opennbt)
 
     api("net.raphimc:MinecraftAuth:5.0.2")
 

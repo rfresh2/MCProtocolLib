@@ -24,8 +24,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes.writeTag;
-
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ItemTypes {
     public static <T> Filterable<T> readFilterable(ByteBuf buf, Function<ByteBuf, T> reader) {
@@ -647,12 +645,16 @@ public class ItemTypes {
         MinecraftTypes.writeComponent(buf, instrument.description());
     }
 
-    public static ListTag readRecipes(ByteBuf buf) {
-        return MinecraftTypes.readTag(buf, ListTag.class);
+    public static MNBT readRecipes(ByteBuf buf) {
+        var recipes = MinecraftTypes.readMNBT(buf);
+        if (recipes != null && recipes.getData()[0] != ListTag.ID) {
+            throw new IllegalArgumentException("Expected a list tag for recipes");
+        }
+        return recipes;
     }
 
-    public static void writeRecipes(ByteBuf buf, ListTag recipes) {
-        writeTag(buf, recipes);
+    public static void writeRecipes(ByteBuf buf, MNBT recipes) {
+        MinecraftTypes.writeMNBT(buf, recipes);
     }
 
     public static JukeboxSong readJukeboxSong(ByteBuf buf) {

@@ -1,5 +1,6 @@
 package org.geysermc.adventure.text.serializer.nbt;
 
+import com.viaversion.nbt.tag.Tag;
 import net.kyori.adventure.text.event.DataComponentValue;
 
 /**
@@ -7,4 +8,4 @@ import net.kyori.adventure.text.event.DataComponentValue;
  *
  * @param tag the value of a data component
  */
-public record NbtDataComponentValue(Object tag) implements DataComponentValue {}
+public record NbtDataComponentValue(Tag tag) implements DataComponentValue {}
