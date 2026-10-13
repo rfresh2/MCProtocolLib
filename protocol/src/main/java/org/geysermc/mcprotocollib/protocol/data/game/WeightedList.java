@@ -3,7 +3,6 @@ package org.geysermc.mcprotocollib.protocol.data.game;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.geysermc.mcprotocollib.protocol.codec.MinecraftTypes;
 
 import java.util.List;
@@ -23,12 +22,12 @@ public class WeightedList<T> {
         MinecraftTypes.writeList(out, entries, (output, entry) -> entry.write(out, writer));
     }
 
-    public WeightedList<T> with(T value, @NonNegative int weight) {
+    public WeightedList<T> with(T value, int weight) {
         add(value, weight);
         return this;
     }
 
-    public void add(T value, @NonNegative int weight) {
+    public void add(T value, int weight) {
         add(new Entry<>(value, weight));
     }
 
@@ -49,7 +48,7 @@ public class WeightedList<T> {
         return false;
     }
 
-    public record Entry<T>(T value, @NonNegative int weight) {
+    public record Entry<T>(T value, int weight) {
 
         public Entry(ByteBuf in, Function<ByteBuf, T> reader) {
             this(reader.apply(in), MinecraftTypes.readVarInt(in));

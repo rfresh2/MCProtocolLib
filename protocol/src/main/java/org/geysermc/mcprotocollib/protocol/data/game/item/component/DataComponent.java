@@ -3,8 +3,8 @@ package org.geysermc.mcprotocollib.protocol.data.game.item.component;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.type.ObjectDataComponent;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 

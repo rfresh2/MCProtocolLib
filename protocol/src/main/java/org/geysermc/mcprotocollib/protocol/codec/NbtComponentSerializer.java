@@ -19,7 +19,7 @@ import com.viaversion.nbt.tag.NumberTag;
 import com.viaversion.nbt.tag.ShortTag;
 import com.viaversion.nbt.tag.StringTag;
 import com.viaversion.nbt.tag.Tag;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashSet;
