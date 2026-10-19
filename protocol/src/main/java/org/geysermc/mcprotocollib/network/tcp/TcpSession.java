@@ -13,7 +13,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.geysermc.mcprotocollib.network.Flag;
@@ -23,6 +22,7 @@ import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.protocol.MinecraftProtocol;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundDelimiterPacket;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -435,6 +435,41 @@ public abstract class TcpSession extends SimpleChannelInboundHandler<Packet> imp
             return;
         }
         this.channel.write(packet);
+    }
+
+    @Override
+    public ChannelFuture sendDelayed(@NonNull Packet packet) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return InvalidVoidChannelFuture.create();
+        }
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
+            return this.channel.write(toSend).addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    callPacketSent(toSend);
+                } else {
+                    exceptionCaught(null, future.cause());
+                }
+            });
+        }
+        return this.channel.newSucceededFuture();
+    }
+
+    @Override
+    public void sendDelayed(@NonNull Packet packet, @NonNull ChannelFutureListener listener) {
+        if(this.channel == null || !this.channel.isActive()) {
+            return;
+        }
+        final Packet toSend = this.callPacketSending(packet);
+        if (toSend != null) {
+            this.channel.write(toSend).addListener((ChannelFutureListener) future -> {
+                if(future.isSuccess()) {
+                    callPacketSent(toSend);
+                } else {
+                    exceptionCaught(null, future.cause());
+                }
+            }).addListener(listener);
+        }
     }
 
     @Override
