@@ -276,10 +276,20 @@ public interface Session {
     ChannelFuture sendDirect(@NonNull Packet packet);
 
     /**
-     * Writes a packet without flushing
+     * Writes a packet without calling listeners and without flushing
      * @param packet Packet to send
      */
     void sendDelayedDirect(@NonNull Packet packet);
+
+    /**
+     * Writes a packet without flushing
+     */
+    ChannelFuture sendDelayed(@NonNull Packet packet);
+
+    /**
+     * Writes a packet without flushing
+     */
+    void sendDelayed(@NonNull Packet packet, @NonNull ChannelFutureListener listener);
 
     /**
      * Flushes all pending packets.
