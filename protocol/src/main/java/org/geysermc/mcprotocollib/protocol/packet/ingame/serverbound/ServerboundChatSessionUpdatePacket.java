@@ -25,8 +25,8 @@ public class ServerboundChatSessionUpdatePacket implements MinecraftPacket {
     public ServerboundChatSessionUpdatePacket(ByteBuf in) {
         this.sessionId = MinecraftTypes.readUUID(in);
         this.expiresAt = in.readLong();
-        byte[] keyBytes = MinecraftTypes.readByteArray(in);
-        this.keySignature = MinecraftTypes.readByteArray(in);
+        byte[] keyBytes = MinecraftTypes.readByteArray(in, 512);
+        this.keySignature = MinecraftTypes.readByteArray(in, 4096);
 
         PublicKey publicKey;
         try {

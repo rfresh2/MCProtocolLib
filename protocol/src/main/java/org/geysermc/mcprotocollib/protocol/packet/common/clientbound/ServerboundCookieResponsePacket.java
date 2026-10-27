@@ -18,7 +18,7 @@ public class ServerboundCookieResponsePacket implements MinecraftPacket {
 
     public ServerboundCookieResponsePacket(ByteBuf in) {
         this.key = MinecraftTypes.readResourceLocation(in);
-        this.payload = MinecraftTypes.readNullable(in, MinecraftTypes::readByteArray);
+        this.payload = MinecraftTypes.readNullable(in, b -> MinecraftTypes.readByteArray(b, 5120));
     }
 
     @Override

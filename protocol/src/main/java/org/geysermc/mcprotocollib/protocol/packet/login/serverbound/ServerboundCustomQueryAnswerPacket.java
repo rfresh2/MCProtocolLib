@@ -21,7 +21,7 @@ public class ServerboundCustomQueryAnswerPacket implements MinecraftPacket {
 
     public ServerboundCustomQueryAnswerPacket(ByteBuf in) {
         this.transactionId = MinecraftTypes.readVarInt(in);
-        this.data = MinecraftTypes.readNullable(in, buf -> MinecraftTypes.readByteArray(buf, ByteBuf::readableBytes));
+        this.data = MinecraftTypes.readNullable(in, buf -> MinecraftTypes.readByteArray(buf, 1048576));
     }
 
     @Override
