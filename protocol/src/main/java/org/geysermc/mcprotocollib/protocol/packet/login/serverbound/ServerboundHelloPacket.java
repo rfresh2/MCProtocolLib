@@ -17,7 +17,7 @@ public class ServerboundHelloPacket implements MinecraftPacket {
     private final UUID profileId;
 
     public ServerboundHelloPacket(ByteBuf in) {
-        this.username = MinecraftTypes.readString(in);
+        this.username = MinecraftTypes.readString(in, 16);
         this.profileId = MinecraftTypes.readUUID(in);
     }
 

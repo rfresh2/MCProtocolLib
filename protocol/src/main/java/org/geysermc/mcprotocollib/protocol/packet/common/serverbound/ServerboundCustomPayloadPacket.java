@@ -17,7 +17,7 @@ public class ServerboundCustomPayloadPacket implements MinecraftPacket {
 
     public ServerboundCustomPayloadPacket(ByteBuf in) {
         this.channel = MinecraftTypes.readResourceLocation(in);
-        this.data = MinecraftTypes.readByteArray(in, ByteBuf::readableBytes);
+        this.data = MinecraftTypes.readByteArray(in, ByteBuf::readableBytes, 32767);
     }
 
     @Override
