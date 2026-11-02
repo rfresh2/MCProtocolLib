@@ -534,8 +534,7 @@ public class MinecraftTypes {
         return tag;
     }
 
-    @Nullable
-    public static <T extends Tag> T readTag(ByteBuf buf, Class<T> expected) {
+    public static <T extends Tag> @Nullable T readTag(ByteBuf buf, Class<T> expected) {
         if (buf.readByte() == 0) {
             return null;
         }
@@ -559,25 +558,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static <T extends Tag> void writeNamedTag(ByteBuf buf, CompoundTag tag, String name) throws UncheckedIOException {
-        try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
-            NBTIO.writeTag(out, tag, false);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public static MNBT readNamedMNBT(ByteBuf buf) throws UncheckedIOException {
-        try (DataInputStream in = byteBufToDataInputStream(buf)) {
-            var mnbt = MNBTIO.read(in, true);
-            if (mnbt.isEmpty()) return null;
-            else return mnbt;
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public static MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
+    public static @Nullable MNBT readMNBT(ByteBuf buf) throws UncheckedIOException {
         try (DataInputStream in = byteBufToDataInputStream(buf)) {
             var mnbt = MNBTIO.read(in, false);
             if (mnbt.isEmpty()) return null;
@@ -587,7 +568,7 @@ public class MinecraftTypes {
         }
     }
 
-    public static void writeMNBT(ByteBuf buf, MNBT mnbt) throws UncheckedIOException {
+    public static void writeMNBT(ByteBuf buf, @Nullable MNBT mnbt) throws UncheckedIOException {
         try (DataOutputStream out = byteBufToDataOutputStream(buf)) {
             MNBTIO.write(out, mnbt);
         } catch (final IOException e) {
