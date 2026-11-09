@@ -1,5 +1,5 @@
 plugins {
-    id("io.freefair.lombok") version "9.8.2"
+    id("io.freefair.lombok") version "9.8.3"
     `maven-publish`
     `java-library`
 }
@@ -38,7 +38,7 @@ dependencies {
     api("com.github.rfresh2.fastutil.maps:int-int-maps")
     api("com.github.rfresh2.fastutil.maps:reference-int-maps")
 
-    api("io.netty:netty-all:4.2.19.Final")
+    api("io.netty:netty-all:4.2.20.Final")
 
     api("com.velocitypowered:velocity-native:3.5.0-SNAPSHOT")
 
